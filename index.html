@@ -1006,6 +1006,7 @@
           <button id="importVcfBtn" class="tool-btn">vCard</button>
           <button id="syncJsonBtn" class="tool-btn">Sync JSON</button>
           <button id="loadJsonBtn" class="tool-btn">Load JSON</button>
+          <button id="exportJsonBtn" class="tool-btn">Export JSON</button>
         </div>
       </div>
       
@@ -1395,7 +1396,7 @@
         this.map = L.map('map', {
           center: [25, 0], // Center on populated continents
           zoom: 3,
-          minZoom: 3, // Prevent zooming out to avoid borders
+          minZoom: 2, // Prevent zooming out to avoid borders
           maxZoom: 18,
           zoomControl: true,
           maxBounds: [[-60, -180], [80, 180]], // Prevent dragging beyond world bounds
@@ -2466,8 +2467,8 @@
         });
         
         // If the fit resulted in too low zoom, set minimum zoom
-        if (this.map.getZoom() < 3) {
-          this.map.setZoom(3);
+        if (this.map.getZoom() < 2) {
+          this.map.setZoom(2);
         }
       }
 
