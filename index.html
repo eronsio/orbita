@@ -1,0 +1,2741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Orbita</title>
+  <!-- Updated: 2025-09-10 11:50 - Fixed Analytics Panel and Added Click-Outside-to-Close -->
+  
+  <!-- External Libraries -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <script src="https://unpkg.com/overlapping-marker-spiderfier@1.0.3/dist/oms.min.js"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS Variables - Luxury Silver Palette (60-30-10 Rule Applied) */
+    :root {
+      /* 60% - Dominant Background Colors */
+      --bg: #FFFFFF;                    /* Pure white - main background */
+      --bg-light: #F8F9FA;             /* Light gray - secondary backgrounds */
+      --bg-dark: #E2E2DA;              /* Warm off-white - elevated surfaces */
+      
+      /* 30% - Secondary UI Colors */
+      --secondary: #A19E9D;            /* Warm gray - borders, dividers */
+      --text: #444143;                 /* Dark charcoal - primary text */
+      --text-light: #6B7280;           /* Medium gray - secondary text */
+      --text-muted: #9CA3AF;           /* Light gray - muted text */
+      --border: #E5E7EB;               /* Light border */
+      --border-light: #F3F4F6;         /* Very light border */
+      
+      /* 10% - Accent Colors */
+      --primary: #DCE8E7;              /* Light mint - primary actions */
+      --primary-dark: #B8D4D1;         /* Darker mint - hover states */
+      --accent: #444143;               /* Dark charcoal - emphasis */
+      
+      /* Semantic Colors */
+      --success: #10B981;              /* Green - success states */
+      --warning: #F59E0B;              /* Amber - warnings */
+      --error: #EF4444;                /* Red - errors */
+      
+      /* Shadows */
+      --shadow: rgba(68, 65, 66, 0.08);
+      --shadow-lg: rgba(68, 65, 66, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      height: 100vh;
+      position: relative;
+    }
+
+    /* Left Vertical Toolbar */
+    .left-toolbar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 60px;
+      height: 100vh;
+      background: var(--bg-light);
+      border-right: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 12px;
+      z-index: 1000;
+      box-shadow: 2px 0 8px var(--shadow);
+    }
+
+    .toolbar-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+    }
+
+    .toolbar-icon:hover {
+      background: var(--bg-light);
+      color: var(--text);
+      transform: scale(1.05);
+    }
+
+    .toolbar-icon.active {
+      background: var(--primary);
+      color: var(--accent);
+    }
+
+    /* Floating Top Left Panel */
+    .floating-header-left {
+      position: fixed;
+      top: 20px;
+      left: 80px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 1001;
+      box-shadow: 0 4px 20px var(--shadow-lg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-light);
+    }
+
+    /* Floating Top Right Panel */
+    .floating-header-right {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1001;
+      box-shadow: 0 4px 20px var(--shadow-lg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-light);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.025em;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 12px;
+    }
+
+    .search-container {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 240px;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--bg);
+      transition: all 0.2s ease;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-shadow: 0 1px 2px var(--shadow);
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 6px var(--shadow);
+      transform: translateY(-1px);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .header-button {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-button:hover {
+      background: var(--bg-light);
+      border-color: var(--secondary);
+      transform: translateY(-1px);
+    }
+
+    .user-profile {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .user-profile:hover {
+      background: var(--text);
+      transform: scale(1.05);
+    }
+
+    .btn {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 1px 3px var(--shadow);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      position: relative;
+      min-height: 40px;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      background: var(--bg-light);
+      border-color: var(--border);
+      box-shadow: 0 4px 6px var(--shadow);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      background: #f1f5f9;
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--bg-light);
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .btn-tools {
+      background: var(--secondary);
+      border-color: var(--secondary);
+      color: var(--bg-light);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      border-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    }
+
+
+    .map-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #f8f9fa;
+      overflow: hidden;
+    }
+
+    #map {
+      height: 100%;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* Remove all Leaflet borders and backgrounds */
+    .leaflet-container {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    .leaflet-tile-pane {
+      background: transparent !important;
+    }
+
+    .leaflet-control-container {
+      background: transparent !important;
+    }
+
+    .leaflet-control-zoom {
+      background: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      border-radius: 8px !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .leaflet-control-zoom a {
+      background: transparent !important;
+      border: none !important;
+      color: #1a1a1a !important;
+    }
+
+    .leaflet-control-zoom a:hover {
+      background: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .dialog {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      border: 1px solid #e5e7eb;
+    }
+
+    .dialog h2 {
+      margin: 0 0 24px 0;
+      color: #111827;
+      font-weight: 600;
+      font-size: 18px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #374151;
+      font-size: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.15s ease;
+      background: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .modal .btn {
+      min-height: 40px;
+      font-weight: 500;
+    }
+
+    /* Analytics styles */
+    .analytics-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+
+    .analytics-card h3 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .insight-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .insight-icon {
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 8px;
+    }
+
+    .insight-content {
+      flex: 1;
+    }
+
+    .insight-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .insight-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .hint {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Tools Panel */
+    .tools-panel {
+      position: fixed;
+      top: 80px;
+      left: 80px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: none;
+      box-shadow: 0 4px 20px var(--shadow-lg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-light);
+      z-index: 1000;
+      min-width: 300px;
+    }
+
+    .tools-panel.open {
+      display: block;
+    }
+
+    .tools-section {
+      margin-bottom: 24px;
+    }
+
+    .tools-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .tools-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .tool-btn {
+      background: var(--bg);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .tool-btn:hover {
+      background: var(--bg-light);
+      border-color: var(--secondary);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #667eea;
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+    }
+
+    /* File input styling */
+    .file-input {
+      display: none;
+    }
+
+    .file-label {
+      cursor: pointer;
+    }
+
+    /* Dropdown styling */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: #ffffff;
+      min-width: 220px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      z-index: 1000;
+      top: calc(100% + 6px);
+      left: 0;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-12px) scale(0.95);
+      transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .dropdown-content a {
+      color: #374151;
+      padding: 14px 18px;
+      text-decoration: none;
+      display: block;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 500;
+      font-size: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      position: relative;
+    }
+
+    .dropdown-content a:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-content a:hover {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      color: #111827;
+      transform: translateX(4px);
+    }
+
+    .dropdown.open .dropdown-content {
+      display: block;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .dropdown.open .btn {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-content:hover {
+      display: block;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .dropdown:hover .btn {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* Contact popup styling */
+    .contact-popup .leaflet-popup-content {
+      margin: 0;
+      padding: 0;
+    }
+
+    .contact-popup-content {
+      padding: 16px;
+      min-width: 250px;
+    }
+
+    .contact-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .contact-avatar {
+      flex-shrink: 0;
+    }
+
+    .avatar-initials {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .contact-info {
+      flex: 1;
+    }
+
+    .contact-name {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .contact-detail {
+      margin: 2px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .contact-address {
+      margin-bottom: 12px;
+      padding-top: 8px;
+      border-top: 1px solid #eee;
+    }
+
+    .contact-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .popup-btn {
+      background: #f8f9fa;
+      border: 1px solid #e1e5e9;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .popup-btn:hover {
+      background: #e9ecef;
+      border-color: #dee2e6;
+    }
+
+    /* Custom marker styling */
+    .custom-marker {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        padding: 12px 16px;
+      }
+      
+      .app-title {
+        font-size: 20px;
+      }
+      
+      .controls {
+        gap: 8px;
+      }
+      
+      .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+    }
+
+    /* Contact Panel Styles */
+    .contact-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 400px;
+      max-width: 90vw;
+      height: 100vh;
+      background: var(--bg-light);
+      backdrop-filter: blur(10px);
+      border-left: 1px solid var(--border-light);
+      box-shadow: -8px 0 24px var(--shadow-lg);
+      z-index: 1002;
+      display: none;
+      flex-direction: column;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      gap: 12px;
+    }
+    .panel-header h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+      flex: 1;
+      text-align: center;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .back-btn:hover {
+      background: var(--bg-light);
+      color: var(--text);
+      transform: translateX(-2px);
+    }
+    .delete-btn-small {
+      background: none;
+      border: none;
+      color: var(--error);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .delete-btn-small:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+      transform: scale(1.1);
+    }
+    .panel-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+    }
+    .avatar-initials-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg);
+      font-weight: 600;
+      font-size: 24px;
+    }
+    .profile-info h4 {
+      margin: 0 0 8px 0;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .occupation, .tags {
+      margin: 4px 0;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+    .details-section {
+      margin-bottom: 24px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    .detail-label {
+      color: var(--text-light);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .detail-value {
+      color: var(--text);
+      font-size: 14px;
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
+    }
+
+    /* Editable field styles */
+    .editable .detail-value {
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .editable .detail-value:hover {
+      background: var(--bg-light);
+      border-radius: 4px;
+      padding: 2px 4px;
+    }
+    .editable .detail-value:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+  
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+
+<body>
+  <div class="app">
+    <!-- Left Vertical Toolbar -->
+    <div class="left-toolbar">
+      <button class="toolbar-icon active" title="Pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
+        </svg>
+      </button>
+      <button class="toolbar-icon" title="Table">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0-18h10a2 2 0 0 1 2 2v4M9 3H5a2 2 0 0 0-2 2v4m0 0v10a2 2 0 0 0 2 2h4m-6-12h10"/>
+        </svg>
+      </button>
+      <button class="toolbar-icon" title="Text">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="4,7 4,4 20,4 20,7"/>
+          <line x1="9" y1="20" x2="15" y2="20"/>
+          <line x1="12" y1="4" x2="12" y2="20"/>
+        </svg>
+      </button>
+      <button class="toolbar-icon" title="Shapes">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21,15 16,10 5,21"/>
+        </svg>
+      </button>
+      <button class="toolbar-icon" title="Pen">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Floating Top Left Panel -->
+    <div class="floating-header-left">
+      <h1 class="app-title">Orbita</h1>
+      <div class="search-container">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search contacts..." class="search-input">
+      </div>
+      <button id="toolsBtn" class="header-button">Tools</button>
+    </div>
+
+    <!-- Floating Top Right Panel -->
+    <div class="floating-header-right">
+      <button id="addContactBtn" class="header-button">+ Add Contact</button>
+      <button class="header-button">Share</button>
+      <button class="header-button">Present</button>
+      <div class="user-profile">A</div>
+    </div>
+
+    <!-- Collapsible Tools Panel -->
+    <div id="toolsPanel" class="tools-panel">
+      <div class="tools-section">
+        <h3>Filter</h3>
+        <div class="tools-grid">
+          <button id="filterTier1Btn" class="tool-btn">Tier 1</button>
+          <button id="filterTier2Btn" class="tool-btn">Tier 2</button>
+          <button id="filterTier3Btn" class="tool-btn">Tier 3</button>
+          <button id="clearTierFilterBtn" class="tool-btn">Show All</button>
+        </div>
+      </div>
+      
+      <div class="tools-section">
+        <h3>Import</h3>
+        <div class="tools-grid">
+          <button id="importCsvBtn" class="tool-btn">CSV</button>
+          <button id="importVcfBtn" class="tool-btn">vCard</button>
+          <button id="syncJsonBtn" class="tool-btn">Sync JSON</button>
+          <button id="loadJsonBtn" class="tool-btn">Load JSON</button>
+        </div>
+      </div>
+      
+      <div class="tools-section">
+        <h3>View</h3>
+        <div class="tools-grid">
+          <button id="toggleHeatmapBtn" class="tool-btn">Heatmap</button>
+          <button id="analyticsBtn" class="tool-btn">Analytics</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <!-- Add Contact Modal -->
+  <div id="addContactModal" class="modal">
+    <div class="dialog">
+      <h2>Add New Contact</h2>
+      <form id="addContactForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contactName">Name *</label>
+            <input type="text" id="contactName" required>
+          </div>
+          <div class="form-group">
+            <label for="contactProfession">Profession</label>
+            <input type="text" id="contactProfession">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contactEmail">Email</label>
+            <input type="email" id="contactEmail">
+          </div>
+          <div class="form-group">
+            <label for="contactPhone">Phone</label>
+            <input type="tel" id="contactPhone">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="contactLocation">Location</label>
+          <input type="text" id="contactLocation" placeholder="City, Country">
+        </div>
+        
+        <div class="form-group">
+          <label for="contactAddress">Address</label>
+          <textarea id="contactAddress" rows="2"></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contactCompany">Company</label>
+            <input type="text" id="contactCompany">
+          </div>
+          <div class="form-group">
+            <label for="contactWebsite">Website</label>
+            <input type="url" id="contactWebsite" placeholder="https://">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="contactTags">Tags</label>
+          <input type="text" id="contactTags" placeholder="Separate tags with commas">
+        </div>
+        
+        <div class="form-group">
+          <label for="contactNotes">Notes</label>
+          <textarea id="contactNotes" rows="3"></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" id="cancelAddContact" class="btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="fab" id="fab" title="Add Contact">＋</button>
+
+  <!-- Analytics Modal -->
+  <div id="analyticsModal" class="modal">
+    <div class="dialog" style="max-width: 1000px; max-height: 90vh;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>📊 Network Analytics</h2>
+        <button class="btn" id="closeAnalytics">Close</button>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <!-- Tier Distribution -->
+        <div class="analytics-card">
+          <h3>👥 Tier Distribution</h3>
+          <div id="tierChart" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+            <div class="hint">Loading...</div>
+          </div>
+        </div>
+        
+        <!-- Geographic Distribution -->
+        <div class="analytics-card">
+          <h3>🌍 Top Countries</h3>
+          <div id="countryChart" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+            <div class="hint">Loading...</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <!-- Contact Growth -->
+        <div class="analytics-card">
+          <h3>📈 Network Growth</h3>
+          <div id="growthChart" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+            <div class="hint">Loading...</div>
+          </div>
+        </div>
+        
+        <!-- Tag Cloud -->
+        <div class="analytics-card">
+          <h3>🏷️ Popular Tags</h3>
+          <div id="tagCloud" style="height: 200px; overflow-y: auto;">
+            <div class="hint">Loading...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Insights Panel -->
+      <div class="analytics-card">
+        <h3>💡 Smart Insights</h3>
+        <div id="insightsPanel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="insight-item">
+            <div class="insight-icon">🎯</div>
+            <div class="insight-content">
+              <div class="insight-title">Network Focus</div>
+              <div class="insight-value" id="networkFocus">Analyzing...</div>
+            </div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon">🌍</div>
+            <div class="insight-content">
+              <div class="insight-title">Global Reach</div>
+              <div class="insight-value" id="globalReach">Analyzing...</div>
+            </div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon">📅</div>
+            <div class="insight-content">
+              <div class="insight-title">Last Contact</div>
+              <div class="insight-value" id="lastContact">Analyzing...</div>
+            </div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon">🎁</div>
+            <div class="insight-content">
+              <div class="insight-title">Opportunities</div>
+              <div class="insight-value" id="opportunities">Analyzing...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden file inputs -->
+  <input type="file" id="csvFileInput" class="file-input" accept=".csv">
+  <input type="file" id="vcfFileInput" class="file-input" accept=".vcf,.vcard">
+  <input type="file" id="jsonFileInput" class="file-input" accept=".json">
+
+  <script>
+    // Simple, working Orbita app
+    class SimpleOrbita {
+      constructor() {
+        this.people = [];
+        this.map = null;
+        this.markers = [];
+        this.clusterGroup = null;
+        this.oms = null;
+        this.spiderfiedMarkers = new Set();
+        this.tiers = JSON.parse(localStorage.getItem('orbita_tiers') || JSON.stringify([
+          { id: 'tier1', name: 'VIP', color: '#FF6B6B', createdAt: new Date().toISOString() },
+          { id: 'tier2', name: 'Professional', color: '#4ECDC4', createdAt: new Date().toISOString() },
+          { id: 'tier3', name: 'Personal', color: '#45B7D1', createdAt: new Date().toISOString() }
+        ]));
+        this.currentTierFilter = null;
+        this.currentSearchQuery = '';
+        this.heatmapLayer = null;
+        this.heatmapEnabled = false;
+        this.init();
+      }
+
+      init() {
+        console.log('Initializing Orbita app...');
+        try {
+          this.initMap();
+          console.log('Map initialized');
+          this.initEventListeners();
+          console.log('Event listeners set up');
+          this.loadFromStorage();
+          console.log('Storage loaded');
+          
+          // Load from JSON in background (non-blocking)
+          this.loadFromJSONBackground();
+        } catch (error) {
+          console.error('Error during initialization:', error);
+        }
+      }
+
+      async loadFromJSONBackground() {
+        try {
+          const response = await fetch('people-export.json');
+          if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data)) {
+              // Only update if we have new contacts or if localStorage is empty
+              if (this.people.length === 0 || data.length > this.people.length) {
+                this.people = data;
+                this.saveToStorage();
+                this.updateMap();
+                console.log('Background loaded from JSON:', data.length, 'contacts');
+              }
+            }
+          }
+        } catch (error) {
+          console.log('No people-export.json found or error loading:', error.message);
+        }
+      }
+
+      // Tier Management
+      createTier() {
+        const tierName = prompt('Enter tier name:');
+        if (tierName && tierName.trim()) {
+          const tier = {
+            id: Date.now().toString(),
+            name: tierName.trim(),
+            color: this.generateTierColor(),
+            createdAt: new Date().toISOString()
+          };
+          this.tiers.push(tier);
+          localStorage.setItem('orbita_tiers', JSON.stringify(this.tiers));
+          this.updateMap();
+          alert(`Tier "${tierName}" created successfully!`);
+        }
+      }
+
+      generateTierColor() {
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+        return colors[this.tiers.length % colors.length];
+      }
+
+      showTierFilter() {
+        if (this.tiers.length === 0) {
+          alert('No tiers available. Create a tier first.');
+          return;
+        }
+
+        const tierOptions = this.tiers.map(tier => 
+          `<option value="${tier.id}">${tier.name}</option>`
+        ).join('');
+        
+        const filterHtml = `
+          <div style="padding: 20px;">
+            <h3>Filter by Tier</h3>
+            <select id="tierFilterSelect" style="width: 100%; padding: 8px; margin: 10px 0;">
+              <option value="">All Contacts</option>
+              ${tierOptions}
+            </select>
+            <div style="margin-top: 15px;">
+              <button onclick="window.orbita.applyTierFilter()" style="padding: 8px 16px; margin-right: 10px;">Apply Filter</button>
+              <button onclick="window.orbita.clearTierFilter()" style="padding: 8px 16px;">Clear Filter</button>
+            </div>
+          </div>
+        `;
+        
+        // Create a simple modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+          background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+          justify-content: center; z-index: 10000;
+        `;
+        modal.innerHTML = `
+          <div style="background: white; border-radius: 8px; max-width: 400px; width: 90%;">
+            ${filterHtml}
+            <button onclick="this.closest('div').remove()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px;">×</button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      applyTierFilter(tierId = null) {
+        if (tierId) {
+          this.currentTierFilter = tierId;
+        } else {
+          const select = document.getElementById('tierFilterSelect');
+          if (select) {
+            tierId = select.value;
+            this.currentTierFilter = tierId;
+            document.querySelector('[style*="position: fixed"]').remove();
+          }
+        }
+        this.updateMap();
+      }
+
+      clearTierFilter() {
+        this.currentTierFilter = null;
+        this.updateMap();
+        const modal = document.querySelector('[style*="position: fixed"]');
+        if (modal) {
+          modal.remove();
+        }
+      }
+
+      // Heatmap functionality
+      toggleHeatmap() {
+        this.heatmapEnabled = !this.heatmapEnabled;
+        
+        if (this.heatmapEnabled) {
+          this.createHeatmap();
+        } else {
+          this.removeHeatmap();
+        }
+      }
+
+      createHeatmap() {
+        if (this.heatmapLayer) {
+          this.map.removeLayer(this.heatmapLayer);
+        }
+
+        // Use both lat/lng and latitude/longitude properties
+        const heatmapData = this.people
+          .filter(person => (person.lat && person.lng) || (person.latitude && person.longitude))
+          .map(person => {
+            const lat = person.lat || person.latitude;
+            const lng = person.lng || person.longitude;
+            return [lat, lng, 1];
+          });
+
+        if (heatmapData.length > 0) {
+          // Get current zoom level for dynamic sizing
+          const currentZoom = this.map.getZoom();
+          
+          // Dynamic radius and blur based on zoom level
+          const baseRadius = 40;
+          const baseBlur = 20;
+          const zoomFactor = Math.max(1, currentZoom - 2);
+          
+          this.heatmapLayer = L.heatLayer(heatmapData, {
+            radius: Math.max(15, baseRadius / zoomFactor),
+            blur: Math.max(10, baseBlur / zoomFactor),
+            maxZoom: 18,
+            gradient: {
+              0.2: '#0066ff',
+              0.4: '#00aaff',
+              0.6: '#00ff88',
+              0.8: '#ffff00',
+              1.0: '#ff4400'
+            }
+          }).addTo(this.map);
+          
+          // Update heatmap when zoom changes
+          this.map.on('zoomend', () => {
+            if (this.heatmapEnabled && this.heatmapLayer) {
+              this.createHeatmap(); // Recreate with new zoom-based settings
+            }
+          });
+          
+          console.log('Heatmap created with', heatmapData.length, 'points at zoom', currentZoom);
+        } else {
+          console.log('No coordinate data found for heatmap');
+        }
+      }
+
+      removeHeatmap() {
+        if (this.heatmapLayer) {
+          this.map.removeLayer(this.heatmapLayer);
+          this.heatmapLayer = null;
+        }
+      }
+
+      initMap() {
+        // Initialize map with proper centering and zoom
+        this.map = L.map('map', {
+          center: [25, 0], // Center on populated continents
+          zoom: 3,
+          minZoom: 3, // Prevent zooming out to avoid borders
+          maxZoom: 18,
+          zoomControl: true,
+          maxBounds: [[-60, -180], [80, 180]], // Prevent dragging beyond world bounds
+          maxBoundsViscosity: 1.0 // Strict bounds enforcement
+        });
+
+        // Add OpenStreetMap tiles with no-repeat and better bounds
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18,
+          noWrap: true,
+          bounds: [[-60, -180], [80, 180]]
+        }).addTo(this.map);
+
+        // Initialize marker cluster group with click-to-expand
+        this.clusterGroup = L.markerClusterGroup({
+          showCoverageOnHover: false,
+          disableClusteringAtZoom: 12,
+          spiderfyOnMaxZoom: true,
+          zoomToBoundsOnClick: false
+        });
+        this.map.addLayer(this.clusterGroup);
+        
+        // Add cluster click handler to force spiderfy
+        this.clusterGroup.on('clusterclick', (e) => {
+          e.originalEvent.stopPropagation();
+          if (e.layer && e.layer.spiderfy) {
+            e.layer.spiderfy();
+          }
+        });
+
+        // Add map click handler to close tools panel when clicking outside
+        this.map.on('click', (e) => {
+          // Close tools panel when clicking on the map
+          this.closeToolsPanel();
+        });
+
+        // Add resize handler for responsive behavior
+        window.addEventListener('resize', () => {
+          setTimeout(() => {
+            this.map.invalidateSize();
+            // Maintain current view on resize instead of fitting to pins
+            const currentCenter = this.map.getCenter();
+            const currentZoom = this.map.getZoom();
+            this.map.setView(currentCenter, currentZoom);
+          }, 100);
+        });
+
+        // Fit map to show all markers when ready
+        this.map.whenReady(() => {
+          if (this.people.length > 0) {
+            this.fitToPins();
+          }
+        });
+      }
+
+      initEventListeners() {
+        console.log('Setting up event listeners...');
+        
+        // Import dropdown
+        const importCsvBtn = document.getElementById('importCsvBtn');
+        if (importCsvBtn) {
+          importCsvBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Import CSV clicked');
+            document.getElementById('csvFileInput').click();
+          });
+        } else {
+          console.error('importCsvBtn not found');
+        }
+
+        const importVcfBtn = document.getElementById('importVcfBtn');
+        if (importVcfBtn) {
+          importVcfBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Import vCard clicked');
+            document.getElementById('vcfFileInput').click();
+          });
+        } else {
+          console.error('importVcfBtn not found');
+        }
+
+        // Export dropdown
+        const exportJsonBtn = document.getElementById('exportJsonBtn');
+        if (exportJsonBtn) {
+          exportJsonBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Export JSON clicked');
+            this.exportToJSON();
+          });
+        } else {
+          console.error('exportJsonBtn not found');
+        }
+
+        const syncJsonBtn = document.getElementById('syncJsonBtn');
+        if (syncJsonBtn) {
+          syncJsonBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Sync JSON clicked');
+            this.syncFromPeopleExport();
+          });
+        } else {
+          console.error('syncJsonBtn not found');
+        }
+
+        const loadJsonBtn = document.getElementById('loadJsonBtn');
+        if (loadJsonBtn) {
+          loadJsonBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Load JSON clicked');
+            document.getElementById('jsonFileInput').click();
+          });
+        } else {
+          console.error('loadJsonBtn not found');
+        }
+
+        // Add contact buttons
+        const addContactBtn = document.getElementById('addContactBtn');
+        if (addContactBtn) {
+          addContactBtn.addEventListener('click', () => {
+            console.log('Add Contact clicked');
+            this.showAddContactModal();
+          });
+        } else {
+          console.error('addContactBtn not found');
+        }
+
+        const fab = document.getElementById('fab');
+        if (fab) {
+          fab.addEventListener('click', () => {
+            console.log('FAB clicked');
+            this.showAddContactModal();
+          });
+        } else {
+          console.error('fab not found');
+        }
+
+        // Modal controls
+        document.getElementById('cancelAddContact').addEventListener('click', () => {
+          this.hideAddContactModal();
+        });
+
+        document.getElementById('addContactForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          if (this.editingContactId) {
+            this.updateContact();
+          } else {
+            this.addContact();
+          }
+        });
+
+        // File inputs
+        document.getElementById('csvFileInput').addEventListener('change', (e) => {
+          this.handleCSVImport(e.target.files[0]);
+        });
+
+        document.getElementById('vcfFileInput').addEventListener('change', (e) => {
+          this.handleVCFImport(e.target.files[0]);
+        });
+
+        document.getElementById('jsonFileInput').addEventListener('change', (e) => {
+          this.handleJSONImport(e.target.files[0]);
+        });
+
+        // Close modal on outside click
+        document.getElementById('addContactModal').addEventListener('click', (e) => {
+          if (e.target.id === 'addContactModal') {
+            this.hideAddContactModal();
+          }
+        });
+
+        // Tier functionality
+        const createTierBtn = document.getElementById('createTierBtn');
+        if (createTierBtn) {
+          createTierBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.createTier();
+          });
+        }
+
+        const filterTierBtn = document.getElementById('filterTierBtn');
+        if (filterTierBtn) {
+          filterTierBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showTierFilter();
+          });
+        }
+
+        // Heatmap functionality
+        const toggleHeatmapBtn = document.getElementById('toggleHeatmapBtn');
+        if (toggleHeatmapBtn) {
+          toggleHeatmapBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.toggleHeatmap();
+          });
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        console.log('Search input element found:', searchInput);
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            this.currentSearchQuery = e.target.value.toLowerCase().trim();
+            console.log('Search query updated:', this.currentSearchQuery);
+            this.updateMap();
+          });
+          console.log('Search event listener attached');
+        } else {
+          console.error('Search input element not found!');
+        }
+
+        // Tier filtering functionality
+        const filterTier1Btn = document.getElementById('filterTier1Btn');
+        if (filterTier1Btn) {
+          filterTier1Btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.applyTierFilter(1);
+          });
+        }
+
+        const filterTier2Btn = document.getElementById('filterTier2Btn');
+        if (filterTier2Btn) {
+          filterTier2Btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.applyTierFilter(2);
+          });
+        }
+
+        const filterTier3Btn = document.getElementById('filterTier3Btn');
+        if (filterTier3Btn) {
+          filterTier3Btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.applyTierFilter(3);
+          });
+        }
+
+        const clearTierFilterBtn = document.getElementById('clearTierFilterBtn');
+        if (clearTierFilterBtn) {
+          clearTierFilterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.clearTierFilter();
+          });
+        }
+
+        // Analytics functionality
+        const analyticsBtn = document.getElementById('analyticsBtn');
+        if (analyticsBtn) {
+          analyticsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showAnalytics();
+          });
+        }
+
+        const closeAnalyticsBtn = document.getElementById('closeAnalytics');
+        if (closeAnalyticsBtn) {
+          closeAnalyticsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.hideAnalytics();
+          });
+        }
+
+        // Tools panel functionality
+        const toolsBtn = document.getElementById('toolsBtn');
+        if (toolsBtn) {
+          toolsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.toggleToolsPanel();
+          });
+        }
+      }
+
+      toggleToolsPanel() {
+        const panel = document.getElementById('toolsPanel');
+        const isOpen = panel.classList.contains('open');
+        
+        if (isOpen) {
+          panel.classList.remove('open');
+        } else {
+          panel.classList.add('open');
+        }
+      }
+
+      closeToolsPanel() {
+        const panel = document.getElementById('toolsPanel');
+        panel.classList.remove('open');
+      }
+
+      initDropdowns() {
+        // Handle dropdown button clicks
+        document.querySelectorAll('.dropdown .btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dropdown = btn.closest('.dropdown');
+            const isOpen = dropdown.classList.contains('open');
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown.open').forEach(openDropdown => {
+              if (openDropdown !== dropdown) {
+                openDropdown.classList.remove('open');
+              }
+            });
+            
+            // Toggle current dropdown
+            dropdown.classList.toggle('open', !isOpen);
+          });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown.open').forEach(dropdown => {
+              dropdown.classList.remove('open');
+            });
+          }
+        });
+
+        // Close dropdowns when pressing Escape
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            document.querySelectorAll('.dropdown.open').forEach(dropdown => {
+              dropdown.classList.remove('open');
+            });
+          }
+        });
+      }
+
+      showAddContactModal() {
+        document.getElementById('addContactModal').classList.add('open');
+        document.getElementById('contactName').focus();
+      }
+
+      hideAddContactModal() {
+        document.getElementById('addContactModal').classList.remove('open');
+        document.getElementById('addContactForm').reset();
+        this.editingContactId = null;
+      }
+
+      updateContact() {
+        const name = document.getElementById('contactName').value;
+        const email = document.getElementById('contactEmail').value;
+        const phone = document.getElementById('contactPhone').value;
+        const address = document.getElementById('contactAddress').value;
+
+        if (!name.trim()) {
+          alert('Please enter a name');
+          return;
+        }
+
+        const contactIndex = this.people.findIndex(p => p.id === this.editingContactId);
+        if (contactIndex !== -1) {
+          this.people[contactIndex] = {
+            ...this.people[contactIndex],
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            address: address.trim()
+          };
+
+          this.saveToStorage();
+          this.updateMap();
+          this.hideAddContactModal();
+          this.showNotification(`Updated ${name}`);
+        }
+      }
+
+      addContact() {
+        const name = document.getElementById('contactName').value;
+        const email = document.getElementById('contactEmail').value;
+        const phone = document.getElementById('contactPhone').value;
+        const address = document.getElementById('contactAddress').value;
+        const profession = document.getElementById('contactProfession').value;
+        const location = document.getElementById('contactLocation').value;
+        const company = document.getElementById('contactCompany').value;
+        const website = document.getElementById('contactWebsite').value;
+        const tags = document.getElementById('contactTags').value;
+        const notes = document.getElementById('contactNotes').value;
+
+        if (!name.trim()) {
+          alert('Please enter a name');
+          return;
+        }
+
+        const contact = {
+          id: Date.now().toString(),
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          profession: profession.trim(),
+          location: location.trim(),
+          company: company.trim(),
+          website: website.trim(),
+          tags: tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+          notes: notes.trim(),
+          lat: null,
+          lng: null,
+          addedAt: new Date().toISOString()
+        };
+
+        this.people.push(contact);
+        this.saveToStorage();
+        this.updateMap();
+        this.hideAddContactModal();
+
+        // Show success message
+        this.showNotification(`Added ${name} to your contacts`);
+      }
+
+      handleCSVImport(file) {
+        if (!file) return;
+
+        Papa.parse(file, {
+          header: true,
+          complete: (results) => {
+            if (results.errors.length > 0) {
+              alert('Error parsing CSV: ' + results.errors[0].message);
+              return;
+            }
+
+            const contacts = results.data
+              .filter(row => row.name || row.Name || row.NAME)
+              .map(row => ({
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                name: row.name || row.Name || row.NAME || '',
+                email: row.email || row.Email || row.EMAIL || '',
+                phone: row.phone || row.Phone || row.PHONE || '',
+                address: row.address || row.Address || row.ADDRESS || '',
+                lat: parseFloat(row.lat || row.Lat || row.LAT) || null,
+                lng: parseFloat(row.lng || row.Lng || row.LNG) || null,
+                addedAt: new Date().toISOString()
+              }));
+
+            this.people.push(...contacts);
+            this.saveToStorage();
+            this.updateMap();
+            this.showNotification(`Imported ${contacts.length} contacts from CSV`);
+          }
+        });
+      }
+
+      handleVCFImport(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const vcfContent = e.target.result;
+          const contacts = this.parseVCF(vcfContent);
+          
+          this.people.push(...contacts);
+          this.saveToStorage();
+          this.updateMap();
+          this.showNotification(`Imported ${contacts.length} contacts from vCard`);
+        };
+        reader.readAsText(file);
+      }
+
+      parseVCF(vcfContent) {
+        const contacts = [];
+        const vcards = vcfContent.split('BEGIN:VCARD');
+        
+        vcards.forEach((vcard, index) => {
+          if (index === 0) return; // Skip first empty split
+          
+          const lines = vcard.split('\n');
+          const contact = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            name: '',
+            email: '',
+            phone: '',
+            address: '',
+            lat: null,
+            lng: null,
+            addedAt: new Date().toISOString()
+          };
+
+          lines.forEach(line => {
+            line = line.trim();
+            if (line.startsWith('FN:')) {
+              contact.name = line.substring(3);
+            } else if (line.startsWith('EMAIL:')) {
+              contact.email = line.substring(6);
+            } else if (line.startsWith('TEL:')) {
+              contact.phone = line.substring(4);
+            } else if (line.startsWith('ADR:')) {
+              contact.address = line.substring(4).replace(/;;/g, ', ');
+            }
+          });
+
+          if (contact.name) {
+            contacts.push(contact);
+          }
+        });
+
+        return contacts;
+      }
+
+      handleJSONImport(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            const contacts = data.people || data;
+            
+            if (Array.isArray(contacts)) {
+              this.people = contacts;
+              this.saveToStorage();
+              this.updateMap();
+              this.showNotification(`Imported ${contacts.length} contacts from JSON`);
+            } else {
+              throw new Error('Invalid JSON format');
+            }
+          } catch (error) {
+            alert('Error parsing JSON: ' + error.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      async syncFromPeopleExport() {
+        // Auto-sync from people-export.json file
+        try {
+          const response = await fetch('people-export.json');
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          const newContacts = data.people || data;
+          
+          if (Array.isArray(newContacts)) {
+            // Merge with existing contacts, avoiding duplicates
+            const existingIds = new Set(this.people.map(p => p.id));
+            const uniqueNewContacts = newContacts.filter(contact => !existingIds.has(contact.id));
+            
+            this.people.push(...uniqueNewContacts);
+            this.saveToStorage();
+            this.updateMap();
+            
+            this.showNotification(`Synced ${uniqueNewContacts.length} new contacts from people-export.json`);
+          } else {
+            throw new Error('Invalid JSON format in people-export.json');
+          }
+        } catch (error) {
+          console.error('Sync error:', error);
+          this.showNotification(`Sync failed: ${error.message}`);
+        }
+      }
+
+      updateMap() {
+        console.log('updateMap called - people count:', this.people.length);
+        console.log('currentSearchQuery:', this.currentSearchQuery);
+        console.log('currentTierFilter:', this.currentTierFilter);
+        
+        // Debug: Show first few people's data structure
+        if (this.people.length > 0) {
+          console.log('Sample person data:', this.people[0]);
+          if (this.people.length > 1) {
+            console.log('Second person data:', this.people[1]);
+          }
+        }
+        
+        // Clear existing markers
+        this.clusterGroup.clearLayers();
+        if (this.oms) {
+          this.oms.clearMarkers();
+        }
+        this.spiderfiedMarkers.clear();
+        this.markers = [];
+
+        // Filter people by tier and search
+        let filteredPeople = this.people;
+        
+        // Apply tier filter if active
+        if (this.currentTierFilter) {
+          console.log('Applying tier filter for:', this.currentTierFilter);
+          filteredPeople = filteredPeople.filter(person => {
+            // Check the person.tier property (numeric 1, 2, 3)
+            const matches = person.tier === this.currentTierFilter;
+            
+            if (!matches) {
+              console.log('Person filtered out:', person.name, 'tier:', person.tier, 'looking for:', this.currentTierFilter);
+            }
+            return matches;
+          });
+          console.log('After tier filter:', filteredPeople.length);
+        }
+        
+        // Apply search filter if active
+        if (this.currentSearchQuery) {
+          console.log('Applying search filter for:', this.currentSearchQuery);
+          filteredPeople = filteredPeople.filter(person => {
+            const searchFields = [
+              person.name,
+              person.email,
+              person.phone,
+              person.location,
+              person.address,
+              person.city,        // Add city to search
+              person.country,     // Add country to search
+              person.region,      // Add region to search
+              person.company,
+              person.website,
+              person.occupation,
+              person.notes,
+              person.instagram,
+              person.tags ? (Array.isArray(person.tags) ? person.tags.join(' ') : person.tags) : ''
+            ].filter(field => field).join(' ').toLowerCase();
+            
+            const matches = searchFields.includes(this.currentSearchQuery);
+            if (matches) {
+              console.log('Person matches search:', person.name, 'searchFields:', searchFields);
+            }
+            return matches;
+          });
+          console.log('After search filter:', filteredPeople.length);
+        } else {
+          console.log('No search query, showing all filtered people');
+        }
+
+        // Add markers for contacts with coordinates
+        console.log('Filtered people count:', filteredPeople.length);
+        let markersCreated = 0;
+        filteredPeople.forEach(person => {
+          if (person.lat && person.lng) {
+            // Create custom icon with photo or initials
+            const icon = this.createContactIcon(person);
+            
+            const marker = L.marker([person.lat, person.lng], {
+              icon: icon,
+              title: person.name
+            });
+
+            // Add click handler for marker - open side panel directly like v7
+            marker.on('click', () => {
+              this.showContactPanel(person.id);
+            });
+
+            this.markers.push(marker);
+            this.clusterGroup.addLayer(marker);
+            markersCreated++;
+          }
+        });
+
+        console.log('Markers created:', markersCreated);
+        console.log('Total markers array length:', this.markers.length);
+
+        // Only fit to pins if no search is active (to avoid auto-zooming during search)
+        if (this.markers.length > 0 && !this.currentSearchQuery) {
+          this.fitToPins();
+        } else if (this.markers.length === 0) {
+          console.log('No markers to fit - setting default view');
+          this.map.setView([25, 0], 3);
+        } else {
+          console.log('Search active - keeping current zoom level');
+        }
+      }
+
+      createContactIcon(person) {
+        // Create custom icon with photo or initials
+        const size = 40;
+        const photoUrl = person.photo || person.photoData;
+        
+        // Handle base64 data properly
+        let backgroundImage = 'none';
+        if (photoUrl) {
+          if (photoUrl.startsWith('data:')) {
+            backgroundImage = `url('${photoUrl}')`;
+          } else if (photoUrl.startsWith('http')) {
+            backgroundImage = `url('${photoUrl}')`;
+          } else {
+            // Assume it's base64 data without data: prefix
+            backgroundImage = `url('data:image/jpeg;base64,${photoUrl}')`;
+          }
+        }
+        
+        const iconHtml = `
+          <div style="
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: ${photoUrl ? backgroundImage : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          ">
+            ${!photoUrl ? this.getInitials(person.name) : ''}
+          </div>
+        `;
+
+        return L.divIcon({
+          html: iconHtml,
+          className: 'custom-marker',
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2],
+          popupAnchor: [0, -size/2]
+        });
+      }
+
+      getInitials(name) {
+        return name.split(' ')
+          .map(word => word.charAt(0))
+          .join('')
+          .toUpperCase()
+          .substring(0, 2);
+      }
+
+      personToLocationString(person) {
+        const parts = [];
+        if (person.address) parts.push(person.address);
+        if (person.city) parts.push(person.city);
+        if (person.region) parts.push(person.region);
+        if (person.country) parts.push(person.country);
+        return parts.join(', ') || null;
+      }
+
+      createPopupContent(person) {
+        const photoUrl = person.photo || person.photoData;
+        return `
+          <div class="contact-popup-content">
+            <div class="contact-header">
+              <div class="contact-avatar">
+                ${photoUrl ? 
+                  `<img src="${photoUrl}" alt="${person.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">` :
+                  `<div class="avatar-initials">${this.getInitials(person.name)}</div>`
+                }
+              </div>
+              <div class="contact-info">
+                <h3 class="contact-name">${person.name}</h3>
+                ${person.occupation ? `<p class="contact-detail">💼 ${person.occupation}</p>` : ''}
+                ${person.tags ? `<p class="contact-detail">🏷️ ${person.tags}</p>` : ''}
+              </div>
+            </div>
+            <div class="contact-details">
+              ${person.email || (person.identifiers?.emails?.[0]) ? `<p class="contact-detail">📧 ${person.email || person.identifiers?.emails?.[0]}</p>` : ''}
+              ${person.phone || (person.identifiers?.phones?.[0]) ? `<p class="contact-detail">📞 ${person.phone || person.identifiers?.phones?.[0]}</p>` : ''}
+              ${person.instagram ? `<p class="contact-detail">📷 @${person.instagram}</p>` : ''}
+              ${person.city ? `<p class="contact-detail">📍 ${person.city}${person.country ? `, ${person.country}` : ''}</p>` : ''}
+              ${person.tier ? `<p class="contact-detail">⭐ Tier ${person.tier}</p>` : ''}
+            </div>
+            ${person.notes ? `
+              <div class="contact-notes">
+                <p class="contact-detail">📝 ${person.notes}</p>
+              </div>
+            ` : ''}
+            <div class="contact-actions">
+              <button class="popup-btn" onclick="window.orbita.showContactPanel('${person.id}')">👁️ View Details</button>
+              <button class="popup-btn" onclick="window.orbita.editContact('${person.id}')">✏️ Edit</button>
+            </div>
+          </div>
+        `;
+      }
+
+      onMarkerClick(person) {
+        // Handle marker click - open detailed view
+        this.showContactPanel(person.id);
+      }
+
+      showContactPanel(personId) {
+        const person = this.people.find(p => p.id === personId);
+        if (!person) return;
+
+        // Create or update the side panel
+        let panel = document.getElementById('contactPanel');
+        if (!panel) {
+          panel = document.createElement('div');
+          panel.id = 'contactPanel';
+          panel.className = 'contact-panel';
+          document.body.appendChild(panel);
+        }
+
+        const photoUrl = person.photo || person.photoData;
+        panel.innerHTML = `
+          <div class="panel-header">
+            <button class="back-btn" onclick="this.parentElement.parentElement.style.display='none'" title="Close">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+            <h3>${person.name || 'Unknown'}</h3>
+            <button class="delete-btn-small" onclick="window.orbita.deleteContact('${person.id}')" title="Delete Contact">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="panel-content">
+            <div class="profile-section">
+              <div class="profile-avatar">
+                ${photoUrl ? 
+                  `<img src="${photoUrl}" alt="${person.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">` :
+                  `<div class="avatar-initials-large">${this.getInitials(person.name)}</div>`
+                }
+              </div>
+              <div class="profile-info">
+                <h4>${person.name || 'Unknown'}</h4>
+                ${person.occupation ? `<p class="occupation">${person.occupation}</p>` : ''}
+                ${person.tags ? `<p class="tags">${person.tags}</p>` : ''}
+              </div>
+            </div>
+            <div class="details-section">
+              <div class="detail-row">
+                <span class="detail-label">Profile:</span>
+                <span class="detail-value">${person.profile_id ? `Linked (${person.profile_handle || person.profile_id})` : 'Not linked'}</span>
+              </div>
+              <div class="detail-row editable" data-field="email">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'email', this)">${(person.identifiers?.emails?.[0]) || person.email || '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="phone">
+                <span class="detail-label">Phone:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'phone', this)">${(person.identifiers?.phones?.[0]) || person.phone || '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="tier">
+                <span class="detail-label">Tier:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'tier', this)">${person.tier ? `Tier ${person.tier}` : '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="occupation">
+                <span class="detail-label">Occupation:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'occupation', this)">${person.occupation || '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="address">
+                <span class="detail-label">Address:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'address', this)">${person.address || '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="city">
+                <span class="detail-label">City:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'city', this)">${person.city || '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="region">
+                <span class="detail-label">Region:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'region', this)">${person.region || '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="country">
+                <span class="detail-label">Country:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'country', this)">${person.country || '—'}</span>
+              </div>
+              <div class="detail-row" data-field="coordinates">
+                <span class="detail-label">Coordinates:</span>
+                <span class="detail-value">${(Number.isFinite(person.lat) && Number.isFinite(person.lng)) ? `${person.lat.toFixed(5)}, ${person.lng.toFixed(5)}` : '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="instagram">
+                <span class="detail-label">Instagram:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'instagram', this)">${person.instagram ? `@${String(person.instagram).replace(/^@/,'')}` : '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="tags">
+                <span class="detail-label">Tags:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'tags', this)">${person.tags || '—'}</span>
+              </div>
+              <div class="detail-row editable" data-field="notes">
+                <span class="detail-label">Notes:</span>
+                <span class="detail-value" ondblclick="window.orbita.editField('${person.id}', 'notes', this)">${person.notes || '—'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        panel.style.display = 'block';
+      }
+
+      editField(personId, fieldName, element) {
+        const person = this.people.find(p => p.id === personId);
+        if (!person) return;
+
+        const currentValue = element.textContent === '—' ? '' : element.textContent;
+        
+        // Special handling for tier field - create dropdown
+        if (fieldName === 'tier') {
+          const select = document.createElement('select');
+          select.style.cssText = `
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            color: white;
+            padding: 4px 8px;
+            font-size: 14px;
+            width: 100%;
+            max-width: 200px;
+          `;
+          
+          // Add options
+          const options = [
+            { value: '', text: 'Select Tier' },
+            { value: '1', text: 'Tier 1 (Close Friends)' },
+            { value: '2', text: 'Tier 2 (Friends)' },
+            { value: '3', text: 'Tier 3 (Acquaintances)' }
+          ];
+          
+          options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.text;
+            if (option.value === currentValue) {
+              optionElement.selected = true;
+            }
+            select.appendChild(optionElement);
+          });
+          
+          // Replace the text with select
+          element.innerHTML = '';
+          element.appendChild(select);
+          select.focus();
+          
+          // Handle save on change or blur
+          const saveField = () => {
+            const newValue = select.value;
+            
+            // Update the person data
+            person[fieldName] = newValue ? parseInt(newValue) : null;
+            
+            // Update display
+            element.innerHTML = newValue ? `Tier ${newValue}` : '—';
+            
+            // Save to storage and update map
+            this.saveToStorage();
+            this.updateMap();
+            
+            this.showNotification(`Updated ${fieldName}`);
+          };
+          
+          select.addEventListener('change', saveField);
+          select.addEventListener('blur', saveField);
+          
+          // Handle cancel on Escape
+          const cancelEdit = () => {
+            element.innerHTML = currentValue ? `Tier ${currentValue}` : '—';
+          };
+          
+          select.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+              cancelEdit();
+            }
+          });
+          
+          return;
+        }
+        
+        // Regular input field for other fields
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentValue;
+        input.style.cssText = `
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          color: white;
+          padding: 4px 8px;
+          font-size: 14px;
+          width: 100%;
+          max-width: 200px;
+        `;
+        
+        // Replace the text with input
+        element.innerHTML = '';
+        element.appendChild(input);
+        input.focus();
+        input.select();
+        
+        // Handle save on Enter or blur
+        const saveField = () => {
+          const newValue = input.value.trim();
+          
+          // Update the person data
+          if (fieldName === 'email' || fieldName === 'phone') {
+            // Handle identifiers
+            if (!person.identifiers) person.identifiers = { emails: [], phones: [] };
+            if (fieldName === 'email') {
+              person.identifiers.emails = newValue ? [newValue] : [];
+            } else {
+              person.identifiers.phones = newValue ? [newValue] : [];
+            }
+          } else if (fieldName === 'city' || fieldName === 'country') {
+            // Handle location updates
+            person[fieldName] = newValue || null;
+            
+            // If we have both city and country, try to geocode
+            if (fieldName === 'city' && person.country) {
+              this.geocodeAndUpdateLocation(person, `${newValue}, ${person.country}`);
+            } else if (fieldName === 'country' && person.city) {
+              this.geocodeAndUpdateLocation(person, `${person.city}, ${newValue}`);
+            }
+          } else {
+            person[fieldName] = newValue || null;
+          }
+          
+          // Update display
+          element.innerHTML = newValue || '—';
+          
+          // Save to storage and update map
+          this.saveToStorage();
+          this.updateMap();
+          
+          this.showNotification(`Updated ${fieldName}`);
+        };
+        
+        // Handle cancel on Escape
+        const cancelEdit = () => {
+          element.innerHTML = currentValue || '—';
+        };
+        
+        input.addEventListener('blur', saveField);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            saveField();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit();
+          }
+        });
+      }
+
+      editContact(contactId) {
+        const contact = this.people.find(p => p.id === contactId);
+        if (contact) {
+          // Fill the add contact form with existing data
+          document.getElementById('contactName').value = contact.name;
+          document.getElementById('contactEmail').value = contact.email || '';
+          document.getElementById('contactPhone').value = contact.phone || '';
+          document.getElementById('contactAddress').value = contact.address || '';
+          
+          // Show modal
+          this.showAddContactModal();
+          
+          // Store the contact ID for updating
+          this.editingContactId = contactId;
+        }
+      }
+
+      deleteContact(contactId) {
+        if (confirm('Are you sure you want to delete this contact?')) {
+          this.people = this.people.filter(p => p.id !== contactId);
+          this.saveToStorage();
+          this.updateMap();
+          this.showNotification('Contact deleted');
+        }
+      }
+
+      fitToPins() {
+        const layers = this.clusterGroup.getLayers();
+        if (layers.length === 0) {
+          // If no markers, set a good default view
+          this.map.setView([25, 0], 3);
+          return;
+        }
+
+        const group = new L.featureGroup(layers);
+        const bounds = group.getBounds();
+        
+        // Add padding and ensure minimum zoom
+        const paddedBounds = bounds.pad(0.2);
+        
+        // Fit bounds but ensure we don't go below zoom level 3 (no borders)
+        this.map.fitBounds(paddedBounds, {
+          maxZoom: 10,
+          padding: [20, 20]
+        });
+        
+        // If the fit resulted in too low zoom, set minimum zoom
+        if (this.map.getZoom() < 3) {
+          this.map.setZoom(3);
+        }
+      }
+
+      exportToJSON() {
+        const data = {
+          people: this.people,
+          exportedAt: new Date().toISOString(),
+          version: '1.0'
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `orbita-contacts-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        this.showNotification('Contacts exported to JSON');
+      }
+
+
+      saveToStorage() {
+        try {
+          localStorage.setItem('orbita-contacts', JSON.stringify(this.people));
+          console.log('Saved to localStorage:', this.people.length, 'contacts');
+          
+          // Auto-save to JSON backup
+          this.autoSaveToJSON();
+        } catch (e) {
+          console.error('Failed to save to localStorage:', e);
+        }
+      }
+
+      async autoSaveToJSON() {
+        try {
+          // Create a downloadable JSON file
+          const jsonData = JSON.stringify(this.people, null, 2);
+          
+          // Save to localStorage as backup
+          localStorage.setItem('orbita_contacts_backup', jsonData);
+          localStorage.setItem('orbita_last_save', new Date().toISOString());
+          
+          console.log('Auto-saved to JSON backup');
+        } catch (error) {
+          console.error('Error auto-saving to JSON:', error);
+        }
+      }
+
+      loadFromStorage() {
+        try {
+          const stored = localStorage.getItem('orbita-contacts');
+          if (stored) {
+            this.people = JSON.parse(stored);
+            this.updateMap();
+          }
+        } catch (e) {
+          console.error('Failed to load from localStorage:', e);
+        }
+      }
+
+
+      // Cluster expansion now handled automatically by Leaflet.markercluster (same as v7)
+
+      showNotification(message) {
+        // Simple notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #667eea;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+          z-index: 3000;
+          font-weight: 500;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+
+      // Analytics functionality
+      showAnalytics() {
+        document.getElementById('analyticsModal').classList.add('open');
+        this.updateAnalytics();
+      }
+
+      hideAnalytics() {
+        document.getElementById('analyticsModal').classList.remove('open');
+      }
+
+      updateAnalytics() {
+        // Tier Distribution
+        this.updateTierChart();
+        
+        // Geographic Distribution
+        this.updateCountryChart();
+        
+        // Tag Cloud
+        this.updateTagCloud();
+        
+        // Insights
+        this.updateInsights();
+      }
+
+      updateTierChart() {
+        const tierChart = document.getElementById('tierChart');
+        const tierCounts = { 1: 0, 2: 0, 3: 0, unassigned: 0 };
+        
+        this.people.forEach(person => {
+          if (person.tier === 1) tierCounts[1]++;
+          else if (person.tier === 2) tierCounts[2]++;
+          else if (person.tier === 3) tierCounts[3]++;
+          else tierCounts.unassigned++;
+        });
+
+        const total = this.people.length;
+        tierChart.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Tier 1 (Close Friends)</span>
+              <span style="font-weight: 600;">${tierCounts[1]} (${total > 0 ? Math.round(tierCounts[1]/total*100) : 0}%)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Tier 2 (Friends)</span>
+              <span style="font-weight: 600;">${tierCounts[2]} (${total > 0 ? Math.round(tierCounts[2]/total*100) : 0}%)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Tier 3 (Acquaintances)</span>
+              <span style="font-weight: 600;">${tierCounts[3]} (${total > 0 ? Math.round(tierCounts[3]/total*100) : 0}%)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Unassigned</span>
+              <span style="font-weight: 600;">${tierCounts.unassigned} (${total > 0 ? Math.round(tierCounts.unassigned/total*100) : 0}%)</span>
+            </div>
+          </div>
+        `;
+      }
+
+      updateCountryChart() {
+        const countryChart = document.getElementById('countryChart');
+        const countryCounts = {};
+        
+        this.people.forEach(person => {
+          const country = person.country || 'Unknown';
+          countryCounts[country] = (countryCounts[country] || 0) + 1;
+        });
+
+        const sortedCountries = Object.entries(countryCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5);
+
+        countryChart.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            ${sortedCountries.map(([country, count]) => `
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>${country}</span>
+                <span style="font-weight: 600;">${count}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      updateTagCloud() {
+        const tagCloud = document.getElementById('tagCloud');
+        const tagCounts = {};
+        
+        this.people.forEach(person => {
+          if (person.tags) {
+            const tags = Array.isArray(person.tags) ? person.tags : person.tags.split(',').map(t => t.trim());
+            tags.forEach(tag => {
+              if (tag) {
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+              }
+            });
+          }
+        });
+
+        const sortedTags = Object.entries(tagCounts)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 10);
+
+        tagCloud.innerHTML = `
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            ${sortedTags.map(([tag, count]) => `
+              <span style="background: #e5e7eb; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
+                ${tag} (${count})
+              </span>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      updateInsights() {
+        // Network Focus
+        const tier1Count = this.people.filter(p => p.tier === 1).length;
+        const total = this.people.length;
+        const focusPercentage = total > 0 ? Math.round(tier1Count/total*100) : 0;
+        document.getElementById('networkFocus').textContent = `${focusPercentage}% close friends`;
+
+        // Global Reach
+        const countries = new Set(this.people.map(p => p.country).filter(Boolean));
+        document.getElementById('globalReach').textContent = `${countries.size} countries`;
+
+        // Last Contact (placeholder)
+        document.getElementById('lastContact').textContent = 'Not tracked';
+
+        // Opportunities
+        const unassignedCount = this.people.filter(p => !p.tier).length;
+        document.getElementById('opportunities').textContent = `${unassignedCount} contacts need tier assignment`;
+      }
+
+      // Geocode and update location for a person
+      async geocodeAndUpdateLocation(person, locationString) {
+        try {
+          console.log('Geocoding location:', locationString);
+          
+          // Use a simple geocoding service (you can replace with a more robust one)
+          const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationString)}&limit=1`);
+          const data = await response.json();
+          
+          if (data && data.length > 0) {
+            const result = data[0];
+            person.lat = parseFloat(result.lat);
+            person.lng = parseFloat(result.lon);
+            
+            console.log('Geocoded successfully:', person.lat, person.lng);
+            
+            // Update the coordinates display in the panel
+            const coordsElement = document.querySelector(`[data-field="coordinates"] .detail-value`);
+            if (coordsElement) {
+              coordsElement.textContent = `${person.lat.toFixed(5)}, ${person.lng.toFixed(5)}`;
+            }
+            
+            // Save and update map
+            this.saveToStorage();
+            this.updateMap();
+            
+            this.showNotification(`Location updated and geocoded`);
+          } else {
+            console.log('Geocoding failed for:', locationString);
+            this.showNotification(`Could not find coordinates for ${locationString}`);
+          }
+        } catch (error) {
+          console.error('Geocoding error:', error);
+          this.showNotification(`Geocoding failed: ${error.message}`);
+        }
+      }
+    }
+
+    // Initialize app when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded, initializing Orbita...');
+      try {
+        window.orbita = new SimpleOrbita();
+        console.log('Orbita initialized successfully');
+      } catch (error) {
+        console.error('Error initializing Orbita:', error);
+      }
+    });
+  </script>
+</body>
+</html>
+
