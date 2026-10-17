@@ -1,0 +1,7 @@
+# Personal contact data must never be committed (this repo is public)
+*.csv
+*.vcf
+orbita-contacts*.json
+people-export*.json
+_test*
+.DS_Store
