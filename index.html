@@ -7,6 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>Orbita</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23444143'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23DCE8E7'/%3E%3Cellipse cx='16' cy='16' rx='12.5' ry='5' fill='none' stroke='%23DCE8E7' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3C/svg%3E">
   <!-- Updated: 2025-09-10 11:50 - Fixed Analytics Panel and Added Click-Outside-to-Close -->
   
   <!-- External Libraries -->
@@ -31,7 +32,7 @@
       --secondary: #A19E9D;            /* Warm gray - borders, dividers */
       --text: #444143;                 /* Dark charcoal - primary text */
       --text-light: #6B7280;           /* Medium gray - secondary text */
-      --text-muted: #9CA3AF;           /* Light gray - muted text */
+      --text-muted: #6F7782;           /* Muted text (4.6:1 on white) */
       --border: #E5E7EB;               /* Light border */
       --border-light: #F3F4F6;         /* Very light border */
       
@@ -943,7 +944,13 @@
       background: var(--bg); border: 1px solid var(--border-light); border-radius: 8px;
       font-family: inherit;
     }
-    .tools-panel { max-height: calc(100vh - 100px); overflow-y: auto; }
+    .tools-panel { max-height: calc(100vh - 100px); overflow-y: auto; padding: 16px 18px; min-width: 310px; }
+    .tools-section { margin-bottom: 14px; }
+    .tools-section h3 { margin-bottom: 8px; font-size: 12px; }
+    .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .tool-btn { padding: 8px 8px; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tool-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .tool-select { margin-top: 6px; padding: 8px 10px; }
 
     /* ===== Contact list drawer ===== */
     .list-panel {
@@ -1053,6 +1060,73 @@
       .status-pill { left: 60px; right: 84px; bottom: 30px; border-radius: 14px; }
       .fab { bottom: 56px; right: 16px; }
     }
+
+    /* ===== Round 2 additions ===== */
+    .toolbar-icon:disabled { opacity: 0.32; cursor: not-allowed; }
+    .toolbar-icon:disabled:hover { background: transparent; transform: none; color: var(--text-light); }
+    .toolbar-icon:focus-visible, .btn:focus-visible, .tool-btn:focus-visible, .header-button:focus-visible,
+    .list-row:focus-visible, .fab:focus-visible, .tier-btn:focus-visible, .chip-link:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 2px;
+    }
+    .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
+    .btn.danger { color: #b4443a; border-color: #e6c3bf; }
+    .btn.danger:hover { background: #fbeeec; color: #9a352c; }
+    .link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--text); text-decoration: underline; cursor: pointer; }
+
+    /* list rows (flex so a checkbox can sit in front) + select mode */
+    .list-head-actions { display: flex; gap: 8px; }
+    .list-row { display: flex; align-items: center; gap: 10px; grid-template-columns: none; }
+    .list-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .list-flag { grid-row: auto; grid-column: auto; }
+    .list-check { width: 18px; height: 18px; border: 1.5px solid var(--secondary); border-radius: 4px; flex-shrink: 0; display: none; align-items: center; justify-content: center; font-size: 12px; color: #fff; background: var(--bg); }
+    .list-panel.selecting .list-check { display: flex; }
+    .list-row.selected { background: var(--primary); }
+    .list-row.selected .list-check { background: var(--accent); border-color: var(--accent); }
+    .bulk-bar { display: none; flex-direction: column; gap: 8px; padding: 10px 16px 12px; border-top: 1px solid var(--border-light); background: var(--bg-light); }
+    .list-panel.selecting .bulk-bar { display: flex; }
+    .bulk-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text); font-weight: 600; }
+    .bulk-top .link-btn { font-weight: 400; font-size: 12px; }
+    .bulk-bar select, .bulk-bar input { width: 100%; padding: 8px 10px; font-size: 13px; font-family: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+    .bulk-row { display: flex; gap: 6px; }
+    .bulk-row input { flex: 1; min-width: 0; }
+    .bulk-row .btn, .bulk-bar > .btn { padding: 7px 12px; min-height: 34px; font-size: 13px; }
+
+    /* tier buttons in the contact panel */
+    .tier-buttons { display: flex; gap: 6px; margin-bottom: 16px; }
+    .tier-btn { flex: 1; font-size: 12px; font-family: inherit; padding: 7px 4px; border-radius: 8px; cursor: pointer; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-top: 3px solid var(--tier); }
+    .tier-btn:hover { background: var(--bg-light); }
+    .tier-btn.active { background: var(--tier); color: #fff; border-color: var(--tier); font-weight: 600; }
+
+    /* placement bar */
+    .place-bar {
+      position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); z-index: 2500; display: none;
+      align-items: center; gap: 12px; max-width: 92vw; background: var(--accent); color: #fff;
+      padding: 10px 14px 10px 18px; border-radius: 12px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28); font-size: 14px;
+    }
+    body.placing .place-bar { display: flex; }
+    .place-bar .place-text { min-width: 0; }
+    .place-bar .place-sub { display: block; font-size: 12px; opacity: 0.78; margin-top: 1px; }
+    .place-bar .place-count { font-variant-numeric: tabular-nums; opacity: 0.8; font-size: 12px; white-space: nowrap; }
+    .place-bar button { background: transparent; border: 1px solid rgba(255, 255, 255, 0.5); color: #fff; border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .place-bar button:hover { background: rgba(255, 255, 255, 0.15); }
+
+    /* duplicates dialog */
+    .dup-dialog { max-width: 720px; }
+    .dup-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .dup-head h2 { margin: 0; }
+    .dup-intro { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+    .dup-pair { border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; background: var(--bg-light); }
+    .dup-reason { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-light); margin-bottom: 8px; }
+    .dup-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .dup-card { background: var(--bg); border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text); word-break: break-word; }
+    .dup-card strong { display: block; margin-bottom: 4px; font-size: 14px; }
+    .dup-meta { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+    .dup-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+    .dup-actions .btn { padding: 7px 14px; min-height: 36px; font-size: 13px; }
+    @media (max-width: 600px) {
+      .dup-cards { grid-template-columns: 1fr; }
+      .place-bar { bottom: 96px; flex-wrap: wrap; justify-content: center; }
+    }
   </style>
   
   <!-- Scripts -->
@@ -1066,31 +1140,31 @@
   <div class="app">
     <!-- Left Vertical Toolbar -->
     <div class="left-toolbar">
-      <button class="toolbar-icon active" title="Pointer">
+      <button class="toolbar-icon active" title="Pointer" aria-label="Pointer" aria-pressed="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
         </svg>
       </button>
-      <button class="toolbar-icon" id="tableBtn" title="Contact list">
+      <button class="toolbar-icon" id="tableBtn" title="Contact list" aria-label="Contact list">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0-18h10a2 2 0 0 1 2 2v4M9 3H5a2 2 0 0 0-2 2v4m0 0v10a2 2 0 0 0 2 2h4m-6-12h10"/>
         </svg>
       </button>
-      <button class="toolbar-icon" title="Text">
+      <button class="toolbar-icon" title="Text (not available yet)" aria-label="Text (not available yet)" disabled>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="4,7 4,4 20,4 20,7"/>
           <line x1="9" y1="20" x2="15" y2="20"/>
           <line x1="12" y1="4" x2="12" y2="20"/>
         </svg>
       </button>
-      <button class="toolbar-icon" title="Shapes">
+      <button class="toolbar-icon" title="Shapes (not available yet)" aria-label="Shapes (not available yet)" disabled>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
           <circle cx="8.5" cy="8.5" r="1.5"/>
           <polyline points="21,15 16,10 5,21"/>
         </svg>
       </button>
-      <button class="toolbar-icon" title="Pen">
+      <button class="toolbar-icon" title="Pen (not available yet)" aria-label="Pen (not available yet)" disabled>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 19l7-7 3 3-7 7-3-3z"/>
           <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
@@ -1123,10 +1197,10 @@
       <div class="tools-section">
         <h3>Filter</h3>
         <div class="tools-grid">
-          <button id="filterTier1Btn" class="tool-btn">Tier 1</button>
-          <button id="filterTier2Btn" class="tool-btn">Tier 2</button>
-          <button id="filterTier3Btn" class="tool-btn">Tier 3</button>
-          <button id="clearTierFilterBtn" class="tool-btn">Show All</button>
+          <button id="filterTier1Btn" class="tool-btn"><span class="dot" style="background:#c9736b"></span>Close friends</button>
+          <button id="filterTier2Btn" class="tool-btn"><span class="dot" style="background:#6f9fa0"></span>Friends</button>
+          <button id="filterTier3Btn" class="tool-btn"><span class="dot" style="background:#8f9bb3"></span>Acquaintances</button>
+          <button id="clearTierFilterBtn" class="tool-btn">Show all</button>
         </div>
         <select id="tagFilter" class="tool-select" aria-label="Filter by tag"><option value="">All tags</option></select>
       </div>
@@ -1134,10 +1208,11 @@
       <div class="tools-section">
         <h3>Import / Export</h3>
         <div class="tools-grid">
-          <button id="importCsvBtn" class="tool-btn" title="Google Contacts CSV or any CSV with name/email/phone columns">CSV</button>
-          <button id="importVcfBtn" class="tool-btn">vCard</button>
+          <button id="importCsvBtn" class="tool-btn" title="Google Contacts CSV, or any CSV with name/email/phone columns">Import CSV</button>
+          <button id="importVcfBtn" class="tool-btn">Import vCard</button>
           <button id="loadJsonBtn" class="tool-btn">Load JSON</button>
           <button id="exportJsonBtn" class="tool-btn">Export JSON</button>
+          <button id="exportCsvBtn" class="tool-btn">Export CSV</button>
         </div>
       </div>
 
@@ -1147,7 +1222,15 @@
           <button id="toggleHeatmapBtn" class="tool-btn">Heatmap</button>
           <button id="analyticsBtn" class="tool-btn">Analytics</button>
           <button id="fitAllBtn" class="tool-btn">Fit to pins</button>
+        </div>
+      </div>
+
+      <div class="tools-section">
+        <h3>Clean up</h3>
+        <div class="tools-grid">
+          <button id="placeQueueBtn" class="tool-btn" title="Walk through contacts that have no pin and click the map for each">Place unpinned</button>
           <button id="locateMissingBtn" class="tool-btn" title="Look up pins from addresses and cities">Locate from addresses</button>
+          <button id="dupBtn" class="tool-btn">Find duplicates</button>
         </div>
       </div>
     </div>
@@ -1159,7 +1242,7 @@
   </div>
 
   <!-- Add Contact Modal -->
-  <div id="addContactModal" class="modal">
+  <div id="addContactModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
     <div class="dialog">
       <h2 id="contactModalTitle">Add New Contact</h2>
       <form id="addContactForm">
@@ -1231,11 +1314,48 @@
         <h3>Contacts</h3>
         <div id="listCount" class="list-count"></div>
       </div>
-      <button class="btn" id="closeList">Close</button>
+      <div class="list-head-actions">
+        <button class="btn" id="listSelectBtn">Select</button>
+        <button class="btn" id="closeList">Close</button>
+      </div>
     </div>
     <label class="list-filter"><input type="checkbox" id="listNoLoc"> Only contacts without a pin</label>
+    <div id="bulkBar" class="bulk-bar">
+      <div class="bulk-top">
+        <span id="bulkCount">0 selected</span>
+        <span><button class="link-btn" id="bulkAll">Select all</button> · <button class="link-btn" id="bulkNone">None</button></span>
+      </div>
+      <select id="bulkTier" aria-label="Set tier for selected">
+        <option value="">Set tier…</option>
+        <option value="1">Tier 1 · Close friends</option>
+        <option value="2">Tier 2 · Friends</option>
+        <option value="3">Tier 3 · Acquaintances</option>
+        <option value="none">Remove tier</option>
+      </select>
+      <div class="bulk-row">
+        <input id="bulkTagInput" list="bulkTagList" placeholder="Tag name" aria-label="Tag name">
+        <datalist id="bulkTagList"></datalist>
+        <button class="btn" id="bulkTagAdd">Add tag</button>
+        <button class="btn" id="bulkTagRemove">Remove</button>
+      </div>
+      <button class="btn danger" id="bulkDelete">Delete selected</button>
+    </div>
     <div id="listBody" class="list-body"></div>
   </aside>
+
+  <div id="placeBar" class="place-bar" role="status"></div>
+
+  <!-- Duplicates dialog -->
+  <div id="dupModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="dupTitle">
+    <div class="dialog dup-dialog">
+      <div class="dup-head">
+        <h2 id="dupTitle">Possible duplicates</h2>
+        <button class="btn" id="closeDup">Close</button>
+      </div>
+      <p class="dup-intro">Nothing is merged until you press Merge, and every merge can be undone.</p>
+      <div id="dupBody"></div>
+    </div>
+  </div>
 
   <aside id="contactPanel" class="contact-panel" aria-label="Contact details"></aside>
   <div id="statusPill" class="status-pill"></div>
@@ -1243,13 +1363,13 @@
   <button id="exitPresent" class="btn exit-present">Exit presentation (Esc)</button>
 
   <!-- Floating Action Button -->
-  <button class="fab" id="fab" title="Add Contact">＋</button>
+  <button class="fab" id="fab" title="Add Contact" aria-label="Add contact">＋</button>
 
   <!-- Analytics Modal -->
-  <div id="analyticsModal" class="modal">
+  <div id="analyticsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="analyticsTitle">
     <div class="dialog" style="max-width: 1000px; max-height: 90vh;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>📊 Network Analytics</h2>
+        <h2 id="analyticsTitle">📊 Network Analytics</h2>
         <button class="btn" id="closeAnalytics">Close</button>
       </div>
       
@@ -1343,6 +1463,7 @@
     const TIER_COLORS = { 1: '#c9736b', 2: '#6f9fa0', 3: '#8f9bb3' };
     // Locations that are inferred (not typed in / geocoded / hand-placed)
     const WORLD_BOUNDS = [[-60, -180], [80, 180]];
+    const DUP_IGNORE_KEY = 'orbita-dupe-ignore';
     const APPROX_SOURCES = new Set(['phone', 'area-code', 'email-domain', 'country', 'region']);
     // How exact a pin is. A more exact location always wins when contacts are merged.
     const GEO_RANK = { country: 1, phone: 1, 'email-domain': 1, region: 2, 'area-code': 3, imported: 4, geocoded: 5, manual: 6 };
@@ -1541,6 +1662,7 @@
       const lat = parseFloat(p.lat ?? p.latitude);
       const lng = parseFloat(p.lng ?? p.longitude);
       delete p.latitude; delete p.longitude;
+      if (p.geoSource && !GEO_RANK[p.geoSource]) delete p.geoSource;
       if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
         && !(lat === 0 && lng === 0)) {
         p.lat = lat; p.lng = lng;
@@ -1550,8 +1672,13 @@
           p.geoSource = atCentre ? 'country' : 'imported';
         }
       } else { p.lat = null; p.lng = null; delete p.geoSource; }
-      p.altEmails = [...new Set((p.altEmails || []).map(clean).filter(Boolean))];
-      p.altPhones = [...new Set((p.altPhones || []).map(clean).filter(Boolean))];
+      const seenEmails = new Set(p.email ? [p.email.toLowerCase()] : []);
+      p.altEmails = (p.altEmails || []).map(clean).filter((e) => e && !seenEmails.has(e.toLowerCase()) && seenEmails.add(e.toLowerCase()));
+      const seenPhones = new Set(p.phone ? [p.phone.replace(/\D/g, '').slice(-9)] : []);
+      p.altPhones = (p.altPhones || []).map(clean).filter((x) => {
+        const d = x.replace(/\D/g, '').slice(-9);
+        return x && !seenPhones.has(d) && seenPhones.add(d);
+      });
       p.addedAt = p.addedAt || new Date().toISOString();
       return p;
     }
@@ -1576,7 +1703,7 @@
         if (d.length >= 7) keys.push('t:' + d.slice(-9));
       });
       if (!clean(p.email) && !clean(p.phone)) keys.push('n:' + fold(p.name).replace(/\s+/g, ' '));
-      return keys;
+      return [...new Set(keys)];
     }
 
     // Merge `src` into `target`, only filling blanks. A pin is only replaced when the incoming one is
@@ -1601,7 +1728,7 @@
     // ---------------------------------------------------------------
     function rowToPerson(row) {
       const r = {};
-      Object.keys(row).forEach((k) => { r[k.trim().toLowerCase()] = clean(row[k]); });
+      Object.keys(row).forEach((k) => { r[k.trim().toLowerCase()] = clean(row[k]).replace(/^'(?=[=+\-@])/, ''); });
       const get = (...keys) => { for (const k of keys) { if (r[k]) return r[k]; } return ''; };
       const collect = (re) => Object.keys(r).filter((k) => re.test(k)).flatMap((k) => multi(r[k]));
 
@@ -1639,6 +1766,7 @@
         tags,
         lat: get('lat', 'latitude'),
         lng: get('lng', 'lon', 'longitude'),
+        geoSource: get('geosource', 'geo_source') || undefined,
       };
       if (get('id')) person.id = get('id');
       return person;
@@ -1685,6 +1813,63 @@
       return people;
     }
 
+    // Spreadsheet apps run cells that start with = + - @ as formulas. Neutralise those, but leave phone numbers alone.
+    function csvSafe(v) {
+      const s = String(v ?? '');
+      return /^[=+\-@\t\r]/.test(s) && !/^\+?[\d\s().:+-]{5,}$/.test(s) ? `'${s}` : s;
+    }
+
+    function mergeScore(p) {
+      const filled = ['email', 'phone', 'company', 'occupation', 'website', 'notes', 'address', 'city', 'country', 'instagram']
+        .filter((f) => clean(p[f])).length;
+      return filled + (p.tags || []).length + (p.tier ? 2 : 0) + geoRank(p.geoSource) / 2 + String(p.name || '').length / 100;
+    }
+
+    // Likely duplicate pairs: [{ a, b, reason, key }]. `ignored` is a Set of pair keys the user dismissed.
+    function findDuplicateCandidates(people, ignored = new Set()) {
+      const out = []; const seen = new Set();
+      const add = (a, b, reason) => {
+        if (a === b || a.id === b.id) return;
+        const key = [a.id, b.id].sort().join('|');
+        if (seen.has(key) || ignored.has(key)) return;
+        seen.add(key); out.push({ a, b, reason, key });
+      };
+      const pairs = (list, reason) => { for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) add(list[i], list[j], reason); };
+
+      const byKey = new Map();
+      people.forEach((p) => contactKeys(p).filter((k) => /^[et]:/.test(k)).forEach((k) => {
+        if (!byKey.has(k)) byKey.set(k, []);
+        byKey.get(k).push(p);
+      }));
+      byKey.forEach((list, k) => pairs(list, k[0] === 'e' ? 'Same email address' : 'Same phone number'));
+
+      const byName = new Map();
+      people.forEach((p) => {
+        const n = fold(p.name).replace(/\s+/g, ' ').trim();
+        if (n.length < 3 || n.includes('@')) return;
+        if (!byName.has(n)) byName.set(n, []);
+        byName.get(n).push(p);
+      });
+      byName.forEach((list) => pairs(list, 'Same name'));
+
+      // "Alex" (phone only) + "Alex Smith" (email only): same first name, details complement, nothing conflicts
+      const emailKeys = (p) => contactKeys(p).filter((k) => k[0] === 'e');
+      const phoneKeys = (p) => contactKeys(p).filter((k) => k[0] === 't');
+      const conflict = (a, b, keysOf) => { const x = keysOf(a); const y = keysOf(b); return x.length && y.length && !x.some((k) => y.includes(k)); };
+      const words = (p) => fold(p.name).split(/\s+/).filter(Boolean);
+      const singles = people.filter((p) => words(p).length === 1 && words(p)[0].length >= 3 && !p.name.includes('@'));
+      singles.forEach((s) => {
+        people.forEach((f) => {
+          if (f === s || words(f).length < 2 || words(f)[0] !== words(s)[0]) return;
+          if (conflict(s, f, emailKeys) || conflict(s, f, phoneKeys)) return;
+          const complements = (!!clean(s.email) !== !!clean(f.email)) || (!!clean(s.phone) !== !!clean(f.phone));
+          if (complements) add(s, f, 'Same first name, and the details complement each other');
+        });
+      });
+      const rank = { 'Same email address': 0, 'Same phone number': 0, 'Same name': 1 };
+      return out.sort((x, y) => (rank[x.reason] ?? 2) - (rank[y.reason] ?? 2));
+    }
+
     function parseLocationText(text) {
       const parts = clean(text).split(',').map((s) => s.trim()).filter(Boolean);
       if (!parts.length) return {};
@@ -1713,6 +1898,16 @@
         this.placingContactId = null;
         this.listOpen = false;
         this.listNoLocOnly = false;
+        this.markerById = new Map();
+        this.selectMode = false;
+        this.selected = new Set();
+        this.lastListIndex = null;
+        this.placeQueue = [];
+        this.placeIndex = 0;
+        this.placePlaced = 0;
+        this.placeSingle = false;
+        this.dupCandidates = [];
+        this.lastFocus = null;
         this.geocodeChain = Promise.resolve();
         this.lastGeocodeAt = 0;
         this.init();
@@ -1775,8 +1970,17 @@
           if (samePoint) {
             // Everyone here shares one coordinate: zoom in a bit, then fan them out
             const z = Math.max(this.map.getZoom(), 9);
-            this.map.once('moveend', () => cluster.spiderfy());
-            this.map.setView(b.getCenter(), z);
+            const centre = b.getCenter();
+            const offCentre = this.map.latLngToContainerPoint(centre).distanceTo(this.map.getSize().divideBy(2));
+            if (this.map.getZoom() >= z && offCentre < 40) {
+              cluster.spiderfy(); // already close enough: a tiny pan may never fire 'moveend'
+            } else {
+              let done = false;
+              const fan = () => { if (done) return; done = true; this.map.off('moveend', fan); cluster.spiderfy(); };
+              this.map.on('moveend', fan);
+              setTimeout(fan, 900); // fallback if the map ends up not moving at all
+              this.map.setView(centre, z);
+            }
           } else {
             cluster.zoomToBounds({ padding: [40, 40] });
           }
@@ -1832,6 +2036,24 @@
         click('tableBtn', () => this.toggleList());
         click('closeList', () => this.toggleList(false));
         click('cancelAddContact', () => this.hideAddContactModal());
+        click('exportCsvBtn', () => this.exportToCSV());
+        click('placeQueueBtn', () => this.startPlaceQueue());
+        click('dupBtn', () => this.openDuplicates());
+        click('closeDup', () => this.closeModal('dupModal'));
+        click('listSelectBtn', () => this.setSelectMode(!this.selectMode));
+        click('bulkAll', () => { this.listRows().forEach((p) => this.selected.add(p.id)); this.renderList(); });
+        click('bulkNone', () => { this.selected.clear(); this.renderList(); });
+        click('bulkTagAdd', () => this.bulkTag(true));
+        click('bulkTagRemove', () => this.bulkTag(false));
+        click('bulkDelete', () => this.bulkDelete());
+        on('bulkTier', 'change', (e) => { this.bulkTier(e.target.value); e.target.value = ''; });
+        $('dupBody').addEventListener('click', (e) => this.onDupClick(e));
+        $('dupModal').addEventListener('click', (e) => { if (e.target.id === 'dupModal') this.closeModal('dupModal'); });
+        $('placeBar').addEventListener('click', (e) => {
+          const act = e.target.closest('[data-act]')?.dataset.act;
+          if (act === 'skip') this.advancePlacing(1);
+          else if (act === 'stop') this.endPlacing();
+        });
 
         [1, 2, 3].forEach((n) => click(`filterTier${n}Btn`, () => this.applyTierFilter(n)));
         click('clearTierFilterBtn', () => this.clearFilters());
@@ -1863,14 +2085,7 @@
           const el = e.target.closest('[data-edit]');
           if (el) this.startEdit(this.activePanelId, el.dataset.edit, el);
         });
-        $('listBody').addEventListener('click', (e) => {
-          const row = e.target.closest('[data-id]');
-          if (!row) return;
-          const p = this.people.find((x) => x.id === row.dataset.id);
-          if (!p) return;
-          this.showContactPanel(p.id);
-          if (hasCoords(p)) this.map.flyTo([p.lat, p.lng], Math.max(this.map.getZoom(), 6), { duration: 0.8 });
-        });
+        $('listBody').addEventListener('click', (e) => this.onListClick(e));
 
         document.addEventListener('click', (e) => {
           if (!e.target.closest('#toolsPanel') && !e.target.closest('#toolsBtn')) this.closeToolsPanel();
@@ -1879,16 +2094,47 @@
       }
 
       onKeydown(e) {
+        if (e.key === 'Tab') { this.trapTab(e); return; }
         const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
         if (e.key === '/' && !typing) { e.preventDefault(); $('searchInput').focus(); return; }
         if (e.key !== 'Escape') return;
         if (document.body.classList.contains('presenting')) { this.setPresenting(false); return; }
-        if (this.placingContactId) { this.cancelPlacing(); return; }
+        if (this.placingContactId) { this.endPlacing(); return; }
         if ($('addContactModal').classList.contains('open')) { this.hideAddContactModal(); return; }
         if ($('analyticsModal').classList.contains('open')) { this.hideAnalytics(); return; }
+        if ($('dupModal').classList.contains('open')) { this.closeModal('dupModal'); return; }
         if ($('contactPanel').style.display === 'flex') { this.closeContactPanel(); return; }
         if ($('toolsPanel').classList.contains('open')) { this.closeToolsPanel(); return; }
+        if (this.selectMode) { this.setSelectMode(false); return; }
         if (this.listOpen) this.toggleList(false);
+      }
+
+      // ---------------- modal focus handling ----------------
+      openModal(id, focusId) {
+        const el = $(id);
+        this.lastFocus = document.activeElement;
+        el.classList.add('open');
+        const target = focusId ? $(focusId) : el.querySelector('button, input, select, textarea');
+        if (target) target.focus();
+      }
+
+      closeModal(id) {
+        $(id).classList.remove('open');
+        const back = this.lastFocus;
+        this.lastFocus = null;
+        if (back && document.contains(back) && back.offsetParent !== null && back.focus) back.focus();
+      }
+
+      trapTab(e) {
+        const open = document.querySelector('.modal.open');
+        if (!open) return;
+        const items = [...open.querySelectorAll('button, input, select, textarea, a[href]')]
+          .filter((el) => !el.disabled && el.offsetParent !== null);
+        if (!items.length) return;
+        const first = items[0]; const last = items[items.length - 1];
+        if (!open.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
 
       toggleToolsPanel() { $('toolsPanel').classList.toggle('open'); }
@@ -1932,28 +2178,88 @@
       }
 
       // ---------------- rendering ----------------
+      isVisible(p) {
+        if (this.currentTierFilter && p.tier !== this.currentTierFilter) return false;
+        if (this.currentTagFilter && !(p.tags || []).includes(this.currentTagFilter)) return false;
+        return this.matchesSearch(p);
+      }
+
+      makeMarker(person) {
+        const marker = L.marker([person.lat, person.lng], { icon: this.createContactIcon(person), title: person.name });
+        marker.orbitaPos = [person.lat, person.lng]; // the real position (a fanned-out marker is temporarily moved)
+        marker.on('click', () => {
+          if (this.placingContactId) { this.placeContactAt(marker.getLatLng()); return; }
+          this.showContactPanel(person.id);
+        });
+        return marker;
+      }
+
+      // Full rebuild: use after filters change, imports, bulk edits
       updateMap({ fit = false } = {}) {
         this.clusterGroup.clearLayers();
         this.markers = [];
-
-        let list = this.people.filter((p) => this.matchesSearch(p));
-        if (this.currentTierFilter) list = list.filter((p) => p.tier === this.currentTierFilter);
-        if (this.currentTagFilter) list = list.filter((p) => (p.tags || []).includes(this.currentTagFilter));
-        this.visiblePeople = list;
-
-        list.forEach((person) => {
-          if (!hasCoords(person)) return;
-          const marker = L.marker([person.lat, person.lng], { icon: this.createContactIcon(person), title: person.name });
-          marker.on('click', () => this.showContactPanel(person.id));
-          this.markers.push(marker);
-          this.clusterGroup.addLayer(marker);
+        this.markerById.clear();
+        this.visiblePeople = this.people.filter((p) => this.isVisible(p));
+        const batch = [];
+        this.visiblePeople.forEach((p) => {
+          if (!hasCoords(p)) return;
+          const m = this.makeMarker(p);
+          this.markers.push(m); this.markerById.set(p.id, m); batch.push(m);
         });
-
+        this.clusterGroup.addLayers(batch);
         if (fit) this.fitToPins();
+        this.afterVisibleChange();
+      }
+
+      // Update a single contact on the map without rebuilding (so an expanded cluster stays open while you edit)
+      syncPerson(p, { removed = false } = {}) {
+        const visible = !removed && this.isVisible(p);
+        const at = this.visiblePeople.indexOf(p);
+        if (visible && at < 0) this.visiblePeople.push(p);
+        else if (!visible && at >= 0) this.visiblePeople.splice(at, 1);
+        let m = this.markerById.get(p.id);
+        if (visible && hasCoords(p)) {
+          if (m) {
+            // setLatLng fires a move event that makes the cluster layer remove and re-add the marker
+            // (collapsing an expanded cluster), so only call it when the position really changed. Compare with
+            // our own record: while a cluster is fanned out, getLatLng() returns the spiral position instead.
+            if (m.orbitaPos[0] !== p.lat || m.orbitaPos[1] !== p.lng) { m.setLatLng([p.lat, p.lng]); m.orbitaPos = [p.lat, p.lng]; }
+            m.options.title = p.name;
+            m.setIcon(this.createContactIcon(p));
+            if (m.getElement()) m.getElement().title = p.name; // a divIcon element is reused, so Leaflet won't refresh the tooltip
+          }
+          else { m = this.makeMarker(p); this.markers.push(m); this.markerById.set(p.id, m); this.clusterGroup.addLayer(m); }
+        } else if (m) {
+          this.clusterGroup.removeLayer(m);
+          this.markers.splice(this.markers.indexOf(m), 1);
+          this.markerById.delete(p.id);
+        }
+        this.afterVisibleChange();
+      }
+
+      afterVisibleChange() {
         if (this.heatmapEnabled) this.createHeatmap();
         this.refreshFilterUi();
         this.renderStatus();
         if (this.listOpen) this.renderList();
+      }
+
+      // Run a data change that can be undone from the toast
+      withUndo(message, mutate) {
+        const snapshot = JSON.stringify(this.people);
+        mutate();
+        this.saveToStorage();
+        this.updateMap();
+        this.showNotification(message, {
+          actionLabel: 'Undo', duration: 10000,
+          onAction: () => {
+            this.people = JSON.parse(snapshot);
+            this.saveToStorage();
+            this.closeContactPanel();
+            this.updateMap();
+            if ($('dupModal').classList.contains('open')) this.openDuplicates();
+          },
+        });
       }
 
       refreshFilterUi() {
@@ -1981,23 +2287,112 @@
           : `backup ${Math.max(0, Math.round((Date.now() - last) / 864e5))}d ago`;
         $('statusPill').innerHTML = `${esc(text)}${backup ? ` · <span class="${stale ? 'warn' : ''}">${esc(backup)}</span>` : ''}`;
         $('statusPill').style.display = total ? 'block' : 'none';
+        const btn = $('placeQueueBtn');
+        btn.textContent = noLoc ? `Place ${noLoc} unpinned` : 'Place unpinned';
+        btn.disabled = !noLoc;
+      }
+
+      listRows() {
+        return this.visiblePeople
+          .filter((p) => !this.listNoLocOnly || !hasCoords(p))
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
       }
 
       renderList() {
         if (!this.listOpen) return;
-        const rows = this.visiblePeople
-          .filter((p) => !this.listNoLocOnly || !hasCoords(p))
-          .slice()
-          .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+        const rows = this.listRows();
+        const body = $('listBody');
+        const scroll = body.scrollTop;
         $('listCount').textContent = `${rows.length} contact${rows.length === 1 ? '' : 's'}`;
-        $('listBody').innerHTML = rows.map((p) => {
+        body.innerHTML = rows.map((p) => {
           const sub = [p.country, ...(p.tags || []).filter((t) => t !== 'Orbita').slice(0, 2)].filter(Boolean).join(' · ');
-          return `<button class="list-row" data-id="${esc(p.id)}">
-            <span class="list-name">${esc(p.name)}</span>
-            <span class="list-sub">${esc(sub)}</span>
+          const picked = this.selected.has(p.id);
+          return `<button class="list-row${picked ? ' selected' : ''}" data-id="${esc(p.id)}" ${this.selectMode ? `role="checkbox" aria-checked="${picked}"` : ''}>
+            <span class="list-check" aria-hidden="true">${picked ? '✓' : ''}</span>
+            <span class="list-main">
+              <span class="list-name">${esc(p.name)}</span>
+              <span class="list-sub">${esc(sub)}</span>
+            </span>
             ${hasCoords(p) ? '' : '<span class="list-flag">no pin</span>'}
           </button>`;
         }).join('') || '<div class="hint list-empty">No contacts match.</div>';
+        body.scrollTop = scroll;
+        if (this.selectMode) this.updateBulkBar();
+      }
+
+      onListClick(e) {
+        const row = e.target.closest('[data-id]');
+        if (!row || this.placingContactId) return;
+        const id = row.dataset.id;
+        if (this.selectMode) {
+          const rows = this.listRows();
+          const idx = rows.findIndex((p) => p.id === id);
+          const turnOn = !this.selected.has(id);
+          if (e.shiftKey && this.lastListIndex != null && this.lastListIndex < rows.length) {
+            const [lo, hi] = [Math.min(this.lastListIndex, idx), Math.max(this.lastListIndex, idx)];
+            rows.slice(lo, hi + 1).forEach((p) => (turnOn ? this.selected.add(p.id) : this.selected.delete(p.id)));
+          } else if (turnOn) this.selected.add(id); else this.selected.delete(id);
+          this.lastListIndex = idx;
+          this.renderList();
+          return;
+        }
+        const p = this.people.find((x) => x.id === id);
+        if (!p) return;
+        this.showContactPanel(p.id);
+        if (hasCoords(p)) this.map.flyTo([p.lat, p.lng], Math.max(this.map.getZoom(), 6), { duration: 0.8 });
+      }
+
+      setSelectMode(on) {
+        this.selectMode = on;
+        if (!on) this.selected.clear();
+        this.lastListIndex = null;
+        $('listPanel').classList.toggle('selecting', on);
+        $('listSelectBtn').textContent = on ? 'Done' : 'Select';
+        this.renderList();
+      }
+
+      updateBulkBar() {
+        const n = this.selected.size;
+        $('bulkCount').textContent = `${n} selected`;
+        const tags = [...new Set(this.people.flatMap((p) => p.tags || []))].sort((a, b) => a.localeCompare(b));
+        $('bulkTagList').innerHTML = tags.map((t) => `<option value="${esc(t)}"></option>`).join('');
+        $('bulkDelete').textContent = n ? `Delete ${n} selected` : 'Delete selected';
+      }
+
+      selectedPeople() {
+        const list = this.people.filter((p) => this.selected.has(p.id));
+        if (!list.length) this.showNotification('Select some contacts first');
+        return list;
+      }
+
+      bulkTier(value) {
+        if (!value) return;
+        const targets = this.selectedPeople();
+        if (!targets.length) return;
+        const tier = value === 'none' ? null : parseInt(value, 10);
+        this.withUndo(tier ? `Set ${targets.length} contact${targets.length === 1 ? '' : 's'} to ${TIER_LABELS[tier]}` : `Removed the tier from ${targets.length}`,
+          () => targets.forEach((p) => { p.tier = tier; }));
+      }
+
+      bulkTag(add) {
+        const tags = splitTags($('bulkTagInput').value);
+        if (!tags.length) { this.showNotification('Type a tag name first'); return; }
+        const targets = this.selectedPeople();
+        if (!targets.length) return;
+        this.withUndo(`${add ? 'Added' : 'Removed'} "${tags.join(', ')}" ${add ? 'to' : 'from'} ${targets.length} contact${targets.length === 1 ? '' : 's'}`, () => targets.forEach((p) => {
+          p.tags = add ? [...new Set([...(p.tags || []), ...tags])] : (p.tags || []).filter((t) => !tags.includes(t));
+        }));
+        if (add) $('bulkTagInput').value = '';
+      }
+
+      bulkDelete() {
+        const targets = this.selectedPeople();
+        if (!targets.length) return;
+        this.withUndo(`Deleted ${targets.length} contact${targets.length === 1 ? '' : 's'}`, () => {
+          this.people = this.people.filter((p) => !this.selected.has(p.id));
+          this.selected.clear();
+        });
       }
 
       getInitials(name) {
@@ -2108,6 +2503,9 @@
               ${p.phone ? `<a class="chip-link" href="tel:${esc(String(p.phone).replace(/[^\d+]/g, ''))}">☎ Call</a>` : ''}
               ${site ? `<a class="chip-link" href="${esc(siteUrl)}" target="_blank" rel="noopener noreferrer">↗ Website</a>` : ''}
             </div>
+            <div class="tier-buttons" role="group" aria-label="Tier">
+              ${[1, 2, 3].map((t) => `<button class="tier-btn${p.tier === t ? ' active' : ''}" data-action="tier" data-tier="${t}" style="--tier:${TIER_COLORS[t]}" aria-pressed="${p.tier === t}">${esc(TIER_LABELS[t])}</button>`).join('')}
+            </div>
             <div class="details-section">
               ${rows.map(([key, label]) => `
                 <div class="detail-row">
@@ -2144,6 +2542,15 @@
         else if (action === 'edit') this.editContact(id);
         else if (action === 'place') this.beginPlacing(id);
         else if (action === 'locate') this.locateOne(id);
+        else if (action === 'tier') {
+          const p = this.people.find((x) => x.id === id);
+          if (!p) return;
+          const t = parseInt(btn.dataset.tier, 10);
+          p.tier = p.tier === t ? null : t;
+          this.saveToStorage();
+          this.syncPerson(p);
+          this.showContactPanel(id, { keepScroll: true });
+        }
       }
 
       startEdit(personId, key, el) {
@@ -2201,7 +2608,7 @@
           if (!clean(p.address) && !clean(p.city)) applyInferredLocation(p);
         }
         this.saveToStorage();
-        this.updateMap();
+        this.syncPerson(p);
         this.showContactPanel(p.id, { keepScroll: true });
         if (locationChanged && (clean(p.address) || clean(p.city)) && p.geoSource !== 'manual') this.locateOne(p.id, { quiet: true });
       }
@@ -2218,12 +2625,11 @@
         set('contactAddress', person?.address); set('contactCompany', person?.company);
         set('contactWebsite', person?.website); set('contactTags', (person?.tags || []).join(', '));
         set('contactNotes', person?.notes);
-        $('addContactModal').classList.add('open');
-        $('contactName').focus();
+        this.openModal('addContactModal', 'contactName');
       }
 
       hideAddContactModal() {
-        $('addContactModal').classList.remove('open');
+        this.closeModal('addContactModal');
         $('addContactForm').reset();
         this.editingContactId = null;
       }
@@ -2254,7 +2660,7 @@
           const after = [p.address, p.city, p.region, p.country].join('|');
           if (after !== before && p.geoSource !== 'manual') { p.lat = null; p.lng = null; delete p.geoSource; applyInferredLocation(p); }
           this.saveToStorage();
-          this.updateMap();
+          this.syncPerson(p);
           this.hideAddContactModal();
           this.showContactPanel(p.id);
           this.showNotification(`Updated ${p.name}`);
@@ -2268,7 +2674,7 @@
         applyInferredLocation(person);
         this.people.push(person);
         this.saveToStorage();
-        this.updateMap();
+        this.syncPerson(person);
         this.hideAddContactModal();
         this.showNotification(`Added ${person.name}`);
         if (person.address || person.city) this.locateOne(person.id, { quiet: true });
@@ -2285,38 +2691,76 @@
         const [removed] = this.people.splice(idx, 1);
         this.saveToStorage();
         this.closeContactPanel();
-        this.updateMap();
+        this.syncPerson(removed, { removed: true });
         this.showNotification(`Deleted ${removed.name}`, {
           actionLabel: 'Undo', duration: 8000,
-          onAction: () => { this.people.splice(idx, 0, removed); this.saveToStorage(); this.updateMap(); },
+          onAction: () => { this.people.splice(idx, 0, removed); this.saveToStorage(); this.syncPerson(removed); },
         });
       }
 
       // ---------------- placing / geocoding ----------------
-      beginPlacing(id) {
-        this.placingContactId = id;
-        document.body.classList.add('placing');
-        this.closeContactPanel();
-        this.showNotification('Click the map to place this contact (Esc to cancel)', { duration: 6000 });
+      // Place one contact (from the panel) or walk through a queue of unpinned contacts
+      beginPlacing(id) { this.startPlacing([id], { single: true }); }
+
+      startPlaceQueue() {
+        const ids = this.visiblePeople.filter((p) => !hasCoords(p))
+          .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })).map((p) => p.id);
+        if (!ids.length) { this.showNotification('Every visible contact already has a pin'); return; }
+        this.startPlacing(ids, { single: false });
       }
 
-      cancelPlacing() {
-        const id = this.placingContactId;
+      startPlacing(ids, { single }) {
+        this.placeQueue = ids.slice();
+        this.placeIndex = -1;
+        this.placePlaced = 0;
+        this.placeSingle = single;
+        this.closeContactPanel();
+        this.closeToolsPanel();
+        document.body.classList.add('placing');
+        this.advancePlacing(1);
+      }
+
+      advancePlacing(step) {
+        this.placeIndex += step;
+        const id = this.placeQueue[this.placeIndex];
+        if (!id) { this.endPlacing(); return; }
+        this.placingContactId = id;
+        this.renderPlaceBar();
+      }
+
+      renderPlaceBar() {
+        const p = this.people.find((x) => x.id === this.placingContactId);
+        if (!p) { this.endPlacing(); return; }
+        const detail = [p.email, p.phone, ...(p.tags || []).filter((t) => t !== 'Orbita').slice(0, 2)].filter(Boolean).join(' · ');
+        const total = this.placeQueue.length;
+        $('placeBar').innerHTML = `
+          ${this.placeSingle ? '' : `<span class="place-count">${this.placeIndex + 1} / ${total}</span>`}
+          <span class="place-text">${this.placeSingle ? 'Click the map to place' : 'Click the map for'} <strong>${esc(p.name)}</strong>
+            <span class="place-sub">${esc(detail || 'Zoom in first for a precise spot')}</span></span>
+          ${this.placeSingle ? '' : '<button data-act="skip">Skip</button>'}
+          <button data-act="stop">${this.placeSingle ? 'Cancel' : 'Done'}</button>`;
+      }
+
+      endPlacing() {
+        const id = this.placeQueue[0];
+        const single = this.placeSingle;
+        const placed = this.placePlaced;
         this.placingContactId = null;
+        this.placeQueue = [];
         document.body.classList.remove('placing');
-        if (id) this.showContactPanel(id);
+        if (single && id) this.showContactPanel(id);
+        else if (placed) this.showNotification(`Placed ${placed} contact${placed === 1 ? '' : 's'}`);
       }
 
       placeContactAt(latlng) {
         const p = this.people.find((x) => x.id === this.placingContactId);
-        this.placingContactId = null;
-        document.body.classList.remove('placing');
-        if (!p) return;
+        if (!p) { this.endPlacing(); return; }
         p.lat = latlng.lat; p.lng = latlng.lng; p.geoSource = 'manual';
+        this.placePlaced++;
         this.saveToStorage();
-        this.updateMap();
-        this.showContactPanel(p.id);
-        this.showNotification(`Placed ${p.name}`);
+        this.syncPerson(p);
+        if (this.placeSingle) { this.showNotification(`Placed ${p.name}`); this.endPlacing(); }
+        else this.advancePlacing(1);
       }
 
       geocode(query) {
@@ -2357,7 +2801,7 @@
           const ok = await this.geocodePerson(p);
           if (ok) {
             this.saveToStorage();
-            this.updateMap();
+            this.syncPerson(p);
             if (this.activePanelId === id) this.showContactPanel(id, { keepScroll: true });
             if (!quiet) this.showNotification(`Located ${p.name}`);
           } else if (!quiet) {
@@ -2482,6 +2926,83 @@
         this.showNotification(`Exported ${this.people.length} contacts`);
       }
 
+      exportToCSV() {
+        const cols = ['name', 'email', 'phone', 'company', 'occupation', 'website', 'address', 'city', 'region', 'country',
+          'lat', 'lng', 'geosource', 'tier', 'tags', 'instagram', 'notes'];
+        const rows = this.people.map((p) => ({
+          name: p.name,
+          email: [p.email, ...p.altEmails].filter(Boolean).join(' ::: '),
+          phone: [p.phone, ...p.altPhones].filter(Boolean).join(' ::: '),
+          company: p.company, occupation: p.occupation, website: p.website, address: p.address, city: p.city,
+          region: p.region, country: p.country, lat: hasCoords(p) ? p.lat : '', lng: hasCoords(p) ? p.lng : '',
+          geosource: p.geoSource || '', tier: p.tier || '', tags: (p.tags || []).join(' ::: '),
+          instagram: p.instagram, notes: p.notes,
+        })).map((r) => Object.fromEntries(cols.map((c) => [c, csvSafe(r[c] ?? '')])));
+        const csv = '\uFEFF' + Papa.unparse({ fields: cols, data: rows.map((r) => cols.map((c) => r[c])) });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `orbita-contacts-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        try { localStorage.setItem(LAST_EXPORT_KEY, String(Date.now())); } catch (e) { /* ignore */ }
+        this.renderStatus();
+        this.showNotification(`Exported ${this.people.length} contacts to CSV`);
+      }
+
+      // ---------------- duplicates ----------------
+      ignoredPairs() {
+        try { return new Set(JSON.parse(localStorage.getItem(DUP_IGNORE_KEY) || '[]')); } catch (e) { return new Set(); }
+      }
+
+      openDuplicates() {
+        this.closeToolsPanel();
+        this.dupCandidates = findDuplicateCandidates(this.people, this.ignoredPairs());
+        this.renderDuplicates();
+        if (!$('dupModal').classList.contains('open')) this.openModal('dupModal', 'closeDup');
+      }
+
+      renderDuplicates() {
+        const card = (p) => `<div class="dup-card"><strong>${esc(p.name)}</strong>
+          ${p.email ? `<div>${esc(p.email)}</div>` : ''}${p.phone ? `<div>${esc(p.phone)}</div>` : ''}
+          <div class="dup-meta">${esc([p.country, ...(p.tags || []).filter((t) => t !== 'Orbita')].filter(Boolean).join(' · '))}</div></div>`;
+        $('dupBody').innerHTML = this.dupCandidates.length
+          ? this.dupCandidates.map((c) => `<div class="dup-pair" data-key="${esc(c.key)}">
+              <div class="dup-reason">${esc(c.reason)}</div>
+              <div class="dup-cards">${card(c.a)}${card(c.b)}</div>
+              <div class="dup-actions"><button class="btn" data-dup="ignore">Not the same</button><button class="btn btn-primary" data-dup="merge">Merge</button></div>
+            </div>`).join('')
+          : '<div class="hint" style="padding:16px 0">No likely duplicates found.</div>';
+      }
+
+      onDupClick(e) {
+        const btn = e.target.closest('[data-dup]');
+        const key = e.target.closest('.dup-pair')?.dataset.key;
+        const cand = this.dupCandidates.find((c) => c.key === key);
+        if (!btn || !cand) return;
+        if (btn.dataset.dup === 'ignore') {
+          const ignored = this.ignoredPairs();
+          ignored.add(key);
+          try { localStorage.setItem(DUP_IGNORE_KEY, JSON.stringify([...ignored])); } catch (err) { /* ignore */ }
+        } else {
+          this.mergePair(cand.a, cand.b);
+        }
+        this.dupCandidates = findDuplicateCandidates(this.people, this.ignoredPairs());
+        this.renderDuplicates();
+      }
+
+      mergePair(a, b) {
+        if (a === b || a.id === b.id) return;
+        const keep = mergeScore(a) >= mergeScore(b) ? a : b;
+        const other = keep === a ? b : a;
+        this.withUndo(`Merged ${other.name} into ${keep.name}`, () => {
+          if (fold(other.name).startsWith(fold(keep.name)) && other.name.length > keep.name.length) keep.name = other.name;
+          fillMissing(keep, other);
+          this.people = this.people.filter((p) => p !== other);
+        });
+      }
+
       // ---------------- storage ----------------
       saveToStorage() {
         try {
@@ -2530,11 +3051,11 @@
 
       // ---------------- analytics ----------------
       showAnalytics() {
-        $('analyticsModal').classList.add('open');
+        this.openModal('analyticsModal', 'closeAnalytics');
         this.updateAnalytics();
       }
 
-      hideAnalytics() { $('analyticsModal').classList.remove('open'); }
+      hideAnalytics() { this.closeModal('analyticsModal'); }
 
       updateAnalytics() {
         const total = this.people.length;
