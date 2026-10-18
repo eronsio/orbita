@@ -7,6 +7,14 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>Orbita</title>
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      var t = JSON.parse(localStorage.getItem('orbita-theme') || '"auto"');
+      var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    } catch (e) { /* default to light */ }
+  </script>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23444143'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23DCE8E7'/%3E%3Cellipse cx='16' cy='16' rx='12.5' ry='5' fill='none' stroke='%23DCE8E7' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3C/svg%3E">
   <!-- Updated: 2025-09-10 11:50 - Fixed Analytics Panel and Added Click-Outside-to-Close -->
   
@@ -1241,6 +1249,94 @@
         margin: 8px auto 0; flex-shrink: 0;
       }
     }
+
+    /* ===== Last contacted ===== */
+    .tool-btn.wide { width: 100%; margin-top: 6px; }
+    button.chip-link { font: inherit; font-size: 13px; cursor: pointer; }
+    .due { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 600; color: #8a5a00; background: #fdf0d2; border-radius: 10px; padding: 1px 8px; }
+    .list-flag.due { margin-left: 0; }
+
+    /* ===== Dark theme (follows the device unless you pick one in Tools) ===== */
+    :root[data-theme="light"] { color-scheme: light; }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #15181c; --bg-light: #1d2126; --bg-dark: #2a2f36;
+      --secondary: #6f7782; --text: #e7e9ec; --text-light: #b2b8c0; --text-muted: #8f97a2;
+      --border: #363c45; --border-light: #2b3038;
+      --primary: #2e4744; --primary-dark: #3b5b57; --accent: #3b4048;
+      --success: #34d399; --warning: #fbbf24; --error: #f87171;
+      --shadow: rgba(0, 0, 0, 0.35); --shadow-lg: rgba(0, 0, 0, 0.5);
+    }
+    /* the basemap: invert the light tiles into a dark map, then soften */
+    :root[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) saturate(0.45) brightness(0.9) contrast(0.92); }
+    :root[data-theme="dark"] .map-container { background: #1b1e22; }
+    :root[data-theme="dark"] .leaflet-control-zoom { background: rgba(29, 33, 38, 0.92) !important; border-color: var(--border) !important; }
+    :root[data-theme="dark"] .leaflet-control-zoom a { color: var(--text) !important; }
+    :root[data-theme="dark"] .leaflet-control-zoom a:hover { background: rgba(255, 255, 255, 0.08) !important; }
+    :root[data-theme="dark"] .leaflet-control-attribution { background: rgba(21, 24, 28, 0.75) !important; color: var(--text-light); }
+    :root[data-theme="dark"] .leaflet-control-attribution a { color: #9fc5bf; }
+
+    /* surfaces that hardcoded white */
+    :root[data-theme="dark"] .btn,
+    :root[data-theme="dark"] .search-input:focus,
+    :root[data-theme="dark"] .insight-item,
+    :root[data-theme="dark"] .inline-edit { background: var(--bg); color: var(--text); }
+    :root[data-theme="dark"] .btn { background: var(--bg-light); border-color: var(--border); }
+    :root[data-theme="dark"] .btn:hover { background: var(--bg-dark); color: var(--text); }
+    :root[data-theme="dark"] .btn:active { background: var(--bg-dark); }
+    :root[data-theme="dark"] .btn-primary { background: var(--primary); border-color: var(--primary); color: var(--text); }
+    :root[data-theme="dark"] .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+    :root[data-theme="dark"] .btn.danger { color: #f0948b; border-color: #6b3a36; }
+    :root[data-theme="dark"] .btn.danger:hover { background: #3a2321; color: #ffb4ab; }
+    :root[data-theme="dark"] .dialog { background: var(--bg-light); border-color: var(--border); }
+    :root[data-theme="dark"] .dialog h2 { color: var(--text); }
+    :root[data-theme="dark"] .form-group label { color: var(--text-light); }
+    :root[data-theme="dark"] .form-group input,
+    :root[data-theme="dark"] .form-group select,
+    :root[data-theme="dark"] .form-group textarea { background: var(--bg); border-color: var(--border); color: var(--text); }
+    :root[data-theme="dark"] .form-group input:focus,
+    :root[data-theme="dark"] .form-group select:focus,
+    :root[data-theme="dark"] .form-group textarea:focus { border-color: #9fc5bf; box-shadow: 0 0 0 3px rgba(159, 197, 191, 0.25); }
+    :root[data-theme="dark"] .search-input:focus { border-color: #9fc5bf; box-shadow: 0 0 0 3px rgba(159, 197, 191, 0.25); }
+    :root[data-theme="dark"] .search-results { background: var(--bg-light); border-color: var(--border); }
+    :root[data-theme="dark"] .welcome-card { background: rgba(29, 33, 38, 0.96); border-color: var(--border); }
+    :root[data-theme="dark"] .status-pill { background: rgba(29, 33, 38, 0.95); border-color: var(--border); }
+    :root[data-theme="dark"] .seg-btn.active { background: var(--bg-dark); color: var(--text); }
+    :root[data-theme="dark"] .inline-edit { border-color: #9fc5bf; }
+    :root[data-theme="dark"] .list-controls select,
+    :root[data-theme="dark"] .bulk-bar select,
+    :root[data-theme="dark"] .bulk-bar input,
+    :root[data-theme="dark"] .tool-select { background: var(--bg); border-color: var(--border); color: var(--text); }
+
+    /* things that used the accent as text, or white text on it */
+    :root[data-theme="dark"] .toolbar-icon.active,
+    :root[data-theme="dark"] .tool-btn.active { color: var(--text); }
+    :root[data-theme="dark"] .fab { background: #9fc5bf; color: #15181c; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
+    :root[data-theme="dark"] .fab:hover { box-shadow: 0 6px 28px rgba(159, 197, 191, 0.35); }
+    :root[data-theme="dark"] .toast,
+    :root[data-theme="dark"] .place-bar { background: #2b3038; border: 1px solid #454c56; }
+    :root[data-theme="dark"] .cluster-bubble span { background: #3b4048; }
+    :root[data-theme="dark"] .avatar-initials-large { background: #3b4048; color: var(--text); }
+    :root[data-theme="dark"] .tier-btn.active { color: #fff; }
+    :root[data-theme="dark"] .due { background: #4a3b12; color: #f3d48a; }
+    :root[data-theme="dark"] .acc-msg.error { color: #f0948b; }
+    :root[data-theme="dark"] .acc-msg.info { color: #8fcbb9; }
+    :root[data-theme="dark"] .approx-note { color: #f3d48a; }
+    :root[data-theme="dark"] .insight-value { color: var(--text); }
+    :root[data-theme="dark"] :focus-visible { outline-color: #9fc5bf !important; }
+    :root[data-theme="dark"] .tag-chip { color: var(--text); }
+    :root[data-theme="dark"] .chip-link:hover,
+    :root[data-theme="dark"] .add-chip:hover { border-color: #9fc5bf; }
+
+    .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .analytics-card { min-width: 0; }
+    .stat-row span:first-child { min-width: 0; overflow-wrap: anywhere; padding-right: 8px; }
+    @media (max-width: 700px) {
+      .analytics-grid, .insights-grid { grid-template-columns: 1fr; gap: 14px; }
+      .analytics-grid { margin-bottom: 14px; }
+      #analyticsModal .dialog { padding: 18px; }
+    }
   </style>
   
   <!-- Scripts -->
@@ -1304,6 +1400,7 @@
           <button id="clearTierFilterBtn" class="tool-btn">Show all</button>
         </div>
         <select id="tagFilter" class="tool-select" aria-label="Filter by tag"><option value="">All tags</option></select>
+        <button id="catchUpBtn" class="tool-btn wide" aria-pressed="false" title="Tiered contacts you haven't been in touch with lately: Close friends 30 days, Friends 90, Acquaintances 180">Needs a catch-up</button>
       </div>
 
       <div class="tools-section">
@@ -1323,6 +1420,7 @@
           <button id="toggleHeatmapBtn" class="tool-btn">Heatmap</button>
           <button id="analyticsBtn" class="tool-btn">Analytics</button>
           <button id="fitAllBtn" class="tool-btn">Fit to pins</button>
+          <button id="themeBtn" class="tool-btn" title="Light, dark, or follow your device">Theme: Auto</button>
         </div>
       </div>
 
@@ -1427,6 +1525,7 @@
         <option value="recent">Recently added</option>
         <option value="nopin">No pin first</option>
         <option value="tier">By tier</option>
+        <option value="catchup">Longest since contact</option>
       </select>
     </div>
     <div id="bulkBar" class="bulk-bar">
@@ -1447,6 +1546,7 @@
         <button class="btn" id="bulkTagAdd">Add tag</button>
         <button class="btn" id="bulkTagRemove">Remove</button>
       </div>
+      <button class="btn" id="bulkContacted">Contacted today</button>
       <button class="btn danger" id="bulkDelete">Delete selected</button>
     </div>
     <div id="listBody" class="list-body"></div>
@@ -1555,7 +1655,7 @@
         <button class="btn" id="closeAnalytics">Close</button>
       </div>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+      <div class="analytics-grid">
         <!-- Tier Distribution -->
         <div class="analytics-card">
           <h3>👥 Tier Distribution</h3>
@@ -1573,7 +1673,7 @@
         </div>
       </div>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+      <div class="analytics-grid">
         <!-- Contact Growth -->
         <div class="analytics-card">
           <h3>📈 Network Growth</h3>
@@ -1594,7 +1694,7 @@
       <!-- Insights Panel -->
       <div class="analytics-card">
         <h3>💡 Smart Insights</h3>
-        <div id="insightsPanel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div id="insightsPanel" class="insights-grid">
           <div class="insight-item">
             <div class="insight-icon">🎯</div>
             <div class="insight-content">
@@ -1655,6 +1755,8 @@
       const q = new URLSearchParams(location.search);
       if (q.get('supabase')) { CLOUD.url = q.get('supabase').replace(/\/+$/, ''); CLOUD.anonKey = q.get('key') || 'test-key'; }
     }
+    const THEME_KEY = 'orbita-theme';
+    const THEME_LABELS = { auto: 'Auto', light: 'Light', dark: 'Dark' };
     const SESSION_KEY = 'orbita-session';
     const SYNC_KEY = 'orbita-sync';
     const SYNC_BASE_KEY = 'orbita-sync-base'; // the list both this device and the cloud last agreed on
@@ -1861,6 +1963,8 @@
       else p.tags = splitTags(p.tags);
       const tier = parseInt(String(p.tier ?? '').replace(/\D/g, ''), 10);
       p.tier = tier >= 1 && tier <= 3 ? tier : null;
+      const last = String(p.lastContacted || '').slice(0, 10);
+      p.lastContacted = DATE_RE.test(last) ? last : null;
       const lat = parseFloat(p.lat ?? p.latitude);
       const lng = parseFloat(p.lng ?? p.longitude);
       delete p.latitude; delete p.longitude;
@@ -1914,6 +2018,7 @@
       ['email', 'phone', 'company', 'occupation', 'website', 'notes', 'instagram', 'address', 'city', 'region', 'country', 'tier']
         .forEach((f) => { if (!target[f] && src[f]) target[f] = src[f]; });
       target.tags = [...new Set([...(target.tags || []), ...(src.tags || [])])];
+      if (src.lastContacted && (!target.lastContacted || src.lastContacted > target.lastContacted)) target.lastContacted = src.lastContacted;
       const extraEmails = [src.email, ...src.altEmails].filter((e) => e && e !== target.email);
       const extraPhones = [src.phone, ...src.altPhones].filter((x) => x && x !== target.phone);
       target.altEmails = [...new Set([...(target.altEmails || []), ...extraEmails])];
@@ -2030,6 +2135,7 @@
         region: get('address 1 - region', 'region', 'state') || null,
         country: get('address 1 - country', 'country') || null,
         tier: get('tier') || null,
+        lastContacted: get('lastcontacted', 'last contacted', 'last_contacted') || null,
         tags,
         lat: get('lat', 'latitude'),
         lng: get('lng', 'lon', 'longitude'),
@@ -2101,12 +2207,45 @@
       email: `${name.toLowerCase().replace(/[^a-z]+/g, '.')}@example.com`,
     }));
 
+    // How often each tier should hear from you before it shows up as "needs a catch-up"
+    const CATCH_UP_DAYS = { 1: 30, 2: 90, 3: 180 };
+    const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+    const todayStr = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    function daysSince(dateStr, now = new Date()) {
+      if (!DATE_RE.test(dateStr || '')) return null;
+      const [y, mo, d] = dateStr.split('-').map(Number);
+      return Math.round((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(y, mo - 1, d)) / 864e5);
+    }
+    function agoLabel(days) {
+      if (days === null) return '';
+      if (days <= 0) return 'today';
+      if (days === 1) return 'yesterday';
+      if (days < 14) return `${days} days ago`;
+      if (days < 60) return `${Math.round(days / 7)} weeks ago`;
+      if (days < 700) return `${Math.round(days / 30)} months ago`;
+      return `${Math.round(days / 365)} years ago`;
+    }
+    // Only contacts you've given a tier can be "due". One you've never logged contact with counts as due.
+    function needsCatchUp(p, now = new Date()) {
+      if (!p.tier) return false;
+      const d = daysSince(p.lastContacted, now);
+      return d === null || d > CATCH_UP_DAYS[p.tier];
+    }
+
     function sortPeople(list, mode) {
       const byName = (a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
       const copy = list.slice();
       if (mode === 'recent') return copy.sort((a, b) => String(b.addedAt || '').localeCompare(String(a.addedAt || '')) || byName(a, b));
       if (mode === 'nopin') return copy.sort((a, b) => (hasCoords(a) ? 1 : 0) - (hasCoords(b) ? 1 : 0) || byName(a, b));
       if (mode === 'tier') return copy.sort((a, b) => (a.tier || 9) - (b.tier || 9) || byName(a, b));
+      if (mode === 'catchup') { // due contacts first (longest since you were in touch, never-contacted leading), then the rest
+        const gap = (p) => { const d = daysSince(p.lastContacted); return d === null ? Infinity : d; };
+        const group = (p) => (needsCatchUp(p) ? 0 : p.tier ? 1 : 2);
+        return copy.sort((a, b) => group(a) - group(b) || (gap(b) === gap(a) ? 0 : gap(b) > gap(a) ? 1 : -1) || byName(a, b));
+      }
       return copy.sort(byName);
     }
 
@@ -2216,6 +2355,8 @@
         this.accMode = 'signin';
         this.listSort = readJson('orbita-list-sort') || 'name';
         this.searchIndex = -1;
+        this.catchUpOnly = false;
+        this.theme = readJson(THEME_KEY) || 'auto';
         this.geocodeChain = Promise.resolve();
         this.lastGeocodeAt = 0;
         this.init();
@@ -2227,6 +2368,7 @@
           this.initEventListeners();
           this.loadFromStorage();
           this.initCloud();
+          this.applyTheme(this.theme);
           if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
         } catch (error) {
           console.error('Error during initialization:', error);
@@ -2388,6 +2530,12 @@
         click('bulkTagAdd', () => this.bulkTag(true));
         click('bulkTagRemove', () => this.bulkTag(false));
         click('bulkDelete', () => this.bulkDelete());
+        click('bulkContacted', () => this.bulkContacted());
+        click('themeBtn', () => this.applyTheme({ auto: 'light', light: 'dark', dark: 'auto' }[this.theme] || 'auto', true));
+        if (window.matchMedia) {
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (this.theme === 'auto') this.applyTheme('auto'); });
+        }
+        click('catchUpBtn', () => { this.catchUpOnly = !this.catchUpOnly; this.updateMap({ fit: true }); });
         on('bulkTier', 'change', (e) => { this.bulkTier(e.target.value); e.target.value = ''; });
         $('dupBody').addEventListener('click', (e) => this.onDupClick(e));
         $('dupModal').addEventListener('click', (e) => { if (e.target.id === 'dupModal') this.closeModal('dupModal'); });
@@ -2557,6 +2705,15 @@
         if (this.listOpen) this.renderList();
       }
 
+      // ---------------- theme ----------------
+      applyTheme(mode, save = false) {
+        this.theme = THEME_LABELS[mode] ? mode : 'auto';
+        const dark = this.theme === 'dark' || (this.theme === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        $('themeBtn').textContent = `Theme: ${THEME_LABELS[this.theme]}`;
+        if (save) { try { localStorage.setItem(THEME_KEY, JSON.stringify(this.theme)); } catch (e) { /* ignore */ } }
+      }
+
       // ---------------- filters ----------------
       applyTierFilter(tier) {
         this.currentTierFilter = this.currentTierFilter === tier ? null : tier;
@@ -2566,6 +2723,7 @@
       clearFilters() {
         this.currentTierFilter = null;
         this.currentTagFilter = '';
+        this.catchUpOnly = false;
         this.currentSearchQuery = '';
         $('searchInput').value = '';
         this.updateMap({ fit: true });
@@ -2584,6 +2742,7 @@
       isVisible(p) {
         if (this.currentTierFilter && p.tier !== this.currentTierFilter) return false;
         if (this.currentTagFilter && !(p.tags || []).includes(this.currentTagFilter)) return false;
+        if (this.catchUpOnly && !needsCatchUp(p)) return false;
         return this.matchesSearch(p);
       }
 
@@ -2594,6 +2753,7 @@
         marker.on('click', () => {
           if (this.placingContactId) { this.placeContactAt(marker.getLatLng()); return; }
           this.showContactPanel(person.id);
+          if (window.innerWidth <= 600) this.map.panTo(this.aboveSheet(marker.orbitaPos, this.map.getZoom()));
         });
         return marker;
       }
@@ -2679,6 +2839,10 @@
         select.innerHTML = '<option value="">All tags</option>' + options.map((t) =>
           `<option value="${esc(t)}">${esc(t)} (${counts[t]})</option>`).join('');
         select.value = options.includes(this.currentTagFilter) ? this.currentTagFilter : '';
+        const due = this.people.filter((p) => needsCatchUp(p)).length;
+        $('catchUpBtn').textContent = `Needs a catch-up${due ? ` (${due})` : ''}`;
+        $('catchUpBtn').classList.toggle('active', this.catchUpOnly);
+        $('catchUpBtn').setAttribute('aria-pressed', String(this.catchUpOnly));
       }
 
       renderStatus() {
@@ -2721,6 +2885,7 @@
               <span class="list-sub">${esc(sub)}</span>
             </span>
             ${hasCoords(p) ? '' : '<span class="list-flag">no pin</span>'}
+            ${needsCatchUp(p) ? '<span class="list-flag due">catch up</span>' : ''}
           </button>`;
         }).join('') || '<div class="hint list-empty">No contacts match.</div>';
         body.scrollTop = scroll;
@@ -2751,7 +2916,16 @@
 
       openContact(p) {
         this.showContactPanel(p.id);
-        if (hasCoords(p)) this.map.flyTo([p.lat, p.lng], Math.max(this.map.getZoom(), 6), { duration: 0.8 });
+        if (!hasCoords(p)) return;
+        const zoom = Math.max(this.map.getZoom(), 6);
+        this.map.flyTo(this.aboveSheet([p.lat, p.lng], zoom), zoom, { duration: 0.8 });
+      }
+
+      // On a phone the contact panel covers the bottom 62% of the screen: aim the map so the pin sits in the visible part
+      aboveSheet(latlng, zoom) {
+        if (window.innerWidth > 600) return latlng;
+        const shift = window.innerHeight * 0.31;
+        return this.map.unproject(this.map.project(latlng, zoom).add([0, shift]), zoom);
       }
 
       setSelectMode(on) {
@@ -2795,6 +2969,12 @@
           p.tags = add ? [...new Set([...(p.tags || []), ...tags])] : (p.tags || []).filter((t) => !tags.includes(t));
         }));
         if (add) $('bulkTagInput').value = '';
+      }
+
+      bulkContacted() {
+        const targets = this.selectedPeople();
+        if (!targets.length) return;
+        this.withUndo(`Logged contact with ${targets.length} contact${targets.length === 1 ? '' : 's'} today`, () => targets.forEach((p) => { p.lastContacted = todayStr(); }));
       }
 
       bulkDelete() {
@@ -2860,6 +3040,13 @@
         const empty = '<span class="empty-val">—</span>';
         switch (key) {
           case 'tier': return p.tier ? `Tier ${p.tier} · ${esc(TIER_LABELS[p.tier])}` : empty;
+          case 'lastContacted': {
+            const d = daysSince(p.lastContacted);
+            if (d === null) return needsCatchUp(p) ? `<span class="empty-val">never</span><span class="due">due</span>` : empty;
+            const [y, mo, dd] = p.lastContacted.split('-').map(Number);
+            const pretty = new Date(y, mo - 1, dd).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+            return `${esc(pretty)} · ${esc(agoLabel(d))}${needsCatchUp(p) ? '<span class="due">due</span>' : ''}`;
+          }
           case 'tags': return (p.tags || []).length
             ? (p.tags).map((t) => `<span class="tag-chip">${esc(t)}</span>`).join('') : empty;
           case 'instagram': return p.instagram ? `@${esc(String(p.instagram).replace(/^@/, ''))}` : empty;
@@ -2880,7 +3067,7 @@
         const prevScroll = keepScroll ? (panel.querySelector('.panel-content')?.scrollTop || 0) : 0;
         this.activePanelId = personId;
 
-        const allRows = [['email', 'Email'], ['phone', 'Phone'], ['occupation', 'Occupation'],
+        const allRows = [['email', 'Email'], ['phone', 'Phone'], ['lastContacted', 'Last contact'], ['occupation', 'Occupation'],
           ['company', 'Company'], ['website', 'Website'], ['address', 'Address'], ['city', 'City'],
           ['region', 'Region'], ['country', 'Country'], ['instagram', 'Instagram'], ['tags', 'Tags'], ['notes', 'Notes']];
         // Only show what's filled in; empty fields become "+ Add" chips so the panel stays short
@@ -2920,6 +3107,7 @@
               ${p.email ? `<a class="chip-link" href="mailto:${esc(p.email)}">✉ Email</a>` : ''}
               ${p.phone ? `<a class="chip-link" href="tel:${esc(String(p.phone).replace(/[^\d+]/g, ''))}">☎ Call</a>` : ''}
               ${site ? `<a class="chip-link" href="${esc(siteUrl)}" target="_blank" rel="noopener noreferrer">↗ Website</a>` : ''}
+              <button class="chip-link" data-action="contacted-today">✓ Contacted today</button>
             </div>
             <div class="tier-buttons" role="group" aria-label="Tier">
               ${[1, 2, 3].map((t) => `<button class="tier-btn${p.tier === t ? ' active' : ''}" data-action="tier" data-tier="${t}" style="--tier:${TIER_COLORS[t]}" aria-pressed="${p.tier === t}">${esc(TIER_LABELS[t])}</button>`).join('')}
@@ -2969,6 +3157,15 @@
           const row = $('contactPanel').querySelector(`[data-edit="${btn.dataset.field}"]`);
           if (row) this.startEdit(id, btn.dataset.field, row);
         }
+        else if (action === 'contacted-today') {
+          const p = this.people.find((x) => x.id === id);
+          if (!p) return;
+          p.lastContacted = todayStr();
+          this.saveToStorage();
+          this.syncPerson(p);
+          this.showContactPanel(id, { keepScroll: true });
+          this.showNotification(`Logged contact with ${p.name}`);
+        }
         else if (action === 'tier') {
           const p = this.people.find((x) => x.id === id);
           if (!p) return;
@@ -2995,7 +3192,8 @@
           input.value = this.rawFieldValue(p, key);
         } else {
           input = document.createElement('input');
-          input.type = 'text';
+          input.type = key === 'lastContacted' ? 'date' : 'text';
+          if (key === 'lastContacted') input.max = todayStr();
           input.value = this.rawFieldValue(p, key);
           if (key === 'tags') input.placeholder = 'comma, separated';
         }
@@ -3027,6 +3225,7 @@
         else if (key === 'tier') p.tier = v ? parseInt(v, 10) : null;
         else if (key === 'tags') p.tags = splitTags(v);
         else if (key === 'instagram') p.instagram = v.replace(/^@/, '') || null;
+        else if (key === 'lastContacted') p.lastContacted = DATE_RE.test(v) ? v : null;
         else p[key] = v || null;
 
         const locationChanged = ['address', 'city', 'region', 'country'].includes(key) && v !== before;
@@ -3349,14 +3548,14 @@
 
       exportToCSV() {
         const cols = ['name', 'email', 'phone', 'company', 'occupation', 'website', 'address', 'city', 'region', 'country',
-          'lat', 'lng', 'geosource', 'tier', 'tags', 'instagram', 'notes'];
+          'lat', 'lng', 'geosource', 'tier', 'lastcontacted', 'tags', 'instagram', 'notes'];
         const rows = this.people.map((p) => ({
           name: p.name,
           email: [p.email, ...p.altEmails].filter(Boolean).join(' ::: '),
           phone: [p.phone, ...p.altPhones].filter(Boolean).join(' ::: '),
           company: p.company, occupation: p.occupation, website: p.website, address: p.address, city: p.city,
           region: p.region, country: p.country, lat: hasCoords(p) ? p.lat : '', lng: hasCoords(p) ? p.lng : '',
-          geosource: p.geoSource || '', tier: p.tier || '', tags: (p.tags || []).join(' ::: '),
+          geosource: p.geoSource || '', tier: p.tier || '', lastcontacted: p.lastContacted || '', tags: (p.tags || []).join(' ::: '),
           instagram: p.instagram, notes: p.notes,
         })).map((r) => Object.fromEntries(cols.map((c) => [c, csvSafe(r[c] ?? '')])));
         const csv = '\uFEFF' + Papa.unparse({ fields: cols, data: rows.map((r) => cols.map((c) => r[c])) });
@@ -3926,7 +4125,9 @@
         const noPin = this.people.filter((p) => !hasCoords(p)).length;
         const approx = this.people.filter((p) => APPROX_SOURCES.has(p.geoSource)).length;
         $('lastContact').textContent = `${noPin} without a pin · ${approx} approximate`;
-        $('opportunities').textContent = `${total - tierCounts[1] - tierCounts[2] - tierCounts[3]} contacts need tier assignment`;
+        const untiered = total - tierCounts[1] - tierCounts[2] - tierCounts[3];
+        const due = this.people.filter((p) => needsCatchUp(p)).length;
+        $('opportunities').textContent = `${untiered} need a tier · ${due} due for a catch-up`;
       }
     }
 

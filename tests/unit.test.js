@@ -12,7 +12,7 @@ let src = html.slice(html.indexOf("<script>\n    'use strict'") + '<script>\n'.l
 src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListener[\s\S]*$/, '');
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
-  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople };`;
+  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
 fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } };"));
 const m = require(sandbox);
@@ -268,6 +268,32 @@ eq('sort: recently added, ties by name', order('recent'), ['álvaro', 'Carl', 'B
 eq('sort: no pin first', order('nopin'), ['álvaro', 'Carl', 'Bea', 'Zed']);
 eq('sort: by tier, untiered last', order('tier'), ['Bea', 'Carl', 'Zed', 'álvaro']);
 eq('sort: does not reorder the original list', sortList.map((p) => p.name), ['Zed', 'álvaro', 'Bea', 'Carl']);
+
+// ---- last contacted / catch-up ----
+const NOW = new Date(2026, 9, 18); // 18 Oct 2026, pinned so these tests never depend on today's date
+eq('days since: same day', m.daysSince('2026-10-18', NOW), 0);
+eq('days since: 30 days', m.daysSince('2026-09-18', NOW), 30);
+eq('days since: across a year boundary', m.daysSince('2025-10-18', NOW), 365);
+eq('days since: invalid or empty -> null', [m.daysSince(''), m.daysSince('yesterday'), m.daysSince(null)], [null, null, null]);
+eq('ago label', [0, 1, 5, 20, 100, 800].map(m.agoLabel), ['today', 'yesterday', '5 days ago', '3 weeks ago', '3 months ago', '2 years ago']);
+const due = (tier, last) => m.needsCatchUp(m.normalizePerson({ id: 'x', name: 'X', tier, lastContacted: last }), NOW);
+eq('catch-up: untiered contacts are never due', due(null, '2020-01-01'), false);
+eq('catch-up: close friend after 31 days is due, at 30 is not', [due(1, '2026-09-17'), due(1, '2026-09-18')], [true, false]);
+eq('catch-up: friend cadence is 90 days', [due(2, '2026-07-20'), due(2, '2026-07-19')], [false, true]);
+eq('catch-up: acquaintance cadence is 180 days', [due(3, '2026-04-21'), due(3, '2026-04-20')], [false, true]);
+eq('catch-up: a tiered contact never logged is due', due(2, null), true);
+eq('normalize: keeps a valid date, trims a timestamp, drops junk', [person({ lastContacted: '2026-03-04' }).lastContacted, person({ lastContacted: '2026-03-04T10:00:00Z' }).lastContacted, person({ lastContacted: 'soon' }).lastContacted], ['2026-03-04', '2026-03-04', null]);
+eq('csv: last contacted column is read', m.normalizePerson(m.rowToPerson({ Name: 'A', lastcontacted: '2026-02-01' })).lastContacted, '2026-02-01');
+{ const a = person({ id: 'a', phone: '1', lastContacted: '2026-01-01' }); m.fillMissing(a, person({ id: 'b', phone: '1', lastContacted: '2026-05-01' }));
+  const b = person({ id: 'c', phone: '2', lastContacted: '2026-06-01' }); m.fillMissing(b, person({ id: 'd', phone: '2', lastContacted: '2026-02-01' }));
+  eq('merge keeps the most recent contact date', [a.lastContacted, b.lastContacted], ['2026-05-01', '2026-06-01']); }
+{ const base3 = [person({ id: 'a', tier: 1, lastContacted: '2026-01-01' })]; const local = JSON.parse(JSON.stringify(base3)); local[0].lastContacted = '2026-09-01';
+  eq('sync merge: logging contact on one device survives', m.threeWayMerge(base3, local, JSON.parse(JSON.stringify(base3))).list[0].lastContacted, '2026-09-01'); }
+{ const L = [person({ id: 'p', name: 'Recent', tier: 1, lastContacted: '2026-10-10' }), person({ id: 'q', name: 'Old', tier: 1, lastContacted: '2025-01-01' }), person({ id: 'r', name: 'Never', tier: 1 }), person({ id: 's', name: 'Mid', tier: 1, lastContacted: '2026-08-01' })];
+  eq('sort: longest since contact, never-contacted first', m.sortPeople(L, 'catchup').map((p) => p.name), ['Never', 'Old', 'Mid', 'Recent']); }
+
+{ const L = [person({ id: 'u1', name: 'Aaa untiered' }), person({ id: 'p', name: 'Fresh', tier: 1, lastContacted: '2026-10-17' }), person({ id: 'q', name: 'Overdue', tier: 1, lastContacted: '2025-01-01' }), person({ id: 'n', name: 'Never', tier: 2 })];
+  eq('sort: tiered and due first, then tiered but up to date, then untiered', m.sortPeople(L, 'catchup').map((p) => p.name), ['Never', 'Overdue', 'Fresh', 'Aaa untiered']); }
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

@@ -43,6 +43,12 @@ Optional Supabase sign-in with the whole contact list saved as one JSON row per 
 - A divIcon element is reused by `setIcon`, so the hover `title` is refreshed by hand.
 - Min zoom adapts to the window (`updateMinZoom`) so the map always fills the screen.
 
+## Last contacted + catch-up
+Each contact has an optional `lastContacted` (`YYYY-MM-DD`). Tiered contacts are "due" after 30 / 90 / 180 days (Close friends / Friends / Acquaintances, `CATCH_UP_DAYS`); a tiered contact you've never logged counts as due; untiered contacts are never due. Surfaces: the "Contacted today" button and "Last contact" row in the panel, the **Needs a catch-up** filter (with a live count), a "catch up" flag in the list, the "Longest since contact" sort, a bulk "Contacted today", the analytics card, and a `lastcontacted` CSV column. The pure helpers (`daysSince`, `needsCatchUp`, `agoLabel`) take a `now` argument so tests can pin the date.
+
+## Theme
+Auto / Light / Dark (Tools -> Theme), remembered in `orbita-theme`. A tiny inline script in `<head>` sets `data-theme` before first paint so there's no light flash. Dark is the `:root[data-theme="dark"]` block at the end of the stylesheet: it swaps the colour variables, inverts the OSM tiles with a CSS filter, and overrides the handful of rules that hardcoded white. When adding new CSS, use the variables (`--bg`, `--bg-light`, `--text`, `--border`...) rather than literal colours, or add a dark override.
+
 ## UI notes
 - Left toolbar: Pointer and the Table icon (contact list) work; Text/Shapes/Pen are disabled placeholders.
 - List drawer: Select mode gives bulk tier / add-remove tag / delete (shift-click selects a range).
