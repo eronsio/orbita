@@ -12,9 +12,9 @@ let src = html.slice(html.indexOf("<script>\n    'use strict'") + '<script>\n'.l
 src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListener[\s\S]*$/, '');
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
-  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE };`;
+  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
-fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } };"));
+fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } };"));
 const m = require(sandbox);
 fs.unlinkSync(sandbox);
 
@@ -195,6 +195,69 @@ eq('sample: ids are unique and stable', new Set(sample.map((p) => p.id)).size ==
 eq('sample: tiers are valid', sample.every((p) => [1, 2, 3].includes(p.tier)), true);
 eq('sample: not flagged as duplicates of each other', m.findDuplicateCandidates(sample), []);
 eq('sample: all tagged Sample so they are easy to select and remove', sample.every((p) => p.tags.includes('Sample')), true);
+
+// ---- three-way merge for cloud sync ----
+const P = (id, extra = {}) => m.normalizePerson({ id, name: `Person ${id}`, ...extra });
+const names = (r) => r.list.map((p) => p.id).sort();
+const find = (r, id) => r.list.find((p) => p.id === id);
+const base2 = [P('a', { email: 'a@example.com' }), P('b', { email: 'b@example.com' })];
+const copy = (l) => JSON.parse(JSON.stringify(l));
+
+let r = m.threeWayMerge(base2, copy(base2), copy(base2));
+eq('merge: nothing changed anywhere', [names(r), r.stats.edited, r.stats.added], [['a', 'b'], 0, 0]);
+
+{ const local = copy(base2); local[0].tier = 3; const remote = copy(base2); remote[0].notes = 'from cloud';
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: different fields of one contact are both kept', [find(r, 'a').tier, find(r, 'a').notes], [3, 'from cloud']); }
+
+{ const local = copy(base2); local[0].tier = 3; const remote = copy(base2); remote[0].tier = 1;
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: same field changed on both sides -> this device wins', find(r, 'a').tier, 3); }
+
+{ const local = copy(base2); local[0].tier = 3; const remote = copy(base2); remote[0].tier = 1; remote[1].tier = 2;
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: untouched-here fields still follow the cloud', find(r, 'b').tier, 2); }
+
+{ const local = [...copy(base2), P('c')]; const remote = [...copy(base2), P('d')];
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: new contacts on both sides are both kept', names(r), ['a', 'b', 'c', 'd']); }
+
+{ const local = [copy(base2)[0]]; const remote = copy(base2);
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: deleted here and untouched in the cloud -> deleted', names(r), ['a']); }
+{ const local = [copy(base2)[0]]; const remote = copy(base2); remote[1].notes = 'edited elsewhere';
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: deleted here but edited in the cloud -> kept', names(r), ['a', 'b']); }
+{ const local = copy(base2); const remote = [copy(base2)[0]];
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: deleted in the cloud and untouched here -> deleted', names(r), ['a']); }
+{ const local = copy(base2); local[1].notes = 'edited here'; const remote = [copy(base2)[0]];
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: deleted in the cloud but edited here -> kept', names(r), ['a', 'b']); }
+
+{ const local = [...copy(base2), P('n1', { email: 'a@example.com', tags: ['x'] })]; const remote = copy(base2);
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: a new local contact matching an existing one is de-duplicated, not doubled', [names(r), find(r, 'a').tags], [['a', 'b'], ['x']]); }
+
+{ const b = [P('a', { lat: 10, lng: 10, geoSource: 'phone' })]; const local = copy(b); local[0].lat = 20; local[0].lng = 30; local[0].geoSource = 'manual';
+  const remote = copy(b); remote[0].lat = 99; remote[0].geoSource = 'geocoded';
+  r = m.threeWayMerge(b, local, remote);
+  eq('merge: a pin moves as one unit (never half one place, half another)', [find(r, 'a').lat, find(r, 'a').lng, find(r, 'a').geoSource], [20, 30, 'manual']); }
+
+{ const local = copy(base2); local[0].tags = ['x', 'y']; const remote = copy(base2); remote[0].tags = ['y', 'z'];
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: tags changed on both sides are combined', find(r, 'a').tags.slice().sort(), ['x', 'y', 'z']); }
+
+{ const local = copy(base2); local[0].tags = ['mine']; const remote = copy(base2);
+  r = m.threeWayMerge(base2, local, remote);
+  eq('merge: tags changed only here follow this device (so removing a tag sticks)', find(r, 'a').tags, ['mine']); }
+
+{ const local = copy(base2); const remote = copy(base2); const before = JSON.stringify(local);
+  m.threeWayMerge(base2, local, remote);
+  eq('merge: does not modify its inputs', JSON.stringify(local), before); }
+
+{ const list = [P('a', { email: 'a@example.com' })]; const add = m.mergeInto(list, [P('z', { email: 'A@example.com' }), P('y')]);
+  eq('mergeInto: matches by email ignoring case, adds the rest', [add, list.map((p) => p.id)], [{ added: 1, merged: 1 }, ['a', 'y']]); }
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

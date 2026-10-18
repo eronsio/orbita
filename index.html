@@ -1172,6 +1172,27 @@
       .toasts { bottom: 92px; }
       .place-bar { bottom: 150px; }
     }
+
+    /* ===== Account / cloud sync ===== */
+    [hidden] { display: none !important; }
+    .account-dialog { max-width: 420px; }
+    .acc-lead { font-size: 14px; color: var(--text-light); margin: 4px 0 14px; line-height: 1.5; }
+    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--border-light); border-radius: 10px; margin-bottom: 16px; }
+    .seg-btn { border: none; background: transparent; padding: 8px; border-radius: 7px; font: inherit; font-size: 14px; color: var(--text-light); cursor: pointer; }
+    .seg-btn.active { background: #fff; color: var(--text); font-weight: 600; box-shadow: 0 1px 3px var(--shadow); }
+    .acc-msg { font-size: 13px; line-height: 1.45; margin: 0 0 12px; min-height: 0; }
+    .acc-msg:empty { display: none; }
+    .acc-msg.error { color: #b4443a; }
+    .acc-msg.info { color: #3f6f61; }
+    .acc-form-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .acc-note { font-size: 12px; color: var(--text-muted); margin-top: 16px; line-height: 1.5; }
+    .acc-email { font-size: 16px; font-weight: 600; color: var(--text); margin: 6px 0 4px; word-break: break-all; }
+    .acc-sync { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+    .acc-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+    .acc-danger { border-top: 1px solid var(--border-light); padding-top: 12px; font-size: 13px; color: var(--text-light); }
+    .acc-danger summary { cursor: pointer; color: var(--text); }
+    .acc-danger p { margin: 10px 0; line-height: 1.5; }
+    .status-pill .cloud { color: var(--text-light); }
   </style>
   
   <!-- Scripts -->
@@ -1219,6 +1240,7 @@
     <!-- Floating Top Right Panel -->
     <div class="floating-header-right">
       <button id="addContactBtn" class="header-button">+ Add Contact</button>
+      <button id="accountBtn" class="header-button" hidden>Sign in</button>
       <button id="presentBtn" class="header-button" title="Hide the interface for presenting (Esc to exit)">Present</button>
     </div>
 
@@ -1392,11 +1414,61 @@
         </ol>
       </details>
       <p class="welcome-privacy">🔒 Everything stays in this browser. Nothing is uploaded anywhere.</p>
+      <button class="link-btn" id="welcomeAccount" hidden>Already have an account? Sign in</button>
       <button class="link-btn" id="welcomeBackup">Restore from a backup (JSON)</button>
     </div>
   </div>
 
   <div id="placeBar" class="place-bar" role="status"></div>
+
+  <!-- Account dialog (only reachable when cloud sync is configured) -->
+  <div id="accountModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <div class="dialog account-dialog">
+      <div class="dup-head">
+        <h2 id="accountTitle">Account</h2>
+        <button class="btn" id="closeAccount">Close</button>
+      </div>
+
+      <div id="accountSignedOut">
+        <p class="acc-lead" id="accLead">Sign in to keep your map in the cloud and use it on any device.</p>
+        <div class="seg" id="accTabs">
+          <button type="button" class="seg-btn active" id="tabSignIn">Sign in</button>
+          <button type="button" class="seg-btn" id="tabSignUp">Create account</button>
+        </div>
+        <form id="accountForm" novalidate>
+          <div class="form-group" id="accEmailGroup">
+            <label for="accEmail">Email</label>
+            <input type="email" id="accEmail" autocomplete="email" inputmode="email">
+          </div>
+          <div class="form-group" id="accPassGroup">
+            <label for="accPassword" id="accPassLabel">Password</label>
+            <input type="password" id="accPassword" autocomplete="current-password">
+          </div>
+          <div id="accMsg" class="acc-msg" role="alert"></div>
+          <div class="acc-form-actions">
+            <button type="submit" class="btn btn-primary" id="accSubmit">Sign in</button>
+            <button type="button" class="link-btn" id="accForgot">Forgot password?</button>
+          </div>
+        </form>
+        <p class="acc-note">This is a prototype. Contacts you sync are stored in a database run by its creator, so use test data if you'd rather not share real people's details.</p>
+      </div>
+
+      <div id="accountSignedIn">
+        <p class="acc-email" id="accEmailShown"></p>
+        <p class="acc-sync" id="accSyncState"></p>
+        <div class="acc-actions">
+          <button class="btn" id="accSyncNow">Sync now</button>
+          <button class="btn" id="accSignOut">Sign out</button>
+        </div>
+        <details class="acc-danger">
+          <summary>Delete my cloud data</summary>
+          <p>Removes your saved contacts from the cloud and signs you out. A copy stays on this device. To delete the account itself, ask the person who runs this prototype.</p>
+          <button class="btn danger" id="accDeleteCloud">Delete my cloud data</button>
+        </details>
+        <p class="acc-note">This is a prototype. Contacts you sync are stored in a database run by its creator.</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Duplicates dialog -->
   <div id="dupModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="dupTitle">
@@ -1517,6 +1589,26 @@
     // Locations that are inferred (not typed in / geocoded / hand-placed)
     const WORLD_BOUNDS = [[-60, -180], [80, 180]];
     const DUP_IGNORE_KEY = 'orbita-dupe-ignore';
+
+    // Cloud accounts + sync (Supabase). Leave both blank to run as a purely local app: no sign-in UI appears.
+    // The anon key is meant to be public; row-level security (supabase/orbita_setup.sql) is what protects the data.
+    const CLOUD = { url: '', anonKey: '' };
+    // Local testing only: ?supabase=http://localhost:54321&key=test (honoured on localhost, see tests/mock-supabase.js)
+    if (['localhost', '127.0.0.1'].includes(location.hostname)) {
+      const q = new URLSearchParams(location.search);
+      if (q.get('supabase')) { CLOUD.url = q.get('supabase').replace(/\/+$/, ''); CLOUD.anonKey = q.get('key') || 'test-key'; }
+    }
+    const SESSION_KEY = 'orbita-session';
+    const SYNC_KEY = 'orbita-sync';
+    const SYNC_BASE_KEY = 'orbita-sync-base'; // the list both this device and the cloud last agreed on
+    const readJson = (key) => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; } };
+    const agoText = (ts) => {
+      const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+      if (s < 60) return 'just now';
+      if (s < 3600) return `${Math.round(s / 60)}m ago`;
+      if (s < 86400) return `${Math.round(s / 3600)}h ago`;
+      return `${Math.round(s / 86400)}d ago`;
+    };
     const APPROX_SOURCES = new Set(['phone', 'area-code', 'email-domain', 'country', 'region']);
     // How exact a pin is. A more exact location always wins when contacts are merged.
     const GEO_RANK = { country: 1, phone: 1, 'email-domain': 1, region: 2, 'area-code': 3, imported: 4, geocoded: 5, manual: 6 };
@@ -1776,6 +1868,71 @@
       return target;
     }
 
+    // Add `incoming` contacts to `target` (an array), de-duplicating against what is already there.
+    function mergeInto(target, incoming) {
+      const index = new Map();
+      const addKeys = (p) => contactKeys(p).forEach((k) => { if (!index.has(k)) index.set(k, p); });
+      target.forEach(addKeys);
+      let added = 0; let merged = 0;
+      incoming.forEach((raw) => {
+        const p = applyInferredLocation(normalizePerson(raw));
+        const hit = contactKeys(p).map((k) => index.get(k)).find(Boolean);
+        if (hit) { fillMissing(hit, p); addKeys(hit); merged++; }
+        else { target.push(p); addKeys(p); added++; }
+      });
+      return { added, merged };
+    }
+
+    // Three-way merge for cloud sync. `base` is the list this device and the cloud last agreed on, `local` is this
+    // device now, `remote` is the cloud now. Whoever changed a field since `base` keeps their change; if both changed
+    // the same field, this device (the one syncing right now) wins; tags are combined; deletes win unless the other
+    // side edited that contact since; contacts new on this device are de-duplicated against the rest.
+    const PIN_FIELDS = ['lat', 'lng', 'geoSource']; // moved as one unit so a pin never mixes two places
+    function threeWayMerge(baseList, localList, remoteList) {
+      const index = (list) => new Map(list.map((p) => [p.id, p]));
+      const base = index(baseList); const local = index(localList); const remote = index(remoteList);
+      const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+      const out = []; const newHere = [];
+      const stats = { edited: 0, removed: 0, added: 0, matched: 0 };
+
+      const mergeOne = (b, l, r) => {
+        const m = { ...r };
+        new Set([...Object.keys(b), ...Object.keys(l), ...Object.keys(r)]).forEach((k) => {
+          if (PIN_FIELDS.includes(k)) return;
+          const mine = !same(l[k], b[k]);
+          const theirs = !same(r[k], b[k]);
+          if (mine) m[k] = k === 'tags' && theirs ? [...new Set([...(l.tags || []), ...(r.tags || [])])] : l[k];
+          if (m[k] === undefined) delete m[k];
+        });
+        if (PIN_FIELDS.some((k) => !same(l[k], b[k]))) {
+          PIN_FIELDS.forEach((k) => { if (l[k] === undefined) delete m[k]; else m[k] = l[k]; });
+        }
+        return m;
+      };
+
+      remoteList.forEach((r) => {
+        const l = local.get(r.id); const b = base.get(r.id);
+        if (l) {
+          const m = mergeOne(b || {}, l, r);
+          if (!same(m, r)) stats.edited++;
+          out.push(m);
+        } else if (b) {
+          if (same(r, b)) stats.removed++; // deleted here, untouched in the cloud: honour the delete
+          else out.push(r); // deleted here but edited in the cloud: keep it
+        } else out.push(r); // new in the cloud
+      });
+      localList.forEach((l) => {
+        if (remote.has(l.id)) return;
+        const b = base.get(l.id);
+        if (!b) newHere.push(l); // new on this device
+        else if (!same(l, b)) out.push(l); // deleted in the cloud but edited here: keep it
+        else stats.removed++; // deleted in the cloud, untouched here
+      });
+      const r = mergeInto(out, newHere);
+      stats.added = r.added; stats.matched = r.merged;
+      return { list: out, stats };
+    }
+
     // ---------------------------------------------------------------
     // CSV / vCard row parsing
     // ---------------------------------------------------------------
@@ -1982,6 +2139,15 @@
         this.placeSingle = false;
         this.dupCandidates = [];
         this.lastFocus = null;
+        this.session = null;
+        this.sync = { userId: null, version: 0, at: 0, dirty: false };
+        this.syncState = 'idle';
+        this.syncing = false;
+        this.syncAgain = false;
+        this.syncTimer = null;
+        this.changeCounter = 0;
+        this.authRetries = 0;
+        this.accMode = 'signin';
         this.geocodeChain = Promise.resolve();
         this.lastGeocodeAt = 0;
         this.init();
@@ -1992,6 +2158,7 @@
           this.initMap();
           this.initEventListeners();
           this.loadFromStorage();
+          this.initCloud();
           if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
         } catch (error) {
           console.error('Error during initialization:', error);
@@ -2117,6 +2284,17 @@
         click('welcomeAdd', () => this.showAddContactModal());
         click('welcomeSample', () => this.loadSample());
         click('welcomeBackup', () => $('jsonFileInput').click());
+        click('welcomeAccount', () => this.openAccount('signin'));
+        click('accountBtn', () => this.openAccount());
+        click('closeAccount', () => this.closeModal('accountModal'));
+        click('tabSignIn', () => this.setAccountMode('signin'));
+        click('tabSignUp', () => this.setAccountMode('signup'));
+        click('accForgot', () => this.setAccountMode(this.accMode === 'forgot' ? 'signin' : 'forgot'));
+        click('accSyncNow', () => this.syncNow({ manual: true }));
+        click('accSignOut', () => this.signOut());
+        click('accDeleteCloud', () => this.deleteCloudData());
+        $('accountForm').addEventListener('submit', (e) => { e.preventDefault(); this.submitAccountForm(); });
+        $('accountModal').addEventListener('click', (e) => { if (e.target.id === 'accountModal') this.closeModal('accountModal'); });
         click('closeList', () => this.toggleList(false));
         click('cancelAddContact', () => this.hideAddContactModal());
         click('exportCsvBtn', () => this.exportToCSV());
@@ -2190,6 +2368,7 @@
         if ($('addContactModal').classList.contains('open')) { this.hideAddContactModal(); return; }
         if ($('analyticsModal').classList.contains('open')) { this.hideAnalytics(); return; }
         if ($('dupModal').classList.contains('open')) { this.closeModal('dupModal'); return; }
+        if ($('accountModal').classList.contains('open')) { this.closeModal('accountModal'); return; }
         if ($('contactPanel').style.display === 'flex') { this.closeContactPanel(); return; }
         if ($('toolsPanel').classList.contains('open')) { this.closeToolsPanel(); return; }
         if (this.selectMode) { this.setSelectMode(false); return; }
@@ -2373,7 +2552,8 @@
         const stale = total > 0 && (!last || Date.now() - last > 14 * 864e5);
         const backup = !total ? '' : !last ? 'never backed up'
           : `backup ${Math.max(0, Math.round((Date.now() - last) / 864e5))}d ago`;
-        $('statusPill').innerHTML = `${esc(text)}${backup ? ` · <span class="${stale ? 'warn' : ''}">${esc(backup)}</span>` : ''}`;
+        const cloud = this.cloudStatusText();
+        $('statusPill').innerHTML = `${esc(text)}${backup ? ` · <span class="${stale ? 'warn' : ''}">${esc(backup)}</span>` : ''}${cloud ? ` · <span class="cloud">${esc(cloud)}</span>` : ''}`;
         $('statusPill').style.display = total ? 'block' : 'none';
         const btn = $('placeQueueBtn');
         btn.textContent = noLoc ? `Place ${noLoc} unpinned` : 'Place unpinned';
@@ -2935,17 +3115,7 @@
 
       // ---------------- import / export ----------------
       mergeContacts(list) {
-        const index = new Map();
-        const addKeys = (p) => contactKeys(p).forEach((k) => { if (!index.has(k)) index.set(k, p); });
-        this.people.forEach(addKeys);
-        let added = 0; let merged = 0;
-        list.forEach((raw) => {
-          const p = applyInferredLocation(normalizePerson(raw));
-          const hit = contactKeys(p).map((k) => index.get(k)).find(Boolean);
-          if (hit) { fillMissing(hit, p); addKeys(hit); merged++; }
-          else { this.people.push(p); addKeys(p); added++; }
-        });
-        return { added, merged };
+        return mergeInto(this.people, list);
       }
 
       finishImport(list, label) {
@@ -3112,9 +3282,10 @@
       }
 
       // ---------------- storage ----------------
-      saveToStorage() {
+      saveToStorage({ fromCloud = false } = {}) {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(this.people));
+          if (!fromCloud) this.markDirty();
         } catch (e) {
           console.error('Failed to save to localStorage:', e);
           this.showNotification('Could not save — browser storage is full. Export a backup now.', { duration: 8000 });
@@ -3136,6 +3307,419 @@
           this.showNotification('Saved contacts could not be read — a copy was kept in storage under orbita-contacts-corrupt', { duration: 10000 });
         }
         this.updateMap({ fit: true });
+      }
+
+      // ---------------- cloud account & sync (Supabase REST, no SDK) ----------------
+      cloudEnabled() { return !!(CLOUD.url && CLOUD.anonKey); }
+
+      initCloud() {
+        if (!this.cloudEnabled()) return;
+        this.session = readJson(SESSION_KEY);
+        this.sync = { userId: null, version: 0, at: 0, dirty: false, ...(readJson(SYNC_KEY) || {}) };
+        this.renderAccount();
+        this.handleAuthRedirect().finally(() => { if (this.session) this.syncNow(); });
+        window.addEventListener('online', () => this.syncNow());
+        window.addEventListener('hashchange', () => this.handleAuthRedirect()); // an emailed link opened in a tab that's already running Orbita
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible' && this.session && Date.now() - this.sync.at > 30000) this.syncNow();
+        });
+        setInterval(() => {
+          if (this.session && (this.sync.dirty || this.syncState === 'offline' || this.syncState === 'error')) this.syncNow();
+          this.renderStatus();
+        }, 60000);
+      }
+
+      async api(path, { method = 'GET', body, auth = true, prefer } = {}) {
+        const headers = { apikey: CLOUD.anonKey, 'Content-Type': 'application/json' };
+        headers.Authorization = `Bearer ${auth && this.session ? this.session.access_token : CLOUD.anonKey}`;
+        if (prefer) headers.Prefer = prefer;
+        const res = await fetch(`${CLOUD.url}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+        const text = await res.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) { /* not JSON */ }
+        if (!res.ok) {
+          const err = new Error((data && (data.msg || data.error_description || data.message || data.error)) || `HTTP ${res.status}`);
+          err.status = res.status;
+          throw err;
+        }
+        return data;
+      }
+
+      persistSync() { try { localStorage.setItem(SYNC_KEY, JSON.stringify(this.sync)); } catch (e) { /* ignore */ } }
+
+      async adoptSession(t) {
+        const session = {
+          access_token: t.access_token, refresh_token: t.refresh_token,
+          expires_at: Date.now() + (Number(t.expires_in) || 3600) * 1000,
+          user: t.user && t.user.id ? { id: t.user.id, email: t.user.email } : null,
+        };
+        this.session = session;
+        if (!session.user) { const u = await this.api('/auth/v1/user'); session.user = { id: u.id, email: u.email }; }
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      }
+
+      dropSession() {
+        this.session = null;
+        clearTimeout(this.syncTimer);
+        try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
+        this.setSyncState('idle');
+        this.renderAccount();
+      }
+
+      async signIn(email, password) {
+        await this.adoptSession(await this.api('/auth/v1/token?grant_type=password', { method: 'POST', auth: false, body: { email, password } }));
+      }
+
+      async signUp(email, password) {
+        const data = await this.api('/auth/v1/signup', { method: 'POST', auth: false, body: { email, password } });
+        if (data && data.access_token) { await this.adoptSession(data); return { signedIn: true }; }
+        return { signedIn: false }; // email confirmation is on (or the address already exists: we don't say which)
+      }
+
+      async refreshSession() {
+        if (!this.session) throw new Error('Not signed in');
+        try {
+          await this.adoptSession(await this.api('/auth/v1/token?grant_type=refresh_token', { method: 'POST', auth: false, body: { refresh_token: this.session.refresh_token } }));
+        } catch (err) {
+          if (err.status === 400 || err.status === 401) err.fatalAuth = true;
+          throw err;
+        }
+      }
+
+      async ensureToken() {
+        if (this.session && this.session.expires_at - Date.now() < 60000) await this.refreshSession();
+      }
+
+      async requestReset(email) {
+        const back = encodeURIComponent(location.origin + location.pathname);
+        await this.api(`/auth/v1/recover?redirect_to=${back}`, { method: 'POST', auth: false, body: { email } });
+      }
+
+      async updatePassword(password) {
+        await this.api('/auth/v1/user', { method: 'PUT', body: { password } });
+      }
+
+      // Email links (confirm signup / reset password) come back as #access_token=...&type=...
+      async handleAuthRedirect() {
+        if (!/access_token|error_description/.test(location.hash)) return;
+        const params = new URLSearchParams(location.hash.slice(1));
+        history.replaceState(null, '', location.pathname + location.search);
+        if (params.get('error_description')) {
+          this.openAccount('signin');
+          this.accMessage(`${params.get('error_description').replace(/\+/g, ' ')}. Request a new link and try again.`, 'error');
+          return;
+        }
+        try {
+          await this.adoptSession({ access_token: params.get('access_token'), refresh_token: params.get('refresh_token'), expires_in: params.get('expires_in') });
+          if (params.get('type') === 'recovery') this.openAccount('reset');
+          else this.showNotification(`Signed in as ${this.session.user.email}`);
+        } catch (err) {
+          this.dropSession();
+          this.showNotification('That link has expired. Please sign in again.');
+        }
+        this.renderAccount();
+      }
+
+      friendlyAuthError(err) {
+        const m = String(err && err.message || '');
+        if (err instanceof TypeError) return "Couldn't reach the server. Check your connection and try again.";
+        if (/invalid login credentials/i.test(m)) return 'That email or password is incorrect.';
+        if (/already registered|already been registered/i.test(m)) return 'That email already has an account. Try signing in.';
+        if (/not confirmed/i.test(m)) return 'Please confirm your email first: check your inbox for the link.';
+        if (/at least \d+ characters|weak password/i.test(m)) return 'Choose a stronger password (at least 8 characters).';
+        if (err.status === 429 || /rate limit|too many/i.test(m)) return 'Too many attempts. Please wait a minute and try again.';
+        if (/invalid format|valid email/i.test(m)) return 'Enter a valid email address.';
+        return m || 'Something went wrong. Please try again.';
+      }
+
+      // ---- account dialog ----
+      accMessage(text, kind = 'error') {
+        const el = $('accMsg');
+        el.textContent = text || '';
+        el.className = `acc-msg ${kind}`;
+      }
+
+      setAccountMode(mode) {
+        this.accMode = mode;
+        const m = { signin: 'Sign in', signup: 'Create account', forgot: 'Send reset link', reset: 'Set new password' };
+        const lead = {
+          signin: 'Sign in to keep your map in the cloud and use it on any device.',
+          signup: 'Create an account and your map follows you to any device. Contacts already on this device are added to it.',
+          forgot: "Enter your email and we'll send you a link to choose a new password.",
+          reset: 'Choose a new password for your account.',
+        };
+        $('tabSignIn').classList.toggle('active', mode === 'signin');
+        $('tabSignUp').classList.toggle('active', mode === 'signup');
+        $('accTabs').hidden = mode === 'forgot' || mode === 'reset';
+        $('accEmailGroup').hidden = mode === 'reset';
+        $('accPassGroup').hidden = mode === 'forgot';
+        $('accPassLabel').textContent = mode === 'reset' ? 'New password' : 'Password';
+        $('accPassword').autocomplete = mode === 'signin' ? 'current-password' : 'new-password';
+        $('accSubmit').textContent = m[mode];
+        $('accLead').textContent = lead[mode];
+        $('accForgot').hidden = mode === 'signup' || mode === 'reset';
+        $('accForgot').textContent = mode === 'forgot' ? 'Back to sign in' : 'Forgot password?';
+        this.accMessage('');
+        this.renderAccount();
+      }
+
+      openAccount(mode) {
+        if (!this.cloudEnabled()) return;
+        if (!this.session || mode === 'reset') this.setAccountMode(mode || 'signin');
+        this.renderAccount();
+        this.closeToolsPanel();
+        this.openModal('accountModal', this.session && mode !== 'reset' ? 'accSyncNow' : (mode === 'reset' ? 'accPassword' : 'accEmail'));
+      }
+
+      renderAccount() {
+        if (!this.cloudEnabled()) return;
+        const signedIn = !!this.session;
+        const showForm = !signedIn || this.accMode === 'reset';
+        $('accountBtn').hidden = false;
+        $('accountBtn').textContent = signedIn ? '☁ Account' : 'Sign in';
+        $('welcomeAccount').hidden = signedIn;
+        $('accountSignedOut').hidden = !showForm;
+        $('accountSignedIn').hidden = showForm;
+        $('accountTitle').textContent = signedIn && !showForm ? 'Your account' : 'Account';
+        if (signedIn) {
+          $('accEmailShown').textContent = this.session.user.email;
+          $('accSyncState').textContent = (this.cloudStatusText() || '').replace('☁ ', '');
+        }
+        this.renderStatus();
+      }
+
+      async submitAccountForm() {
+        const mode = this.accMode;
+        const email = clean($('accEmail').value);
+        const password = $('accPassword').value;
+        this.accMessage('');
+        if (mode !== 'reset' && !/^\S+@\S+\.\S+$/.test(email)) { this.accMessage('Enter a valid email address.'); return; }
+        if (mode !== 'forgot' && !password) { this.accMessage(mode === 'reset' ? 'Enter a new password.' : 'Enter your password.'); return; }
+        if ((mode === 'signup' || mode === 'reset') && password.length < 8) { this.accMessage('Use at least 8 characters for the password.'); return; }
+        $('accSubmit').disabled = true;
+        try {
+          if (mode === 'signin') { await this.signIn(email, password); this.afterSignedIn(); }
+          else if (mode === 'signup') {
+            const res = await this.signUp(email, password);
+            if (res.signedIn) this.afterSignedIn(); else { this.setAccountMode('signin'); this.accMessage('Check your email to confirm your account, then sign in.', 'info'); }
+          } else if (mode === 'forgot') {
+            await this.requestReset(email);
+            this.accMessage('If that email has an account, a reset link is on its way.', 'info');
+          } else if (mode === 'reset') {
+            await this.updatePassword(password);
+            this.accMode = 'signin';
+            this.afterSignedIn();
+            this.showNotification('Password updated');
+          }
+        } catch (err) {
+          this.accMessage(this.friendlyAuthError(err));
+        } finally {
+          $('accSubmit').disabled = false;
+        }
+      }
+
+      afterSignedIn() {
+        $('accPassword').value = '';
+        this.accMode = 'signin';
+        this.renderAccount();
+        this.closeModal('accountModal');
+        this.showNotification(`Signed in as ${this.session.user.email}`);
+        this.syncNow();
+      }
+
+      async signOut() {
+        if (this.sync.dirty) await this.syncNow();
+        try { await this.api('/auth/v1/logout', { method: 'POST' }); } catch (e) { /* the token is dropped locally either way */ }
+        const safe = !this.sync.dirty; // everything is in the cloud
+        let clearLocal = false;
+        if (safe && this.people.length) {
+          clearLocal = confirm('Remove your contacts from this browser too?\n\nThey stay safe in your account and come back when you sign in. Choose Cancel to keep a copy here.');
+        } else if (!safe) {
+          this.showNotification("Some changes hadn't synced yet, so your contacts were kept on this device.", { duration: 7000 });
+        }
+        this.dropSession();
+        if (clearLocal) {
+          this.people = [];
+          this.saveToStorage({ fromCloud: true });
+          this.sync = { userId: null, version: 0, at: 0, dirty: false };
+          this.persistSync();
+          this.closeContactPanel();
+          this.updateMap();
+        }
+        this.closeModal('accountModal');
+        this.showNotification('Signed out');
+      }
+
+      async deleteCloudData() {
+        if (!this.session) return;
+        if (!confirm('Delete your saved contacts from the cloud? A copy stays on this device.')) return;
+        try {
+          await this.ensureToken();
+          await this.api(`/rest/v1/orbita_data?user_id=eq.${this.session.user.id}`, { method: 'DELETE' });
+        } catch (err) {
+          this.showNotification(`Couldn't delete: ${this.friendlyAuthError(err)}`);
+          return;
+        }
+        try { await this.api('/auth/v1/logout', { method: 'POST' }); } catch (e) { /* ignore */ }
+        this.dropSession();
+        this.sync = { userId: null, version: 0, at: 0, dirty: false };
+        this.persistSync();
+        this.closeModal('accountModal');
+        this.showNotification('Cloud data deleted. Your contacts are still on this device.', { duration: 6000 });
+      }
+
+      // ---- sync ----
+      markDirty() {
+        if (!this.cloudEnabled()) return;
+        this.changeCounter++;
+        this.sync.dirty = true;
+        this.persistSync();
+        if (this.session) this.scheduleSync();
+        this.renderStatus();
+      }
+
+      scheduleSync(delay = 1500) {
+        clearTimeout(this.syncTimer);
+        this.syncTimer = setTimeout(() => this.syncNow(), delay);
+      }
+
+      setSyncState(state) {
+        this.syncState = state;
+        if (this.cloudEnabled()) { this.renderStatus(); if ($('accountModal').classList.contains('open')) this.renderAccount(); }
+      }
+
+      cloudStatusText() {
+        if (!this.cloudEnabled() || !this.session) return '';
+        const labels = { syncing: '☁ syncing…', offline: '☁ offline · will retry', error: '☁ sync problem' };
+        if (labels[this.syncState]) return labels[this.syncState];
+        if (this.sync.dirty) return '☁ changes waiting';
+        return `☁ synced${this.sync.at ? ' ' + agoText(this.sync.at) : ''}`;
+      }
+
+      async fetchRemote() {
+        const rows = await this.api(`/rest/v1/orbita_data?select=data,version&user_id=eq.${this.session.user.id}`);
+        return rows && rows[0] ? rows[0] : null;
+      }
+
+      // Returns the saved row, or null if someone else saved first (we lost the race and must merge again)
+      async pushRemote(list, expectedVersion) {
+        const id = this.session.user.id;
+        try {
+          if (expectedVersion === 0) {
+            const rows = await this.api('/rest/v1/orbita_data', { method: 'POST', prefer: 'return=representation', body: { user_id: id, data: list, version: 1 } });
+            return rows && rows[0] ? { version: 1 } : null;
+          }
+          const rows = await this.api(`/rest/v1/orbita_data?user_id=eq.${id}&version=eq.${expectedVersion}`, {
+            method: 'PATCH', prefer: 'return=representation',
+            body: { data: list, version: expectedVersion + 1, updated_at: new Date().toISOString() },
+          });
+          return rows && rows[0] ? { version: expectedVersion + 1 } : null;
+        } catch (err) {
+          if (err.status === 409) return null; // the row was created by another device in the meantime
+          throw err;
+        }
+      }
+
+      markSynced(userId, version, changeMark, baseJson) {
+        this.sync = { userId, version, at: Date.now(), dirty: this.changeCounter !== changeMark };
+        this.persistSync();
+        try { if (baseJson) localStorage.setItem(SYNC_BASE_KEY, baseJson); } catch (e) { /* the baseline is an optimisation */ }
+        this.authRetries = 0;
+        if (this.sync.dirty) this.scheduleSync(400); // edited while the save was in flight
+      }
+
+      async pushSnapshot(expectedVersion) {
+        const snap = JSON.stringify(this.people);
+        const saved = await this.pushRemote(JSON.parse(snap), expectedVersion);
+        return saved ? { ...saved, snap } : null;
+      }
+
+      applyRemoteList(list) {
+        const wasEmpty = this.people.length === 0;
+        this.people = list;
+        this.saveToStorage({ fromCloud: true });
+        this.closeContactPanel();
+        this.updateMap({ fit: wasEmpty });
+      }
+
+      async syncNow({ manual = false } = {}) {
+        if (!this.cloudEnabled() || !this.session) return;
+        if (this.syncing) { this.syncAgain = true; return; }
+        this.syncing = true;
+        this.setSyncState('syncing');
+        let next = 'idle';
+        try {
+          await this.ensureToken();
+          const userId = this.session.user.id;
+          for (let attempt = 0; attempt < 5; attempt++) {
+            const remote = await this.fetchRemote();
+            const sameAccount = this.sync.userId === userId;
+            const foreign = !!this.sync.userId && !sameAccount; // cached data that belongs to a different account
+            const mark = this.changeCounter;
+
+            if (!remote) {
+              if (foreign && this.people.length) this.applyRemoteList([]); // never upload someone else's cached contacts
+              const created = await this.pushSnapshot(0);
+              if (created) { this.markSynced(userId, created.version, mark, created.snap); break; }
+              continue;
+            }
+            const remoteList = (Array.isArray(remote.data) ? remote.data : []).filter((x) => x && typeof x === 'object').map(normalizePerson);
+
+            if (sameAccount && remote.version === this.sync.version) {
+              if (!this.sync.dirty) { this.markSynced(userId, remote.version, mark, JSON.stringify(remoteList)); break; }
+              const saved = await this.pushSnapshot(remote.version);
+              if (saved) { this.markSynced(userId, saved.version, mark, saved.snap); break; }
+              continue;
+            }
+            // The cloud copy differs from what this device last saw. Pull if there's nothing local to protect.
+            const local = foreign ? [] : this.people.slice();
+            if ((sameAccount && !this.sync.dirty) || !local.length) {
+              this.applyRemoteList(remoteList);
+              this.markSynced(userId, remote.version, this.changeCounter, JSON.stringify(remoteList));
+              if (manual || attempt) this.showNotification('Updated from your account');
+              break;
+            }
+            // Both sides have changes: merge them (three-way when we know the last agreed copy), then save it back
+            const savedBase = sameAccount ? readJson(SYNC_BASE_KEY) : null;
+            let stats;
+            if (Array.isArray(savedBase)) {
+              const r = threeWayMerge(savedBase.filter((x) => x && typeof x === 'object').map(normalizePerson), local, remoteList);
+              this.people = r.list; stats = r.stats;
+            } else {
+              this.people = remoteList;
+              const r = mergeInto(this.people, local);
+              stats = { added: r.added, matched: r.merged, edited: 0, removed: 0 };
+            }
+            const saved = await this.pushSnapshot(remote.version);
+            this.saveToStorage({ fromCloud: true });
+            this.updateMap({ fit: true });
+            if (saved) {
+              this.markSynced(userId, saved.version, this.changeCounter, saved.snap);
+              const bits = [stats.added && `${stats.added} new`, stats.edited && `${stats.edited} updated`, stats.removed && `${stats.removed} removed`].filter(Boolean);
+              this.showNotification(`Combined this device with your account${bits.length ? ` (${bits.join(', ')})` : ''}`);
+              break;
+            }
+          }
+        } catch (err) {
+          console.warn('Sync failed:', err);
+          if (err.fatalAuth) {
+            this.dropSession();
+            this.showNotification('Your session expired. Sign in again; your contacts are safe on this device.', { duration: 8000 });
+          } else if (err.status === 401 || /jwt|token/i.test(err.message || '')) {
+            if (this.authRetries++ < 2) {
+              try { await this.refreshSession(); this.scheduleSync(300); } catch (e2) { this.dropSession(); }
+            } else { next = 'error'; }
+          } else if (err instanceof TypeError || err.status >= 500) {
+            next = 'offline';
+          } else {
+            next = 'error';
+            this.showNotification(`Sync problem: ${err.message}`, { duration: 6000 });
+          }
+        } finally {
+          this.syncing = false;
+          if (this.session) this.setSyncState(next);
+          if (this.syncAgain) { this.syncAgain = false; this.scheduleSync(300); }
+        }
       }
 
       // ---------------- notifications ----------------

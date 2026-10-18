@@ -8,7 +8,7 @@ A personal contacts/relationship "people map": a Leaflet map of pinned contacts 
 ## Stack
 - One file: `index.html` (inline CSS + JS). No build step.
 - Leaflet + markercluster + leaflet.heat, PapaParse (all CDN)
-- Contacts live in the browser's `localStorage` (key `orbita-contacts`). **Nothing is stored server-side**, so each browser/profile has its own data. Tools -> Export JSON / Export CSV are the backups (the status pill warns when the last one is old).
+- Contacts live in the browser's `localStorage` (key `orbita-contacts`). **Nothing is stored server-side**, so each browser/profile has its own data. Tools -> Export JSON / Export CSV are the backups (or turn on accounts, see below) (the status pill warns when the last one is old).
 
 ## PRIVACY RULE
 The repo and site are **public**. Never commit contact data, and never use real names/emails/phone numbers from Aaron's contacts in tests or comments either (use `@example.com`, `555` numbers, invented names). `.gitignore` blocks `*.csv`, `*.vcf`, `orbita-contacts*.json`, `people-export*.json`, `_test*`. To test an import in the browser, copy a file in as `_test_*`, then delete it. Before committing, grep tracked files for real names/emails.
@@ -26,6 +26,15 @@ The repo and site are **public**. Never commit contact data, and never use real 
 - `findDuplicateCandidates()` (same email/phone, same name, or same first name with complementary details and no conflicts). Merging goes through `withUndo()`. Dismissed pairs are remembered in `orbita-dupe-ignore`.
 - Geocoding uses Nominatim, serialized to 1 request/second (`geocode()`).
 - Everything user-supplied is HTML-escaped via `esc()` before it goes into `innerHTML`; CSV export neutralises spreadsheet formulas (`csvSafe`).
+
+## Accounts + cloud sync (dormant until configured)
+Optional Supabase sign-in with the whole contact list saved as one JSON row per user (`supabase/orbita_setup.sql`, row-level security). Setup steps are in `supabase/README.md`. It stays completely off (no UI, no requests) until `CLOUD = { url, anonKey }` near the top of the script is filled in. No SDK: plain `fetch` against GoTrue + PostgREST, like the student portal.
+- localStorage stays the working copy; every `saveToStorage()` marks it dirty and a debounced `syncNow()` pushes it. `saveToStorage({ fromCloud: true })` is for writes that came *from* the cloud (so they don't loop).
+- Concurrency is optimistic: the row has a `version`; a PATCH only succeeds if the version is unchanged, otherwise we re-fetch and merge. `orbita-sync` holds `{userId, version, at, dirty}`; `orbita-sync-base` holds the list both sides last agreed on.
+- `threeWayMerge(base, local, remote)` (pure, unit-tested) keeps whichever side changed a field, this device wins a true tie, tags are unioned, pins move as one unit, deletes win unless the other side edited that contact.
+- **Shared-browser safety:** if cached contacts belong to a different account than the one signing in, they are dropped, never uploaded. Sign-out offers to clear the device (only when everything is synced).
+- Emailed links (confirm / reset) return as `#access_token=...&type=...`; `handleAuthRedirect()` consumes them (also on `hashchange`) and strips the token from the URL.
+- Test locally with `node tests/mock-supabase.js` and `?supabase=http://localhost:54321&key=test` (localhost only; `127.0.0.1` is a second device). `MOCK_CONFIRM=1` requires email confirmation.
 
 ## Map gotchas (learned the hard way)
 - **Don't rebuild markers for a single-contact edit.** `syncPerson()` updates one marker in place; `updateMap()` rebuilds everything and collapses any fanned-out cluster. Use `updateMap()` only after filters/imports/bulk edits.
