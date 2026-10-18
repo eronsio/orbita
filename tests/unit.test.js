@@ -12,7 +12,7 @@ let src = html.slice(html.indexOf("<script>\n    'use strict'") + '<script>\n'.l
 src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListener[\s\S]*$/, '');
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
-  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto };`;
+  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
 fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } };"));
 const m = require(sandbox);
@@ -258,6 +258,16 @@ eq('merge: nothing changed anywhere', [names(r), r.stats.edited, r.stats.added],
 
 { const list = [P('a', { email: 'a@example.com' })]; const add = m.mergeInto(list, [P('z', { email: 'A@example.com' }), P('y')]);
   eq('mergeInto: matches by email ignoring case, adds the rest', [add, list.map((p) => p.id)], [{ added: 1, merged: 1 }, ['a', 'y']]); }
+
+// ---- list sorting ----
+const S = (name, extra = {}) => m.normalizePerson({ id: name, name, ...extra });
+const sortList = [S('Zed', { tier: 2, lat: 1, lng: 1, addedAt: '2026-01-01' }), S('álvaro', { addedAt: '2026-03-01' }), S('Bea', { tier: 1, lat: 2, lng: 2, addedAt: '2026-02-01' }), S('Carl', { tier: 2, addedAt: '2026-03-01' })];
+const order = (mode) => m.sortPeople(sortList, mode).map((p) => p.name);
+eq('sort: A to Z ignores accents and case', order('name'), ['álvaro', 'Bea', 'Carl', 'Zed']);
+eq('sort: recently added, ties by name', order('recent'), ['álvaro', 'Carl', 'Bea', 'Zed']);
+eq('sort: no pin first', order('nopin'), ['álvaro', 'Carl', 'Bea', 'Zed']);
+eq('sort: by tier, untiered last', order('tier'), ['Bea', 'Carl', 'Zed', 'álvaro']);
+eq('sort: does not reorder the original list', sortList.map((p) => p.name), ['Zed', 'álvaro', 'Bea', 'Carl']);
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

@@ -1193,6 +1193,54 @@
     .acc-danger summary { cursor: pointer; color: var(--text); }
     .acc-danger p { margin: 10px 0; line-height: 1.5; }
     .status-pill .cloud { color: var(--text-light); }
+
+    /* ===== Round 4: tier badge, cluster rings, search dropdown, list sort, phone sheet ===== */
+    .avatar-marker { position: relative; }
+    .tier-badge {
+      position: absolute; right: -6px; bottom: -6px; width: 17px; height: 17px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700;
+      line-height: 1; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .cluster-bubble { padding: 4px; }
+    .cluster-bubble span {
+      width: 100%; height: 100%; border-radius: 50%; background: var(--accent); display: flex;
+      align-items: center; justify-content: center; font-size: 13px;
+    }
+
+    .search-results {
+      position: absolute; top: calc(100% + 8px); left: 0; min-width: 320px; background: #fff;
+      border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+      overflow: hidden; z-index: 1200;
+    }
+    .search-result {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 9px 14px;
+      border: none; border-bottom: 1px solid var(--border-light); background: transparent; cursor: pointer; font-family: inherit;
+    }
+    .search-result:hover, .search-result.active { background: var(--primary); }
+    .search-result .list-main { flex: 1; min-width: 0; }
+    .search-more { padding: 8px 14px; font-size: 12px; color: var(--text-muted); background: var(--bg-light); }
+    .search-empty { padding: 14px; font-size: 13px; color: var(--text-muted); }
+
+    .list-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 16px 10px; }
+    .list-controls .list-filter { padding: 0; }
+    .list-controls select {
+      font: inherit; font-size: 12.5px; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 5px 8px;
+    }
+
+    @media (max-width: 600px) {
+      .search-results { min-width: 0; width: calc(100vw - 84px); }
+      /* the contact panel becomes a bottom sheet so the map stays visible above it */
+      .contact-panel {
+        top: auto; bottom: 0; left: 0; right: 0; width: 100vw; max-width: 100vw; height: 62vh;
+        border-left: none; border-top: 1px solid var(--border); border-radius: 18px 18px 0 0;
+        box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.2);
+      }
+      .contact-panel::before {
+        content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--border);
+        margin: 8px auto 0; flex-shrink: 0;
+      }
+    }
   </style>
   
   <!-- Scripts -->
@@ -1232,7 +1280,8 @@
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.35-4.35"></path>
         </svg>
-        <input type="text" id="searchInput" placeholder="Search contacts..." class="search-input">
+        <input type="text" id="searchInput" placeholder="Search contacts..." class="search-input" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults">
+        <div id="searchResults" class="search-results" role="listbox" hidden></div>
       </div>
       <button id="toolsBtn" class="header-button">Tools</button>
     </div>
@@ -1371,7 +1420,15 @@
         <button class="btn" id="closeList">Close</button>
       </div>
     </div>
-    <label class="list-filter"><input type="checkbox" id="listNoLoc"> Only contacts without a pin</label>
+    <div class="list-controls">
+      <label class="list-filter"><input type="checkbox" id="listNoLoc"> Without a pin</label>
+      <select id="listSort" aria-label="Sort contacts">
+        <option value="name">A to Z</option>
+        <option value="recent">Recently added</option>
+        <option value="nopin">No pin first</option>
+        <option value="tier">By tier</option>
+      </select>
+    </div>
     <div id="bulkBar" class="bulk-bar">
       <div class="bulk-top">
         <span id="bulkCount">0 selected</span>
@@ -2044,6 +2101,15 @@
       email: `${name.toLowerCase().replace(/[^a-z]+/g, '.')}@example.com`,
     }));
 
+    function sortPeople(list, mode) {
+      const byName = (a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+      const copy = list.slice();
+      if (mode === 'recent') return copy.sort((a, b) => String(b.addedAt || '').localeCompare(String(a.addedAt || '')) || byName(a, b));
+      if (mode === 'nopin') return copy.sort((a, b) => (hasCoords(a) ? 1 : 0) - (hasCoords(b) ? 1 : 0) || byName(a, b));
+      if (mode === 'tier') return copy.sort((a, b) => (a.tier || 9) - (b.tier || 9) || byName(a, b));
+      return copy.sort(byName);
+    }
+
     // Spreadsheet apps run cells that start with = + - @ as formulas. Neutralise those, but leave phone numbers alone.
     function csvSafe(v) {
       const s = String(v ?? '');
@@ -2148,6 +2214,8 @@
         this.changeCounter = 0;
         this.authRetries = 0;
         this.accMode = 'signin';
+        this.listSort = readJson('orbita-list-sort') || 'name';
+        this.searchIndex = -1;
         this.geocodeChain = Promise.resolve();
         this.lastGeocodeAt = 0;
         this.init();
@@ -2196,10 +2264,23 @@
           zoomToBoundsOnClick: false,
           maxClusterRadius: 48,
           iconCreateFunction: (cluster) => {
-            const n = cluster.getChildCount();
-            const size = n < 10 ? 38 : n < 50 ? 46 : 54;
+            const kids = cluster.getAllChildMarkers();
+            const n = kids.length;
+            const size = n < 10 ? 40 : n < 50 ? 48 : 56;
+            const counts = { 1: 0, 2: 0, 3: 0, 0: 0 };
+            kids.forEach((k) => { counts[k.options.tier || 0]++; });
+            let ring = '#444143';
+            if (counts[0] !== n) { // some are tiered: draw the mix as a ring around the count
+              let acc = 0; const stops = [];
+              [[1, TIER_COLORS[1]], [2, TIER_COLORS[2]], [3, TIER_COLORS[3]], [0, '#444143']].forEach(([t, color]) => {
+                if (!counts[t]) return;
+                const from = (acc / n) * 100; acc += counts[t];
+                stops.push(`${color} ${from}% ${(acc / n) * 100}%`);
+              });
+              ring = `conic-gradient(${stops.join(',')})`;
+            }
             return L.divIcon({
-              html: `<div class="cluster-bubble" style="width:${size}px;height:${size}px">${n}</div>`,
+              html: `<div class="cluster-bubble" style="width:${size}px;height:${size}px;background:${ring}"><span>${n}</span></div>`,
               className: 'cluster-wrap',
               iconSize: [size, size],
             });
@@ -2320,6 +2401,12 @@
         click('clearTierFilterBtn', () => this.clearFilters());
         on('tagFilter', 'change', (e) => { this.currentTagFilter = e.target.value; this.updateMap({ fit: true }); });
         on('listNoLoc', 'change', (e) => { this.listNoLocOnly = e.target.checked; this.renderList(); });
+        $('listSort').value = this.listSort;
+        on('listSort', 'change', (e) => {
+          this.listSort = e.target.value;
+          try { localStorage.setItem('orbita-list-sort', JSON.stringify(this.listSort)); } catch (err) { /* ignore */ }
+          this.renderList();
+        });
 
         $('addContactForm').addEventListener('submit', (e) => { e.preventDefault(); this.submitContactForm(); });
         $('csvFileInput').addEventListener('change', (e) => { this.handleCSVImport(e.target.files[0]); e.target.value = ''; });
@@ -2329,15 +2416,40 @@
         $('addContactModal').addEventListener('click', (e) => { if (e.target.id === 'addContactModal') this.hideAddContactModal(); });
         $('analyticsModal').addEventListener('click', (e) => { if (e.target.id === 'analyticsModal') this.hideAnalytics(); });
 
-        // Search (debounced; Enter zooms to the matches)
+        // Search: filters the map as you type, lists the top matches, Enter zooms to them (or opens the highlighted one)
         let timer;
         const search = $('searchInput');
+        const results = $('searchResults');
         search.addEventListener('input', (e) => {
           clearTimeout(timer);
           timer = setTimeout(() => { this.currentSearchQuery = fold(e.target.value).trim(); this.updateMap(); }, 120);
         });
+        search.addEventListener('focus', () => this.renderSearchResults());
+        search.addEventListener('blur', () => setTimeout(() => this.hideSearchResults(), 150));
         search.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') { this.currentSearchQuery = fold(search.value).trim(); this.updateMap({ fit: true }); }
+          const items = [...results.querySelectorAll('.search-result')];
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            if (!items.length) return;
+            e.preventDefault();
+            this.searchIndex = (this.searchIndex + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+            items.forEach((el, i) => el.classList.toggle('active', i === this.searchIndex));
+          } else if (e.key === 'Enter') {
+            if (this.searchIndex >= 0 && items[this.searchIndex]) { items[this.searchIndex].dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); return; }
+            clearTimeout(timer);
+            this.currentSearchQuery = fold(search.value).trim();
+            this.updateMap({ fit: true });
+          } else if (e.key === 'Escape' && !results.hidden) {
+            e.stopPropagation(); this.hideSearchResults();
+          }
+        });
+        // mousedown (not click) so it runs before the input loses focus and the list disappears
+        results.addEventListener('mousedown', (e) => {
+          const row = e.target.closest('[data-id]');
+          if (!row) return;
+          e.preventDefault();
+          const p = this.people.find((x) => x.id === row.dataset.id);
+          this.hideSearchResults();
+          if (p) this.openContact(p);
         });
 
         // Delegated: side panel + list
@@ -2403,6 +2515,31 @@
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
 
+      // ---------------- search dropdown ----------------
+      hideSearchResults() {
+        const el = $('searchResults');
+        el.hidden = true;
+        this.searchIndex = -1;
+        $('searchInput').setAttribute('aria-expanded', 'false');
+      }
+
+      renderSearchResults() {
+        const el = $('searchResults');
+        if (!this.currentSearchQuery || document.activeElement !== $('searchInput')) { this.hideSearchResults(); return; }
+        const matches = sortPeople(this.visiblePeople, 'name');
+        const shown = matches.slice(0, 6);
+        el.innerHTML = shown.length
+          ? shown.map((p) => `<button class="search-result" role="option" data-id="${esc(p.id)}">
+              <span class="list-main"><span class="list-name">${p.tier ? `<span class="tier-dot" style="background:${TIER_COLORS[p.tier]}"></span>` : ''}${esc(p.name)}</span>
+              <span class="list-sub">${esc([p.country, ...(p.tags || []).filter((t) => t !== 'Orbita').slice(0, 2)].filter(Boolean).join(' · '))}</span></span>
+              ${hasCoords(p) ? '' : '<span class="list-flag">no pin</span>'}</button>`).join('')
+            + (matches.length > shown.length ? `<div class="search-more">+${matches.length - shown.length} more: press Enter to show them all on the map</div>` : '')
+          : '<div class="search-empty">No contacts match.</div>';
+        el.hidden = false;
+        this.searchIndex = -1;
+        $('searchInput').setAttribute('aria-expanded', 'true');
+      }
+
       toggleToolsPanel() { $('toolsPanel').classList.toggle('open'); }
       closeToolsPanel() { $('toolsPanel').classList.remove('open'); }
 
@@ -2453,6 +2590,7 @@
       makeMarker(person) {
         const marker = L.marker([person.lat, person.lng], { icon: this.createContactIcon(person), title: person.name });
         marker.orbitaPos = [person.lat, person.lng]; // the real position (a fanned-out marker is temporarily moved)
+        marker.options.tier = person.tier;
         marker.on('click', () => {
           if (this.placingContactId) { this.placeContactAt(marker.getLatLng()); return; }
           this.showContactPanel(person.id);
@@ -2491,7 +2629,9 @@
             // our own record: while a cluster is fanned out, getLatLng() returns the spiral position instead.
             if (m.orbitaPos[0] !== p.lat || m.orbitaPos[1] !== p.lng) { m.setLatLng([p.lat, p.lng]); m.orbitaPos = [p.lat, p.lng]; }
             m.options.title = p.name;
+            m.options.tier = p.tier;
             m.setIcon(this.createContactIcon(p));
+            this.clusterGroup.refreshClusters(m);
             if (m.getElement()) m.getElement().title = p.name; // a divIcon element is reused, so Leaflet won't refresh the tooltip
           }
           else { m = this.makeMarker(p); this.markers.push(m); this.markerById.set(p.id, m); this.clusterGroup.addLayer(m); }
@@ -2509,6 +2649,7 @@
         this.refreshFilterUi();
         this.renderStatus();
         if (this.listOpen) this.renderList();
+        this.renderSearchResults();
       }
 
       // Run a data change that can be undone from the toast
@@ -2561,10 +2702,7 @@
       }
 
       listRows() {
-        return this.visiblePeople
-          .filter((p) => !this.listNoLocOnly || !hasCoords(p))
-          .slice()
-          .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+        return sortPeople(this.visiblePeople.filter((p) => !this.listNoLocOnly || !hasCoords(p)), this.listSort);
       }
 
       renderList() {
@@ -2607,6 +2745,11 @@
         }
         const p = this.people.find((x) => x.id === id);
         if (!p) return;
+        this.openContact(p);
+        if (window.innerWidth < 1100) this.toggleList(false); // two wide panels don't fit on a narrow screen
+      }
+
+      openContact(p) {
         this.showContactPanel(p.id);
         if (hasCoords(p)) this.map.flyTo([p.lat, p.lng], Math.max(this.map.getZoom(), 6), { duration: 0.8 });
       }
@@ -2676,7 +2819,7 @@
         const safePhoto = /^(https?:|data:image\/)/i.test(photo) ? photo.replace(/['")\\\s]/g, encodeURIComponent) : '';
         const shadow = ring ? `0 0 0 3px ${ring}, 0 2px 8px rgba(0,0,0,0.3)` : '0 2px 8px rgba(0,0,0,0.3)';
         const html = `<div class="avatar-marker${APPROX_SOURCES.has(person.geoSource) ? ' approx' : ''}"
-            style="${safePhoto ? `background-image:url('${safePhoto}');` : ''}box-shadow:${shadow}">${safePhoto ? '' : esc(this.getInitials(person.name))}</div>`;
+            style="${safePhoto ? `background-image:url('${safePhoto}');` : ''}box-shadow:${shadow}">${safePhoto ? '' : esc(this.getInitials(person.name))}${person.tier ? `<span class="tier-badge" style="background:${ring}">${person.tier}</span>` : ''}</div>`;
         return L.divIcon({ html, className: 'custom-marker', iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
       }
 
