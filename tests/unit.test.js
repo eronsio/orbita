@@ -14,7 +14,7 @@ if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class:
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
   parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
-fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } };"));
+fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } }; const L = { Map: { mergeOptions() {}, addInitHook() {} }, Handler: { extend: (o) => o }, DomEvent: {} };"));
 const m = require(sandbox);
 fs.unlinkSync(sandbox);
 
