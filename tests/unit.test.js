@@ -12,7 +12,7 @@ let src = html.slice(html.indexOf("<script>\n    'use strict'") + '<script>\n'.l
 src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListener[\s\S]*$/, '');
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
-  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold };`;
+  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
 fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } };"));
 const m = require(sandbox);
@@ -185,6 +185,16 @@ eq('a lone contact has no duplicate candidates', m.findDuplicateCandidates([twic
 const selfAlt = m.normalizePerson({ id: 's1', name: 'Sam', email: 'a@example.com', altEmails: ['a@example.com'], altPhones: [] });
 selfAlt.altEmails = ['a@example.com']; // even if an old save left the repeat in place
 eq('no self-pair even with a stale repeated alternate', m.findDuplicateCandidates([selfAlt, D('s2', 'Other')]), []);
+
+// ---- sample data for the welcome screen ----
+const sample = m.SAMPLE_PEOPLE.map((p) => m.normalizePerson({ ...p }));
+eq('sample: has a worldwide spread', sample.length >= 12 && new Set(sample.map((p) => p.country)).size === sample.length, true);
+eq('sample: every contact is on the map and precisely sourced', sample.every((p) => Number.isFinite(p.lat) && p.geoSource === 'geocoded'), true);
+eq('sample: emails are all on example.com (fictional)', sample.every((p) => /@example\.com$/.test(p.email)), true);
+eq('sample: ids are unique and stable', new Set(sample.map((p) => p.id)).size === sample.length && sample[0].id === 'sample-1', true);
+eq('sample: tiers are valid', sample.every((p) => [1, 2, 3].includes(p.tier)), true);
+eq('sample: not flagged as duplicates of each other', m.findDuplicateCandidates(sample), []);
+eq('sample: all tagged Sample so they are easy to select and remove', sample.every((p) => p.tags.includes('Sample')), true);
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

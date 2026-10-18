@@ -1127,6 +1127,51 @@
       .dup-cards { grid-template-columns: 1fr; }
       .place-bar { bottom: 96px; flex-wrap: wrap; justify-content: center; }
     }
+
+    /* ===== Round 3: calmer map, lean panel, welcome ===== */
+    .map-container { background: #dde1e3; }
+    /* Mute the basemap so the pins stand out (colours only; markers are on a different pane) */
+    .leaflet-tile-pane { filter: saturate(0.4) contrast(0.94) brightness(1.04); }
+    .toasts { bottom: 64px; }
+    .place-bar { bottom: 124px; }
+    .toolbar-icon[aria-pressed="true"] { background: var(--primary); color: var(--accent); }
+    .tier-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+
+    .avatar-initials-large { box-shadow: 0 0 0 3px var(--ring, transparent); }
+    .add-fields { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 14px 0 4px; }
+    .add-label { font-size: 12px; color: var(--text-muted); margin-right: 2px; }
+    .add-chip {
+      font: inherit; font-size: 12px; color: var(--text-light); background: var(--bg); cursor: pointer;
+      border: 1px dashed var(--secondary); border-radius: 14px; padding: 3px 10px;
+    }
+    .add-chip:hover { color: var(--text); border-color: var(--accent); background: var(--bg-light); }
+    .add-chip:focus-visible, .detail-value[data-edit]:focus-visible, .profile-info h4[data-edit]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .edit-hint { font-size: 12px; color: var(--text-muted); margin: 10px 0 16px; }
+
+    .welcome {
+      position: fixed; inset: 0; z-index: 850; display: none; align-items: center; justify-content: center;
+      padding: 90px 16px 40px 76px; pointer-events: none;
+    }
+    .welcome.show { display: flex; }
+    .welcome-card {
+      pointer-events: auto; width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto;
+      background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(10px); border: 1px solid var(--border-light);
+      border-radius: 16px; padding: 28px 28px 22px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14); text-align: center;
+    }
+    .welcome-card h2 { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; margin-bottom: 8px; }
+    .welcome-sub { font-size: 14px; line-height: 1.5; color: var(--text-light); margin-bottom: 20px; }
+    .welcome-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .welcome-actions .btn { width: 100%; }
+    .welcome-help { text-align: left; font-size: 13px; color: var(--text-light); margin-bottom: 14px; }
+    .welcome-help summary { cursor: pointer; text-align: center; color: var(--text); font-weight: 500; }
+    .welcome-help ol { margin: 10px 0 0 18px; line-height: 1.6; }
+    .welcome-privacy { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+    @media (max-width: 600px) {
+      .welcome { padding: 130px 12px 70px 60px; align-items: flex-start; }
+      .welcome-card { padding: 20px 18px 16px; }
+      .toasts { bottom: 92px; }
+      .place-bar { bottom: 150px; }
+    }
   </style>
   
   <!-- Scripts -->
@@ -1140,34 +1185,20 @@
   <div class="app">
     <!-- Left Vertical Toolbar -->
     <div class="left-toolbar">
-      <button class="toolbar-icon active" title="Pointer" aria-label="Pointer" aria-pressed="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
-        </svg>
-      </button>
       <button class="toolbar-icon" id="tableBtn" title="Contact list" aria-label="Contact list">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0-18h10a2 2 0 0 1 2 2v4M9 3H5a2 2 0 0 0-2 2v4m0 0v10a2 2 0 0 0 2 2h4m-6-12h10"/>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/>
+          <circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>
         </svg>
       </button>
-      <button class="toolbar-icon" title="Text (not available yet)" aria-label="Text (not available yet)" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="4,7 4,4 20,4 20,7"/>
-          <line x1="9" y1="20" x2="15" y2="20"/>
-          <line x1="12" y1="4" x2="12" y2="20"/>
+      <button class="toolbar-icon" id="statsBtn" title="Analytics" aria-label="Analytics">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/>
         </svg>
       </button>
-      <button class="toolbar-icon" title="Shapes (not available yet)" aria-label="Shapes (not available yet)" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21,15 16,10 5,21"/>
-        </svg>
-      </button>
-      <button class="toolbar-icon" title="Pen (not available yet)" aria-label="Pen (not available yet)" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+      <button class="toolbar-icon" id="heatBtn" title="Heatmap" aria-label="Heatmap" aria-pressed="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2.5c.8 3.2 4.5 4.8 4.5 9a4.5 4.5 0 0 1-9 0c0-1.7.7-2.9 1.7-3.9.2 1.2.8 1.9 1.5 2.2C10.3 7.2 11 4.8 12 2.5Z"/>
         </svg>
       </button>
     </div>
@@ -1189,7 +1220,6 @@
     <div class="floating-header-right">
       <button id="addContactBtn" class="header-button">+ Add Contact</button>
       <button id="presentBtn" class="header-button" title="Hide the interface for presenting (Esc to exit)">Present</button>
-      <div class="user-profile">A</div>
     </div>
 
     <!-- Collapsible Tools Panel -->
@@ -1342,6 +1372,29 @@
     </div>
     <div id="listBody" class="list-body"></div>
   </aside>
+
+  <!-- First-run welcome (shown while there are no contacts) -->
+  <div id="welcome" class="welcome" role="region" aria-label="Get started">
+    <div class="welcome-card">
+      <h2>Your people, on a map</h2>
+      <p class="welcome-sub">Add your contacts and Orbita pins them where they live, so you can see your whole network at a glance.</p>
+      <div class="welcome-actions">
+        <button class="btn btn-primary" id="welcomeImport">Import Google Contacts</button>
+        <button class="btn" id="welcomeAdd">Add a contact</button>
+        <button class="btn" id="welcomeSample">Try it with sample data</button>
+      </div>
+      <details class="welcome-help">
+        <summary>How do I export from Google Contacts?</summary>
+        <ol>
+          <li>Open <strong>contacts.google.com</strong> and pick the label (group) you want, or select everyone.</li>
+          <li>Choose <strong>Export</strong>, then <strong>Google CSV</strong>.</li>
+          <li>Come back here and press <strong>Import Google Contacts</strong>.</li>
+        </ol>
+      </details>
+      <p class="welcome-privacy">🔒 Everything stays in this browser. Nothing is uploaded anywhere.</p>
+      <button class="link-btn" id="welcomeBackup">Restore from a backup (JSON)</button>
+    </div>
+  </div>
 
   <div id="placeBar" class="place-bar" role="status"></div>
 
@@ -1813,6 +1866,27 @@
       return people;
     }
 
+    // Invented contacts for the welcome screen's "Try it with sample data" (never real people)
+    const SAMPLE_PEOPLE = [
+      ['Mia Alvarez', 'Barcelona', 'Spain', 41.3874, 2.1686, 1, 'Designer', ['Sample', 'Friends']],
+      ['Kenji Mori', 'Tokyo', 'Japan', 35.6762, 139.6503, 2, 'Photographer', ['Sample', 'Work']],
+      ['Giulia Ferri', 'Rome', 'Italy', 41.9028, 12.4964, 1, 'Chef', ['Sample', 'Friends']],
+      ['Liam Walsh', 'Dublin', 'Ireland', 53.3498, -6.2603, 3, 'Teacher', ['Sample']],
+      ['Priya Nair', 'Mumbai', 'India', 19.076, 72.8777, 2, 'Engineer', ['Sample', 'Work']],
+      ['Diego Salinas', 'Mexico City', 'Mexico', 19.4326, -99.1332, 2, 'Musician', ['Sample', 'Friends']],
+      ['Nora Haddad', 'Cairo', 'Egypt', 30.0444, 31.2357, 3, 'Architect', ['Sample']],
+      ['Jonas Berg', 'Stockholm', 'Sweden', 59.3293, 18.0686, 2, 'Producer', ['Sample', 'Work']],
+      ['Amara Okafor', 'Lagos', 'Nigeria', 6.5244, 3.3792, 1, 'Writer', ['Sample', 'Friends']],
+      ['Hannah Weiss', 'Berlin', 'Germany', 52.52, 13.405, 3, 'Curator', ['Sample']],
+      ['Tomas Rivera', 'Buenos Aires', 'Argentina', -34.6037, -58.3816, 2, 'Actor', ['Sample', 'Friends']],
+      ['Jisoo Park', 'Seoul', 'South Korea', 37.5665, 126.978, 3, 'Developer', ['Sample', 'Work']],
+      ['Emma Collins', 'New York', 'United States', 40.7128, -74.006, 1, 'Editor', ['Sample', 'Friends']],
+      ['Noah Bennett', 'Sydney', 'Australia', -33.8688, 151.2093, 2, 'Sound engineer', ['Sample', 'Work']],
+    ].map(([name, city, country, lat, lng, tier, occupation, tags], i) => ({
+      id: `sample-${i + 1}`, name, city, country, lat, lng, tier, occupation, tags, geoSource: 'geocoded',
+      email: `${name.toLowerCase().replace(/[^a-z]+/g, '.')}@example.com`,
+    }));
+
     // Spreadsheet apps run cells that start with = + - @ as formulas. Neutralise those, but leave phone numbers alone.
     function csvSafe(v) {
       const s = String(v ?? '');
@@ -1937,6 +2011,9 @@
         });
         this.updateMinZoom();
 
+        // OpenStreetMap's own tiles. (CARTO's free light style now needs an API key: its tiles load, but each one
+        // is stamped "API KEY REQUIRED", so a tile-error fallback never fires.) The calmer look comes from the
+        // `.leaflet-tile-pane` CSS filter instead.
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 18,
@@ -2034,6 +2111,12 @@
         click('presentBtn', () => this.setPresenting(true));
         click('exitPresent', () => this.setPresenting(false));
         click('tableBtn', () => this.toggleList());
+        click('statsBtn', () => this.showAnalytics());
+        click('heatBtn', () => this.toggleHeatmap());
+        click('welcomeImport', () => $('csvFileInput').click());
+        click('welcomeAdd', () => this.showAddContactModal());
+        click('welcomeSample', () => this.loadSample());
+        click('welcomeBackup', () => $('jsonFileInput').click());
         click('closeList', () => this.toggleList(false));
         click('cancelAddContact', () => this.hideAddContactModal());
         click('exportCsvBtn', () => this.exportToCSV());
@@ -2084,6 +2167,10 @@
         $('contactPanel').addEventListener('dblclick', (e) => {
           const el = e.target.closest('[data-edit]');
           if (el) this.startEdit(this.activePanelId, el.dataset.edit, el);
+        });
+        $('contactPanel').addEventListener('keydown', (e) => {
+          const el = e.target.closest?.('[data-edit]');
+          if (el && e.key === 'Enter' && e.target === el) { e.preventDefault(); this.startEdit(this.activePanelId, el.dataset.edit, el); }
         });
         $('listBody').addEventListener('click', (e) => this.onListClick(e));
 
@@ -2238,6 +2325,7 @@
       }
 
       afterVisibleChange() {
+        $('welcome').classList.toggle('show', this.people.length === 0);
         if (this.heatmapEnabled) this.createHeatmap();
         this.refreshFilterUi();
         this.renderStatus();
@@ -2311,7 +2399,7 @@
           return `<button class="list-row${picked ? ' selected' : ''}" data-id="${esc(p.id)}" ${this.selectMode ? `role="checkbox" aria-checked="${picked}"` : ''}>
             <span class="list-check" aria-hidden="true">${picked ? '✓' : ''}</span>
             <span class="list-main">
-              <span class="list-name">${esc(p.name)}</span>
+              <span class="list-name">${p.tier ? `<span class="tier-dot" style="background:${TIER_COLORS[p.tier]}" title="${esc(TIER_LABELS[p.tier])}"></span>` : ''}${esc(p.name)}</span>
               <span class="list-sub">${esc(sub)}</span>
             </span>
             ${hasCoords(p) ? '' : '<span class="list-flag">no pin</span>'}
@@ -2416,6 +2504,8 @@
       toggleHeatmap() {
         this.heatmapEnabled = !this.heatmapEnabled;
         $('toggleHeatmapBtn').classList.toggle('active', this.heatmapEnabled);
+        $('heatBtn').classList.toggle('active', this.heatmapEnabled);
+        $('heatBtn').setAttribute('aria-pressed', String(this.heatmapEnabled));
         if (this.heatmapEnabled) this.createHeatmap(); else this.removeHeatmap();
       }
 
@@ -2440,6 +2530,7 @@
       closeContactPanel() {
         $('contactPanel').style.display = 'none';
         this.activePanelId = null;
+        this.revealedFor = null;
       }
 
       fieldHtml(p, key) {
@@ -2466,9 +2557,13 @@
         const prevScroll = keepScroll ? (panel.querySelector('.panel-content')?.scrollTop || 0) : 0;
         this.activePanelId = personId;
 
-        const rows = [['email', 'Email'], ['phone', 'Phone'], ['tier', 'Tier'], ['occupation', 'Occupation'],
+        const allRows = [['email', 'Email'], ['phone', 'Phone'], ['occupation', 'Occupation'],
           ['company', 'Company'], ['website', 'Website'], ['address', 'Address'], ['city', 'City'],
           ['region', 'Region'], ['country', 'Country'], ['instagram', 'Instagram'], ['tags', 'Tags'], ['notes', 'Notes']];
+        // Only show what's filled in; empty fields become "+ Add" chips so the panel stays short
+        if (this.revealedFor !== personId) { this.revealed = new Set(); this.revealedFor = personId; }
+        const rows = allRows.filter(([key]) => this.rawFieldValue(p, key) !== '' || this.revealed.has(key));
+        const emptyRows = allRows.filter(([key]) => !rows.some(([k]) => k === key));
 
         const approx = APPROX_SOURCES.has(p.geoSource);
         const sourceLabel = { phone: 'from phone country', 'area-code': 'from phone area code', 'email-domain': 'from email domain',
@@ -2492,9 +2587,9 @@
           </div>
           <div class="panel-content">
             <div class="profile-section">
-              <div class="avatar-initials-large">${esc(this.getInitials(p.name))}</div>
+              <div class="avatar-initials-large" style="--ring:${p.tier ? TIER_COLORS[p.tier] : 'transparent'}">${esc(this.getInitials(p.name))}</div>
               <div class="profile-info">
-                <h4 data-edit="name" title="Double-click to edit">${esc(p.name)}</h4>
+                <h4 data-edit="name" tabindex="0" title="Double-click to edit">${esc(p.name)}</h4>
                 ${p.occupation ? `<p class="occupation">${esc(p.occupation)}</p>` : ''}
               </div>
             </div>
@@ -2510,7 +2605,7 @@
               ${rows.map(([key, label]) => `
                 <div class="detail-row">
                   <span class="detail-label">${label}</span>
-                  <span class="detail-value" data-edit="${key}" title="Double-click to edit">${this.fieldHtml(p, key)}</span>
+                  <span class="detail-value" data-edit="${key}" tabindex="0" title="Double-click to edit">${this.fieldHtml(p, key)}</span>
                 </div>`).join('')}
               ${(p.altEmails.length || p.altPhones.length) ? `
                 <div class="detail-row"><span class="detail-label">Also</span>
@@ -2522,6 +2617,9 @@
                   : '<span class="empty-val">not on map</span>'}</span>
               </div>
             </div>
+            ${emptyRows.length ? `<div class="add-fields"><span class="add-label">Add</span>${emptyRows.map(([key, label]) =>
+              `<button class="add-chip" data-action="add-field" data-field="${key}">+ ${label}</button>`).join('')}</div>` : ''}
+            ${rows.length ? '<p class="edit-hint">Double-click a value to edit it.</p>' : ''}
             <div class="loc-actions">
               <button class="btn" data-action="place">📍 ${hasCoords(p) ? 'Move pin' : 'Place on map'}</button>
               ${canLocate ? '<button class="btn" data-action="locate">🔎 Find from address</button>' : ''}
@@ -2542,6 +2640,12 @@
         else if (action === 'edit') this.editContact(id);
         else if (action === 'place') this.beginPlacing(id);
         else if (action === 'locate') this.locateOne(id);
+        else if (action === 'add-field') {
+          this.revealed.add(btn.dataset.field);
+          this.showContactPanel(id, { keepScroll: true });
+          const row = $('contactPanel').querySelector(`[data-edit="${btn.dataset.field}"]`);
+          if (row) this.startEdit(id, btn.dataset.field, row);
+        }
         else if (action === 'tier') {
           const p = this.people.find((x) => x.id === id);
           if (!p) return;
@@ -2858,6 +2962,10 @@
           onAction: () => { this.people = JSON.parse(snapshot); this.saveToStorage(); this.updateMap({ fit: true }); },
         });
         return { added, merged };
+      }
+
+      loadSample() {
+        this.finishImport(SAMPLE_PEOPLE.map((p) => ({ ...p })), 'Sample data');
       }
 
       parseCsv(input) {
