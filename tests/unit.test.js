@@ -12,7 +12,7 @@ let src = html.slice(html.indexOf("<script>\n    'use strict'") + '<script>\n'.l
 src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListener[\s\S]*$/, '');
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
-  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS };`;
+  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS, bloomLayout, bloomFit, BLOOM };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
 fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } }; const L = { Map: { mergeOptions() {}, addInitHook() {} }, Handler: { extend: (o) => o }, DomEvent: {} };"));
 const m = require(sandbox);
@@ -294,6 +294,18 @@ eq('csv: last contacted column is read', m.normalizePerson(m.rowToPerson({ Name:
 
 { const L = [person({ id: 'u1', name: 'Aaa untiered' }), person({ id: 'p', name: 'Fresh', tier: 1, lastContacted: '2026-10-17' }), person({ id: 'q', name: 'Overdue', tier: 1, lastContacted: '2025-01-01' }), person({ id: 'n', name: 'Never', tier: 2 })];
   eq('sort: tiered and due first, then tiered but up to date, then untiered', m.sortPeople(L, 'catchup').map((p) => p.name), ['Never', 'Overdue', 'Fresh', 'Aaa untiered']); }
+
+// ---- bloom layout: pins must never overlap each other or the hub, and the fit must respect the space given ----
+{ const minGap = (lay) => { let m = Infinity; for (let i = 0; i < lay.length; i++) for (let j = i + 1; j < lay.length; j++) m = Math.min(m, Math.hypot(lay[i].x - lay[j].x, lay[i].y - lay[j].y)); return m; };
+  const hubGap = (lay) => Math.min(...lay.map((o) => Math.hypot(o.x, o.y)));
+  const bad = [];
+  for (let n = 1; n <= m.BLOOM.max; n++) { const lay = m.bloomLayout(n); if (lay.length !== n) bad.push(`n=${n} len`); if (n > 1 && minGap(lay) < 38) bad.push(`n=${n} pins ${minGap(lay).toFixed(1)}px apart`); if (hubGap(lay) < m.BLOOM.hubR + 17 + 2) bad.push(`n=${n} touches hub`); }
+  eq('bloom: no overlaps for 1..max contacts', bad, []);
+  eq('bloom: 0 contacts is empty', m.bloomLayout(0), []);
+  const reach = (n) => Math.max(...m.bloomLayout(n).map((o) => Math.hypot(o.x, o.y))) + 17;
+  eq('bloom: fit never exceeds the available radius', [10, 30, 90, 160, 400].every((a) => reach(m.bloomFit(500, a)) <= a || m.bloomFit(500, a) === 1), true);
+  eq('bloom: small clusters fit entirely, huge ones are capped', [m.bloomFit(5, 300), m.bloomFit(500, 2000)], [5, m.BLOOM.max]);
+}
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
 process.exit(failures ? 1 : 0);

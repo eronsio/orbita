@@ -1412,6 +1412,74 @@
     :root[data-theme="dark"] .heat-legend { background: rgba(29, 33, 38, 0.95); border-color: var(--border); }
     :root[data-theme="dark"] .sel-ring { box-shadow: 0 0 0 2px #9fc5bf, 0 0 14px rgba(0, 0, 0, 0.6); }
     :root[data-theme="dark"] .pin-tip.leaflet-tooltip { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); }
+
+    /* ===== Bloom: clicking a cluster fans its contacts out around it (the map never moves) ===== */
+    .bloom { position: absolute; inset: 0; z-index: 700; pointer-events: none; --bloom-veil: rgba(244, 246, 247, 0.58); --bloom-line: rgba(68, 65, 67, 0.32); }
+    .bloom-veil { position: absolute; inset: 0; background: var(--bloom-veil); opacity: 0; transition: opacity 0.25s ease; }
+    .bloom.open .bloom-veil { opacity: 1; }
+    .bloom-field { position: absolute; left: 0; top: 0; width: 0; height: 0; will-change: transform; }
+    .bloom-lines { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; z-index: 1; display: none; }
+    .bloom.labels .bloom-lines { display: block; }
+    .bloom-lines line, .bloom-tie line { stroke: var(--bloom-line); stroke-width: 1.5; stroke-linecap: round; }
+    .bloom-lines line { opacity: 0; transition: opacity 0.3s ease 0.1s; }
+    .bloom.open .bloom-lines line { opacity: 1; }
+    /* big fans: a pin draws its own line back to the hub only while hovered, focused or selected */
+    .bloom-tie { position: absolute; left: 17px; top: 17px; width: 1px; height: 1px; overflow: visible; z-index: -1; display: none; pointer-events: none; }
+    .bloom-tie line { stroke: var(--text-light); stroke-width: 2; opacity: 0.7; }
+    .bloom:not(.labels) .bloom-pin:hover .bloom-tie, .bloom:not(.labels) .bloom-pin:focus-visible .bloom-tie, .bloom:not(.labels) .bloom-pin.sel .bloom-tie { display: block; }
+    .bloom-hub { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); z-index: 3; padding: 0; border: none; background: transparent; border-radius: 50%; cursor: pointer; pointer-events: auto; }
+    .bloom-hub .cluster-bubble { transition: transform 0.15s ease; }
+    .bloom-hub:hover .cluster-bubble, .bloom-hub:focus-visible .cluster-bubble { transform: scale(1.08); }
+    .bloom-pin, .bloom-more {
+      position: absolute; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; padding: 0; border: none; background: transparent;
+      border-radius: 50%; cursor: pointer; pointer-events: auto; z-index: 2; font-family: inherit;
+      transform: translate(0, 0) scale(0.2); opacity: 0;
+      transition: transform 0.36s cubic-bezier(0.2, 0.9, 0.3, 1.15) var(--d, 0ms), opacity 0.2s ease var(--d, 0ms);
+    }
+    .bloom.open .bloom-pin, .bloom.open .bloom-more { transform: translate(var(--x), var(--y)) scale(1); opacity: 1; }
+    .bloom.closing .bloom-pin, .bloom.closing .bloom-more, .bloom.closing .bloom-hub, .bloom.closing .bloom-bar { pointer-events: none; }
+    .bloom-pin:hover, .bloom-pin:focus-visible, .bloom-more:hover { z-index: 6; }
+    .bloom-pin:hover .pin, .bloom-pin:focus-visible .pin { transform: scale(1.16); }
+    .bloom-pin:focus-visible { outline: none; }
+    .bloom-pin:focus-visible .pin { box-shadow: 0 0 0 3px var(--accent), 0 2px 8px rgba(0, 0, 0, 0.4); }
+    .bloom-pin.sel .pin { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--accent), 0 3px 10px rgba(0, 0, 0, 0.4); transform: scale(1.12); }
+    .bloom-name {
+      position: absolute; display: none; max-width: 170px; text-align: left; line-height: 1.25;
+      background: var(--bg-light); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 2px 8px; font-size: 11.5px; font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .bloom-pin[data-side="r"] .bloom-name { left: calc(100% + 6px); top: 50%; transform: translateY(-50%); }
+    .bloom-pin[data-side="l"] .bloom-name { right: calc(100% + 6px); top: 50%; transform: translateY(-50%); }
+    .bloom-pin[data-side="t"] .bloom-name { bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+    .bloom-pin[data-side="b"] .bloom-name { top: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+    .bloom-name i { display: none; font-style: normal; font-weight: 400; color: var(--text-light); font-size: 11px; }
+    .bloom.labels .bloom-name, .bloom-pin:hover .bloom-name, .bloom-pin:focus-visible .bloom-name { display: block; }
+    .bloom-pin:hover .bloom-name i, .bloom-pin:focus-visible .bloom-name i { display: block; }
+    .bloom-more {
+      width: 38px; height: 38px; margin: -19px 0 0 -19px; background: var(--bg-light); color: var(--text); border: 1.5px dashed var(--secondary);
+      font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+    .bloom-more:hover { background: var(--bg-dark); }
+    .bloom-bar {
+      position: absolute; bottom: 22px; left: 50%; transform: translate(-50%, 8px); opacity: 0; display: flex; align-items: center; gap: 8px; max-width: calc(100% - 24px);
+      background: var(--bg-light); border: 1px solid var(--border); border-radius: 22px; padding: 5px 6px 5px 14px; font-size: 13px; white-space: nowrap; pointer-events: auto;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.2); transition: opacity 0.2s ease, transform 0.25s ease; z-index: 8;
+    }
+    .bloom.open .bloom-bar { opacity: 1; transform: translate(-50%, 0); }
+    .bloom-bar strong { color: var(--text); }
+    .bloom-bar .sub { color: var(--text-muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+    .bloom-bar button { font: inherit; font-size: 12.5px; border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 16px; padding: 5px 11px; cursor: pointer; }
+    .bloom-bar button:hover { background: var(--bg-dark); }
+    .bloom-bar button.x { border: none; background: transparent; font-size: 18px; line-height: 1; padding: 3px 9px; color: var(--text-light); }
+    .cluster-hint { margin-right: auto; font-size: 12px; color: var(--text-muted); align-self: center; }
+    @media (max-width: 1100px) { .bloom-bar { left: calc(50% + 110px); } } /* clear of the status pill at bottom-left */
+    @media (max-width: 600px) { .bloom-bar .sub { display: none; } .bloom-bar { bottom: 150px; left: 50%; } }
+    @media (prefers-reduced-motion: reduce) {
+      .bloom-pin, .bloom-more, .bloom-veil, .bloom-lines line, .bloom-bar { transition: none; }
+    }
+    :root[data-theme="dark"] .bloom { --bloom-veil: rgba(14, 16, 19, 0.6); --bloom-line: rgba(231, 233, 236, 0.3); }
+    :root[data-theme="dark"] .bloom-pin.sel .pin { box-shadow: 0 0 0 3px #15181c, 0 0 0 5px #9fc5bf, 0 3px 10px rgba(0, 0, 0, 0.5); }
+    :root[data-theme="dark"] .bloom-pin:focus-visible .pin { box-shadow: 0 0 0 3px #9fc5bf, 0 2px 8px rgba(0, 0, 0, 0.5); }
   </style>
   
   <!-- Scripts -->
@@ -2315,6 +2383,35 @@
       return d === null || d > CATCH_UP_DAYS[p.tier];
     }
 
+    // ---- bloom: where a cluster's contacts go when it fans out (offsets in px from the cluster) ----
+    const BLOOM = { gap: 46, hubR: 28, pin: 34, max: 80 };
+    // A handful sit on a ring; more follow a sunflower (Vogel) spiral, which spaces any number of pins evenly.
+    // Slot 0 is the closest to the hub, so callers put the contacts they care about most first.
+    function bloomLayout(n, gap = BLOOM.gap) {
+      if (n <= 0) return [];
+      if (n <= 8) {
+        const r = Math.max(gap * 1.25, (n * gap) / (2 * Math.PI));
+        return Array.from({ length: n }, (_, i) => {
+          const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+          return { x: Math.round(r * Math.cos(a)), y: Math.round(r * Math.sin(a)) };
+        });
+      }
+      const c = gap / 1.7;
+      const k = Math.pow((BLOOM.hubR + gap * 0.75) / c, 2); // leaves the hub clear
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      return Array.from({ length: n }, (_, i) => {
+        const r = c * Math.sqrt(i + k); const a = -Math.PI / 2 + i * golden;
+        return { x: Math.round(r * Math.cos(a)), y: Math.round(r * Math.sin(a)) };
+      });
+    }
+    // How many slots fit in a circle of radius `avail` px (capped); anything beyond becomes a "+N more" slot
+    function bloomFit(total, avail, max = BLOOM.max) {
+      const reach = (n) => Math.max(...bloomLayout(n).map((o) => Math.hypot(o.x, o.y))) + BLOOM.pin / 2;
+      let n = Math.max(1, Math.min(total, max));
+      while (n > 1 && reach(n) > avail) n--;
+      return n;
+    }
+
     function sortPeople(list, mode) {
       const byName = (a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
       const copy = list.slice();
@@ -2573,15 +2670,21 @@
           },
         });
         this.map.addLayer(this.clusterGroup);
-        this.clusterGroup.on('clusterclick', (e) => this.openClusterCard(e.layer));
+        // Click fans the cluster out around itself; hovering (with a mouse) previews the list; neither moves the map
+        this.clusterGroup.on('clusterclick', (e) => this.openBloom(e.layer, !!e.originalEvent && e.originalEvent.detail === 0));
+        this.clusterGroup.on('clustermouseover', (e) => this.peekCluster(e.layer));
+        this.clusterGroup.on('clustermouseout', () => this.unpeekCluster());
 
         this.map.on('click', (e) => {
           if (this.placingContactId) { this.placeContactAt(e.latlng); return; }
           this.closeToolsPanel();
           this.hideClusterCard();
+          this.closeBloom();
           this.closeContactPanel();
         });
         this.map.on('movestart', () => this.hideClusterCard()); // the card is anchored to a spot on screen
+        this.map.on('move', () => this.positionBloom()); // the fan stays pinned to its cluster while you pan
+        this.map.on('zoomstart', () => this.closeBloom()); // a zoom changes what the clusters are, so the fan folds away
 
         // Heatmap: keep its canvas aligned while the map moves (smooth zoom moves it without any zoom animation),
         // and re-size the blobs when the zoom settles
@@ -2731,6 +2834,9 @@
           if (el) this.startEdit(this.activePanelId, el.dataset.edit, el);
         });
         $('clusterCard').addEventListener('click', (e) => this.onClusterCardClick(e));
+        $('clusterCard').addEventListener('mouseenter', () => clearTimeout(this.peekHide));
+        $('clusterCard').addEventListener('mouseleave', () => this.scheduleCardHide());
+        $('clusterCard').addEventListener('focusin', () => { this.cardMode = 'sticky'; });
         $('clusterCard').addEventListener('input', (e) => {
           if (!e.target.classList.contains('cluster-search')) return;
           const q = fold(e.target.value).trim();
@@ -2755,6 +2861,7 @@
         if (e.key !== 'Escape') return;
         if (document.body.classList.contains('presenting')) { this.setPresenting(false); return; }
         if (this.placingContactId) { this.endPlacing(); return; }
+        if (this.bloom) { this.closeBloom(); return; }
         if (!$('clusterCard').hidden) { this.hideClusterCard(); return; }
         if ($('addContactModal').classList.contains('open')) { this.hideAddContactModal(); return; }
         if ($('analyticsModal').classList.contains('open')) { this.hideAnalytics(); return; }
@@ -2906,6 +3013,7 @@
         this.markers = [];
         this.markerById.clear();
         this.hideClusterCard();
+        this.closeBloom(true);
         this.visiblePeople = this.people.filter((p) => this.isVisible(p));
         const batch = [];
         this.visiblePeople.forEach((p) => {
@@ -2942,6 +3050,7 @@
           this.markerById.delete(p.id);
         }
         if (this.activePanelId === p.id) this.updateSelection();
+        this.refreshBloomPin(p);
         this.afterVisibleChange();
       }
 
@@ -3154,9 +3263,144 @@
         return L.divIcon({ html, className: 'custom-marker', iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
       }
 
-      // ---------------- cluster card ----------------
-      openClusterCard(cluster) {
+      // ---------------- hover preview of a cluster (mouse only) ----------------
+      peekCluster(cluster) {
+        if (this.heatmapEnabled || this.bloom || this.cardMode === 'sticky') return;
+        if (L.Browser.mobile || !(window.matchMedia && window.matchMedia('(hover: hover)').matches)) return;
+        clearTimeout(this.peekTimer);
+        this.peekTimer = setTimeout(() => { if (!this.bloom && this.cardMode !== 'sticky') this.openClusterCard(cluster, { hover: true }); }, 380);
+      }
+
+      unpeekCluster() {
+        clearTimeout(this.peekTimer);
+        this.scheduleCardHide();
+      }
+
+      scheduleCardHide() {
+        if (this.cardMode !== 'hover') return;
+        clearTimeout(this.peekHide);
+        this.peekHide = setTimeout(() => { if (this.cardMode === 'hover') this.hideClusterCard(); }, 300);
+      }
+
+      // ---------------- bloom: click a cluster and its contacts fan out around it ----------------
+      // The map never moves. Closest friends sit nearest the hub; a leader line ties every pin back to it. The fan
+      // slides away from screen edges (the hub stays on the cluster), follows panning, and folds away on zoom.
+      bloomPinInner(p, x = 0, y = 0) {
+        return `<svg class="bloom-tie" aria-hidden="true"><line x1="0" y1="0" x2="${-x}" y2="${-y}"/></svg>${this.createContactIcon(p).options.html}<span class="bloom-name">${esc(p.name)}<i>${esc([p.tier ? TIER_LABELS[p.tier] : '', p.country].filter(Boolean).join(' · '))}</i></span>`;
+      }
+
+      openBloom(cluster, viaKeyboard = false) {
         if (this.heatmapEnabled) return;
+        clearTimeout(this.peekTimer);
+        this.closeBloom(true);
+        this.hideClusterCard();
+        const members = sortPeople(cluster.getAllChildMarkers().map((m) => this.people.find((x) => x.id === m.options.pid)).filter(Boolean), 'tier');
+        if (!members.length) return;
+
+        const size = this.map.getSize();
+        const latlng = cluster.getLatLng();
+        const hub = this.map.latLngToContainerPoint(latlng);
+        const slots = bloomFit(members.length, Math.min(size.x, size.y) / 2 - 24);
+        const shown = members.length <= slots ? members : members.slice(0, slots - 1);
+        const lay = bloomLayout(slots);
+
+        // slide the whole fan (not the hub) back inside the visible map, clear of the bar at the top and the open panel
+        const panel = $('contactPanel');
+        const room = { x: size.x - (window.innerWidth > 600 && panel.style.display === 'flex' ? panel.offsetWidth : 0), y: size.y };
+        const bar = document.querySelector('.left-toolbar').getBoundingClientRect(); // the map runs underneath the left toolbar
+        const inset = Math.max(0, bar.right - this.map.getContainer().getBoundingClientRect().left);
+        const padX = shown.length <= 8 ? 150 : 26; // ring-sized fans show name labels beside the pins
+        const fit = (lo, hi, max) => (hi - lo >= max ? (max - (hi + lo)) / 2 : lo < 0 ? -lo : hi > max ? max - hi : 0);
+        const xs = lay.map((o) => o.x); const ys = lay.map((o) => o.y);
+        const dx = Math.round(fit(hub.x + Math.min(...xs) - padX - inset, hub.x + Math.max(...xs) + padX - inset, room.x - inset));
+        const phone = window.innerWidth <= 600; // the header stacks two rows tall and the bar sits higher, clear of the + button
+        const dy = Math.round(fit(hub.y + Math.min(...ys) - (phone ? 132 : 84), hub.y + Math.max(...ys) + (phone ? 158 : 76), room.y));
+
+        const lines = []; const pins = [];
+        shown.forEach((p, i) => {
+          const x = lay[i].x + dx; const y = lay[i].y + dy;
+          lines.push(`<line x1="0" y1="0" x2="${x}" y2="${y}"/>`);
+          pins.push(`<button class="bloom-pin" data-id="${esc(p.id)}" data-side="${Math.abs(lay[i].x) < 14 ? (lay[i].y < 0 ? 't' : 'b') : (lay[i].x < 0 ? 'l' : 'r')}" style="--x:${x}px;--y:${y}px;--d:${Math.min(i * 9, 220)}ms" aria-label="${esc(p.name)}">${this.bloomPinInner(p, x, y)}</button>`);
+        });
+        if (shown.length < members.length) {
+          const x = lay[slots - 1].x + dx; const y = lay[slots - 1].y + dy; const rest = members.length - shown.length;
+          lines.push(`<line x1="0" y1="0" x2="${x}" y2="${y}"/>`);
+          pins.push(`<button class="bloom-more" data-bl="list" style="--x:${x}px;--y:${y}px;--d:${Math.min(shown.length * 9, 220)}ms" aria-label="${rest} more contacts: open the list" title="${rest} more: open the list">+${rest}</button>`);
+        }
+
+        const tally = {};
+        members.forEach((p) => { const c = p.country || 'Unknown'; tally[c] = (tally[c] || 0) + 1; });
+        const top = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([c, n]) => (Object.keys(tally).length === 1 ? c : `${c} ${n}`)).join(' · ');
+        const hubHtml = cluster._icon ? cluster._icon.innerHTML : `<div class="cluster-bubble" style="width:46px;height:46px;background:#444143"><span>${members.length}</span></div>`;
+
+        const root = document.createElement('div');
+        root.className = `bloom${shown.length <= 8 ? ' labels' : ''}`;
+        root.innerHTML = `<div class="bloom-veil"></div>
+          <div class="bloom-bar" role="toolbar" aria-label="Cluster of ${members.length} contacts">
+            <strong>${members.length} contacts</strong><span class="sub">${esc(top)}</span>
+            <button data-bl="list">List</button><button data-bl="zoom">Zoom in here</button><button class="x" data-bl="close" aria-label="Collapse">×</button>
+          </div>
+          <div class="bloom-field"><svg class="bloom-lines" aria-hidden="true">${lines.join('')}</svg>
+            <button class="bloom-hub" data-bl="close" aria-label="Collapse" title="Collapse">${hubHtml}</button>${pins.join('')}</div>`;
+        L.DomEvent.disableClickPropagation(root); // clicks on the fan must not reach the map (that would fold it away)
+        root.addEventListener('click', (e) => this.onBloomClick(e));
+        this.map.getContainer().appendChild(root);
+        this.bloom = { root, cluster, latlng };
+        this.positionBloom();
+        this.markBloomSelection();
+        void root.offsetWidth; // commit the collapsed state so the open transition runs (no rAF: it never fires in a hidden tab)
+        root.classList.add('open');
+        const first = root.querySelector('.bloom-pin'); // keyboard users land inside the fan; mouse users don't get a focus ring
+        if (first && viaKeyboard) first.focus({ preventScroll: true });
+      }
+
+      positionBloom() {
+        if (!this.bloom) return;
+        const pt = this.map.latLngToContainerPoint(this.bloom.latlng);
+        this.bloom.root.querySelector('.bloom-field').style.transform = `translate(${pt.x}px, ${pt.y}px)`;
+      }
+
+      closeBloom(instant = false) {
+        const b = this.bloom;
+        if (!b) return;
+        this.bloom = null;
+        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (instant || reduce) { b.root.remove(); return; }
+        b.root.classList.add('closing');
+        b.root.classList.remove('open');
+        setTimeout(() => b.root.remove(), 340);
+      }
+
+      onBloomClick(e) {
+        const b = this.bloom;
+        const t = e.target.closest('[data-bl], .bloom-pin');
+        if (!b || !t) return;
+        const act = t.dataset.bl;
+        if (act === 'close') { this.closeBloom(); return; }
+        if (act === 'list') { this.closeBloom(true); this.openClusterCard(b.cluster); return; }
+        if (act === 'zoom') { this.closeBloom(); this.zoomToCluster(b.cluster); return; }
+        const p = this.people.find((x) => x.id === t.dataset.id);
+        if (!p) return;
+        this.showContactPanel(p.id); // picking a contact never moves the map either; the fan stays open so you can compare
+        if (window.innerWidth <= 600) this.closeBloom(); // on a phone the panel's sheet would cover the fan
+      }
+
+      markBloomSelection() {
+        if (!this.bloom) return;
+        this.bloom.root.querySelectorAll('.bloom-pin').forEach((el) => el.classList.toggle('sel', el.dataset.id === this.activePanelId));
+      }
+
+      refreshBloomPin(p) {
+        if (!this.bloom) return;
+        const el = [...this.bloom.root.querySelectorAll('.bloom-pin')].find((x) => x.dataset.id === p.id);
+        if (el) { el.innerHTML = this.bloomPinInner(p, parseFloat(el.style.getPropertyValue('--x')), parseFloat(el.style.getPropertyValue('--y'))); el.setAttribute('aria-label', p.name); }
+      }
+
+      // ---------------- cluster card ----------------
+      openClusterCard(cluster, { hover = false } = {}) {
+        if (this.heatmapEnabled) return;
+        clearTimeout(this.peekHide);
+        this.cardMode = hover ? 'hover' : 'sticky';
         const byId = new Map(this.people.map((p) => [p.id, p]));
         const members = sortPeople(cluster.getAllChildMarkers().map((m) => byId.get(m.options.pid)).filter(Boolean), 'name');
         if (!members.length) return;
@@ -3175,7 +3419,7 @@
             <button class="cluster-x" data-cc="close" aria-label="Close">×</button></div>
           ${members.length > 12 ? '<input class="cluster-search" type="search" placeholder="Filter these contacts…" aria-label="Filter these contacts">' : ''}
           <div class="cluster-rows">${members.slice(0, CAP).map(rowHtml).join('')}${members.length > CAP ? `<div class="cluster-more">+${members.length - CAP} more: zoom in or use the contact list</div>` : ''}</div>
-          <div class="cluster-foot"><button class="btn" data-cc="zoom">Zoom in here</button></div>`;
+          <div class="cluster-foot">${hover ? '<span class="cluster-hint">Click to fan out</span>' : ''}<button class="btn" data-cc="zoom">Zoom in here</button></div>`;
         this.positionClusterCard(cluster);
       }
 
@@ -3195,22 +3439,29 @@
       }
 
       hideClusterCard() {
+        clearTimeout(this.peekTimer); clearTimeout(this.peekHide);
         const card = $('clusterCard');
         if (card.hidden) return;
         card.hidden = true;
         this.clusterRef = null;
+        this.cardMode = null;
+      }
+
+      zoomToCluster(cluster) {
+        if (!cluster) return;
+        const b = cluster.getBounds();
+        if (b.getNorthEast().equals(b.getSouthWest())) this.map.flyTo(b.getCenter(), Math.max(this.map.getZoom() + 3, 9), { duration: 0.7 });
+        else this.map.flyToBounds(b, { padding: [70, 70], maxZoom: 14, duration: 0.7 });
       }
 
       onClusterCardClick(e) {
+        this.cardMode = 'sticky'; // once you click inside the hover preview it stays until you close it
         const act = e.target.closest('[data-cc]')?.dataset.cc;
         if (act === 'close') { this.hideClusterCard(); return; }
         if (act === 'zoom') {
           const cluster = this.clusterRef;
           this.hideClusterCard();
-          if (!cluster) return;
-          const b = cluster.getBounds();
-          if (b.getNorthEast().equals(b.getSouthWest())) this.map.flyTo(b.getCenter(), Math.max(this.map.getZoom() + 3, 9), { duration: 0.7 });
-          else this.map.flyToBounds(b, { padding: [70, 70], maxZoom: 14, duration: 0.7 });
+          this.zoomToCluster(cluster);
           return;
         }
         const row = e.target.closest('[data-id]');
@@ -3223,6 +3474,7 @@
 
       // ---------------- selection ring ----------------
       updateSelection() {
+        this.markBloomSelection();
         if (this.selectionMarker) { this.map.removeLayer(this.selectionMarker); this.selectionMarker = null; }
         const p = this.activePanelId && this.people.find((x) => x.id === this.activePanelId);
         if (!p || !hasCoords(p)) return;
@@ -3244,6 +3496,7 @@
         $('heatLegend').hidden = !this.heatmapEnabled;
         if (this.heatmapEnabled) {
           this.hideClusterCard();
+          this.closeBloom(true);
           this.map.removeLayer(this.clusterGroup);
           this.refreshHeatmap();
         } else {
