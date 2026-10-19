@@ -4191,7 +4191,10 @@
 
       async api(path, { method = 'GET', body, auth = true, prefer } = {}) {
         const headers = { apikey: CLOUD.anonKey, 'Content-Type': 'application/json' };
-        headers.Authorization = `Bearer ${auth && this.session ? this.session.access_token : CLOUD.anonKey}`;
+        // Signed in: the user's token. Signed out: the key itself, but only if it is a JWT (the legacy `anon` key).
+        // Supabase's newer `sb_publishable_...` keys are not JWTs and go in the `apikey` header alone.
+        if (auth && this.session) headers.Authorization = `Bearer ${this.session.access_token}`;
+        else if (/^eyJ/.test(CLOUD.anonKey)) headers.Authorization = `Bearer ${CLOUD.anonKey}`;
         if (prefer) headers.Prefer = prefer;
         const res = await fetch(`${CLOUD.url}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
         const text = await res.text();
