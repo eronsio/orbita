@@ -1897,7 +1897,7 @@
 
     // Cloud accounts + sync (Supabase). Leave both blank to run as a purely local app: no sign-in UI appears.
     // The anon key is meant to be public; row-level security (supabase/orbita_setup.sql) is what protects the data.
-    const CLOUD = { url: '', anonKey: '' };
+    const CLOUD = { url: 'https://ptfdynvqbpuotnikqpgb.supabase.co', anonKey: 'sb_publishable_j-zKaGhoP_wt6pcrcuN0Yg_Plc5pRO_' };
     // Local testing only: ?supabase=http://localhost:54321&key=test (honoured on localhost, see tests/mock-supabase.js)
     if (['localhost', '127.0.0.1'].includes(location.hostname)) {
       const q = new URLSearchParams(location.search);
