@@ -45,6 +45,8 @@ const readBody = (req) => new Promise((resolve) => {
   let b = ''; req.on('data', (c) => { b += c; }); req.on('end', () => { try { resolve(b ? JSON.parse(b) : {}); } catch (e) { resolve({}); } });
 });
 
+const feedback = [];
+
 http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const p = url.pathname;
@@ -55,6 +57,14 @@ http.createServer(async (req, res) => {
   if (p === '/__last_recovery') return send(res, 200, { link: lastRecovery });
   if (failing) return send(res, 503, { message: 'mock is offline' });
   const body = ['POST', 'PATCH', 'PUT'].includes(req.method) ? await readBody(req) : {};
+
+  // ---------------- feedback box ----------------
+  if (p === '/__feedback') return send(res, 200, feedback);
+  if (p === '/rest/v1/orbita_feedback' && req.method === 'POST') {
+    if (!body.message || String(body.message).length > 4000) return send(res, 400, { message: 'new row violates check constraint "orbita_feedback_len"' });
+    feedback.push({ ...body, at: Date.now() });
+    return send(res, 201);
+  }
 
   // ---------------- auth ----------------
   if (p === '/auth/v1/signup' && req.method === 'POST') {

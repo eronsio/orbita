@@ -12,7 +12,8 @@ let src = html.slice(html.indexOf("<script>\n    'use strict'") + '<script>\n'.l
 src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListener[\s\S]*$/, '');
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
-  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS, bloomLayout, bloomFit, BLOOM };`;
+  parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS, bloomLayout, bloomFit, BLOOM,
+  parseBirthday, nextBirthday, bdaySoon, birthdayLabel, birthdayInput };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
 fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } }; const L = { Map: { mergeOptions() {}, addInitHook() {} }, Handler: { extend: (o) => o }, DomEvent: {} };"));
 const m = require(sandbox);
@@ -305,6 +306,35 @@ eq('csv: last contacted column is read', m.normalizePerson(m.rowToPerson({ Name:
   const reach = (n) => Math.max(...m.bloomLayout(n).map((o) => Math.hypot(o.x, o.y))) + 17;
   eq('bloom: fit never exceeds the available radius', [10, 30, 90, 160, 400].every((a) => reach(m.bloomFit(500, a)) <= a || m.bloomFit(500, a) === 1), true);
   eq('bloom: small clusters fit entirely, huge ones are capped', [m.bloomFit(5, 300), m.bloomFit(500, 2000)], [5, m.BLOOM.max]);
+}
+
+// ---- birthdays ----
+{ const pb = m.parseBirthday;
+  eq('birthday: full dates in several shapes', [pb('1990-05-21'), pb('19900521'), pb('1990/05/21'), pb('1990-05-21T00:00:00Z')], ['1990-05-21', '1990-05-21', '1990-05-21', '1990-05-21']);
+  eq('birthday: no-year shapes (Google --MM-DD, vCard, typed)', [pb('--05-21'), pb('--0521'), pb('05-21'), pb('-05-21')], ['--05-21', '--05-21', '--05-21', '--05-21']);
+  eq('birthday: placeholder years mean "no year"', [pb('1604-05-21'), pb('0000-05-21'), pb('2999-05-21')], ['--05-21', '--05-21', '--05-21']);
+  eq('birthday: junk and impossible dates are rejected', [pb(''), pb(null), pb('soon'), pb('1990-13-01'), pb('1990-02-30'), pb('--04-31'), pb('00-12')], [null, null, null, null, null, null, null]);
+  eq('birthday: 29 Feb is allowed', [pb('--02-29'), pb('1992-02-29')], ['--02-29', '1992-02-29']);
+  eq('birthday: input form drops the leading dashes', [m.birthdayInput('--05-21'), m.birthdayInput('1990-05-21'), m.birthdayInput(null)], ['05-21', '1990-05-21', '']);
+  const on = new Date(2026, 9, 22); // 22 Oct 2026
+  eq('birthday: today is 0 days, with the age they turn', m.nextBirthday({ birthday: '1990-10-22' }, on), { days: 0, age: 36 });
+  eq('birthday: tomorrow', m.nextBirthday({ birthday: '1990-10-23' }, on).days, 1);
+  eq('birthday: one that already passed this year rolls to next year', m.nextBirthday({ birthday: '1990-10-21' }, on), { days: 364, age: 37 });
+  eq('birthday: no year means no age', m.nextBirthday({ birthday: '--12-25' }, on), { days: 64, age: null });
+  eq('birthday: no birthday is null', m.nextBirthday({}, on), null);
+  eq('birthday: year-end wraps (31 Dec -> 2 Jan)', m.nextBirthday({ birthday: '--01-02' }, new Date(2026, 11, 31)).days, 2);
+  eq('birthday: 29 Feb in a non-leap year lands on 1 Mar', m.nextBirthday({ birthday: '--02-29' }, new Date(2027, 1, 1)).days, 28);
+  eq('birthday: soon window', [m.bdaySoon({ birthday: '--11-05' }, 30, on), m.bdaySoon({ birthday: '--12-25' }, 30, on), m.bdaySoon({}, 30, on)], [true, false, false]);
+  eq('birthday: labels', [m.birthdayLabel(0), m.birthdayLabel(1), m.birthdayLabel(5)], ['today', 'tomorrow', 'in 5 days']);
+  eq('normalize: tidies a birthday and drops junk', [person({ birthday: '19900521' }).birthday, person({ birthday: 'whenever' }).birthday], ['1990-05-21', null]);
+  eq('csv: Google "Birthday" column is read', m.normalizePerson(m.rowToPerson({ Name: 'A', Birthday: '--05-21' })).birthday, '--05-21');
+  eq('vcard: BDAY is read', m.parseVCF('BEGIN:VCARD\nFN:Test Person\nBDAY:19900521\nEND:VCARD').map((x) => m.normalizePerson(x).birthday), ['1990-05-21']);
+  { const a = person({ id: 'a', phone: '1' }); m.fillMissing(a, person({ id: 'b', phone: '1', birthday: '1990-05-21' }));
+    eq('merge fills a missing birthday', a.birthday, '1990-05-21'); }
+  { const base4 = [person({ id: 'a', tier: 1 })]; const local = JSON.parse(JSON.stringify(base4)); local[0].birthday = '--05-21';
+    eq('sync merge: a birthday added on one device survives', m.threeWayMerge(base4, local, JSON.parse(JSON.stringify(base4))).list[0].birthday, '--05-21'); }
+  const today = new Date(); const rel = (n) => { const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + n); return `--${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  eq('sort: next birthday first, people without one last', m.sortPeople([person({ id: 'x', name: 'None' }), person({ id: 'y', name: 'Later', birthday: rel(20) }), person({ id: 'z', name: 'Soon', birthday: rel(2) })], 'birthday').map((q) => q.name), ['Soon', 'Later', 'None']);
 }
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');

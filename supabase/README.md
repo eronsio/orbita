@@ -40,6 +40,9 @@ Commit and push; Cloudflare redeploys and a "Sign in" button appears in the head
 Sign up two throwaway accounts in two browsers and confirm each sees only its own contacts. Users can be viewed or
 removed under Authentication -> Users (deleting a user also deletes their saved contacts).
 
+## 7. Feedback box (optional)
+`orbita_setup.sql` also creates an `orbita_feedback` table behind Tools -> Help -> Send feedback. Anyone can send a message, nobody can read them through the app; you read them in the Supabase dashboard under Table Editor -> `orbita_feedback`. Re-running the whole file is safe.
+
 ## Notes
 - Contacts are stored as one JSON document per user (`orbita_data`), capped at about 8 MB. Two devices that edit at the
   same time are reconciled with a three-way merge (see `threeWayMerge` in `index.html`).

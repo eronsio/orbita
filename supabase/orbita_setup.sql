@@ -28,3 +28,26 @@ create policy "orbita: delete own row" on public.orbita_data for delete to authe
 -- Signed-out visitors (the anon role) get nothing at all.
 revoke all on public.orbita_data from anon;
 grant select, insert, update, delete on public.orbita_data to authenticated;
+
+-- ---------------------------------------------------------------------------------------------
+-- Feedback box (Tools -> Help -> Send feedback). Anyone, signed in or not, can SEND a message;
+-- nobody can read them through the app. You read them in the Supabase dashboard: Table Editor -> orbita_feedback.
+-- ---------------------------------------------------------------------------------------------
+create table if not exists public.orbita_feedback (
+  id            uuid primary key default gen_random_uuid(),
+  created_at    timestamptz not null default now(),
+  user_id       uuid default auth.uid(),
+  contact_email text,
+  message       text not null,
+  page          text,
+  user_agent    text,
+  constraint orbita_feedback_len check (char_length(message) between 1 and 4000)
+);
+
+alter table public.orbita_feedback enable row level security;
+
+drop policy if exists "orbita: anyone can send feedback" on public.orbita_feedback;
+create policy "orbita: anyone can send feedback" on public.orbita_feedback for insert to anon, authenticated with check (true);
+
+revoke all on public.orbita_feedback from anon, authenticated;
+grant insert on public.orbita_feedback to anon, authenticated;

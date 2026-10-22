@@ -43,6 +43,7 @@ Optional Supabase sign-in with the whole contact list saved as one JSON row per 
 - **Pins** are `.pin` divIcons: avatar circle, tier-coloured border + digit badge, dashed when the location is approximate, a hover card (`pinTipHtml`, desktop only), a selection ring when open. Clusters are `.cluster-bubble` rings showing the tier mix.
 - **Heatmap:** pins are hidden while it's on (they used to cover it). leaflet.heat's `maxZoom` option scales intensity by 2^(maxZoom - zoom), so it must stay at 1; the old `maxZoom: 18` made every contact ~1/4000th as strong at world zoom, which is why the heat used to look like a faint haze over empty sea. Radius follows zoom, `max` follows contact count, approximate pins count half, and `scheduleHeatReset` re-aligns the canvas on every `move`. Verify heat by sampling canvas pixels (alpha > 0 at contacts, 0 over empty ocean).
 - **Don't rebuild markers for a single-contact edit.** `syncPerson()` updates one marker in place; `updateMap()` rebuilds everything (and closes the cluster card). Use `updateMap()` only after filters/imports/bulk edits.
+- **Basemap:** Esri's World Light Gray canvas (base + `World_Light_Gray_Reference` labels layer, `maxNativeZoom: 16`): English place names, calm look, **no API key**. It is a free legacy service, so `initMap` falls back to OpenStreetMap if the first 4 tiles error with none loaded. Labels layer has class `map-labels` (dimmed in dark mode, where the tile pane is inverted by CSS). Basemaps that need a key (CARTO, MapTiler, Stadia) are not used.
 - Min zoom adapts to the window (`updateMinZoom`) so the map always fills the screen.
 
 ## Last contacted + catch-up
@@ -60,3 +61,12 @@ Auto / Light / Dark (Tools -> Theme), remembered in `orbita-theme`. A tiny inlin
 
 ## History
 Rescued 2026-07-09 from Google Drive (`Work/Business/Orbita/Prototype 1/HTMLS/Orbita_minimal.html`, last edited there 2025-09-10). Major cleanup 2026-10-17 (round 1: import, accuracy, security; round 2: bulk actions, placement queue, duplicates, CSV export, tests, accessibility).
+
+## Birthdays
+`birthday` is `YYYY-MM-DD`, or `--MM-DD` when the year is unknown (Google exports placeholder years like 0000/1604 for that; `parseBirthday` turns them into no-year). Pure helpers `parseBirthday`, `nextBirthday(p, now)`, `bdaySoon`, `birthdayLabel` take a `now` so tests can pin the date. Surfaces: panel row (click to edit; typed as `1990-05-21` or `05-21`), add/edit form field, Tools -> "Birthdays soon (N)" filter (next 30 days), list sort "Next birthday", a 🎂 flag in the list (next 7 days), a once-a-day toast on load (`orbita-bday-seen`), CSV/vCard import (`Birthday` column, `BDAY`) and a `birthday` CSV export column. It rides along in sync because the three-way merge is field-generic.
+
+## Tour, feedback, help, install
+- **Tour:** `TOUR_STEPS` + `startTour/renderTour/endTour`; auto-starts once (`orbita-tour-done`) when there are contacts and no modal/welcome is up (also after loading sample data); replay from Tools -> Help. The highlight is a CSS outline (no layout effect).
+- **Feedback:** Tools -> Help -> Send feedback (only shown when cloud is configured). Inserts into `orbita_feedback` (see `supabase/orbita_setup.sql`): anyone can insert, nobody can read through the API; the owner reads rows in the Supabase Table Editor. Contacts are never included.
+- **Sample data:** sample contacts carry the tag `Sample`; Tools -> Help -> "Remove sample contacts" deletes just those (undoable).
+- **Install / offline (PWA):** `manifest.webmanifest`, `sw.js`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` (all at the repo root; Cloudflare serves them). `sw.js`: page is network-first (a deploy is never hidden behind a stale copy), libs and tiles are stale-while-revalidate (tiles capped at 500, fetched with CORS so they aren't opaque), and anything on `supabase.co` is never touched. Registered from `initPwa()` on https/localhost. Verified offline by stopping the server and reloading. The Install button uses `beforeinstallprompt` where it exists, else shows instructions (iOS: Share -> Add to Home Screen). Bump the cache names in `sw.js` if you ever change what it caches.

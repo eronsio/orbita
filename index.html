@@ -16,7 +16,13 @@
     } catch (e) { /* default to light */ }
   </script>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23444143'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%23DCE8E7'/%3E%3Cellipse cx='16' cy='16' rx='12.5' ry='5' fill='none' stroke='%23DCE8E7' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3C/svg%3E">
-  <!-- Updated: 2025-09-10 11:50 - Fixed Analytics Panel and Added Click-Outside-to-Close -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#444143">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Orbita">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   
   <!-- External Libraries -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1480,6 +1486,26 @@
     :root[data-theme="dark"] .bloom { --bloom-veil: rgba(14, 16, 19, 0.6); --bloom-line: rgba(231, 233, 236, 0.3); }
     :root[data-theme="dark"] .bloom-pin.sel .pin { box-shadow: 0 0 0 3px #15181c, 0 0 0 5px #9fc5bf, 0 3px 10px rgba(0, 0, 0, 0.5); }
     :root[data-theme="dark"] .bloom-pin:focus-visible .pin { box-shadow: 0 0 0 3px #9fc5bf, 0 2px 8px rgba(0, 0, 0, 0.5); }
+
+    /* ===== Round 7: birthdays, tour, feedback, help ===== */
+    .tool-btn[hidden] { display: none; }
+    .list-flag.bday { background: #f6e3e0; color: #8a3b33; }
+    :root[data-theme="dark"] .list-flag.bday { background: #4a2a27; color: #f0b0a8; }
+    .tour { position: fixed; z-index: 2500; width: 320px; max-width: calc(100vw - 24px); background: var(--bg-light); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3); padding: 16px 18px 14px; }
+    .tour[hidden] { display: none; }
+    .tour h3 { margin: 0 0 6px; font-size: 16px; color: var(--text); }
+    .tour p { margin: 0 0 14px; font-size: 13.5px; line-height: 1.5; color: var(--text-light); }
+    .tour-foot { display: flex; align-items: center; gap: 8px; }
+    .tour-dots { display: flex; gap: 5px; margin-right: auto; }
+    .tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+    .tour-dots i.on { background: var(--text-light); }
+    .tour .btn { padding: 7px 14px; min-height: 34px; font-size: 13px; }
+    .tour-hl { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 10px; animation: tourPulse 1.6s ease-in-out infinite; }
+    @keyframes tourPulse { 50% { outline-offset: 6px; } }
+    :root[data-theme="dark"] .tour-hl { outline-color: #9fc5bf; }
+    :root[data-theme="dark"] .map-labels { opacity: 0.72; } /* inverted labels glare a little on the dark map */
+    @media (prefers-reduced-motion: reduce) { .tour-hl { animation: none; } }
+    @media (max-width: 600px) { .tour { left: 12px !important; right: 12px; width: auto; top: auto !important; bottom: 16px; } }
   </style>
   
   <!-- Scripts -->
@@ -1543,6 +1569,7 @@
           <button id="clearTierFilterBtn" class="tool-btn">Show all</button>
         </div>
         <select id="tagFilter" class="tool-select" aria-label="Filter by tag"><option value="">All tags</option></select>
+        <button id="birthdayBtn" class="tool-btn wide" aria-pressed="false" title="Birthdays in the next 30 days">Birthdays soon</button>
         <button id="catchUpBtn" class="tool-btn wide" aria-pressed="false" title="Tiered contacts you haven't been in touch with lately: Close friends 30 days, Friends 90, Acquaintances 180">Needs a catch-up</button>
       </div>
 
@@ -1573,6 +1600,16 @@
           <button id="placeQueueBtn" class="tool-btn" title="Walk through contacts that have no pin and click the map for each">Place unpinned</button>
           <button id="locateMissingBtn" class="tool-btn" title="Look up pins from addresses and cities">Locate from addresses</button>
           <button id="dupBtn" class="tool-btn">Find duplicates</button>
+        </div>
+      </div>
+
+      <div class="tools-section">
+        <h3>Help</h3>
+        <div class="tools-grid">
+          <button id="tourBtn" class="tool-btn">Take the tour</button>
+          <button id="feedbackBtn" class="tool-btn" hidden>Send feedback</button>
+          <button id="installBtn" class="tool-btn" title="Add Orbita to your home screen or desktop">Install app</button>
+          <button id="clearSampleBtn" class="tool-btn" hidden title="Delete the example contacts, keep everyone else">Remove sample contacts</button>
         </div>
       </div>
     </div>
@@ -1632,6 +1669,11 @@
         </div>
         
         <div class="form-group">
+          <label for="contactBirthday">Birthday</label>
+          <input type="text" id="contactBirthday" placeholder="1990-05-21, or 05-21 if you don't know the year" autocomplete="off">
+        </div>
+
+        <div class="form-group">
           <label for="contactTags">Tags</label>
           <input type="text" id="contactTags" placeholder="Separate tags with commas">
         </div>
@@ -1669,6 +1711,7 @@
         <option value="nopin">No pin first</option>
         <option value="tier">By tier</option>
         <option value="catchup">Longest since contact</option>
+        <option value="birthday">Next birthday</option>
       </select>
     </div>
     <div id="bulkBar" class="bulk-bar">
@@ -1719,12 +1762,36 @@
     </div>
   </div>
 
+  <div id="tour" class="tour" role="dialog" aria-label="Quick tour" hidden></div>
   <div id="clusterCard" class="cluster-card" role="dialog" aria-label="Contacts in this cluster" hidden></div>
   <div id="heatLegend" class="heat-legend" role="img" aria-label="Heatmap legend: fewer contacts to more contacts" hidden>
     <span>Fewer</span><i class="heat-bar"></i><span>More</span>
   </div>
 
   <div id="placeBar" class="place-bar" role="status"></div>
+
+  <div id="feedbackModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+    <div class="dialog account-dialog">
+      <div class="dup-head">
+        <h2 id="feedbackTitle">Send feedback</h2>
+        <button class="btn" id="closeFeedback" type="button">Close</button>
+      </div>
+      <p class="acc-lead">Something broken, confusing or missing? Tell me. It goes straight to the person who built Orbita.</p>
+      <form id="feedbackForm" novalidate>
+        <div class="form-group">
+          <label for="feedbackText">What happened, or what would help?</label>
+          <textarea id="feedbackText" rows="5" maxlength="4000"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="feedbackEmail">Your email (optional, only if you'd like a reply)</label>
+          <input type="email" id="feedbackEmail" autocomplete="email" inputmode="email">
+        </div>
+        <div id="feedbackMsg" class="acc-msg" role="alert"></div>
+        <div class="acc-form-actions"><button type="submit" class="btn btn-primary" id="feedbackSend">Send</button></div>
+      </form>
+      <p class="acc-note">Your contacts are never included. I only receive what you type here, plus the page address and your browser type.</p>
+    </div>
+  </div>
 
   <!-- Account dialog (only reachable when cloud sync is configured) -->
   <div id="accountModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
@@ -2113,6 +2180,7 @@
       p.tier = tier >= 1 && tier <= 3 ? tier : null;
       const last = String(p.lastContacted || '').slice(0, 10);
       p.lastContacted = DATE_RE.test(last) ? last : null;
+      p.birthday = parseBirthday(p.birthday);
       const lat = parseFloat(p.lat ?? p.latitude);
       const lng = parseFloat(p.lng ?? p.longitude);
       delete p.latitude; delete p.longitude;
@@ -2163,7 +2231,7 @@
     // Merge `src` into `target`, only filling blanks. A pin is only replaced when the incoming one is
     // strictly more exact than the existing one (see GEO_RANK).
     function fillMissing(target, src) {
-      ['email', 'phone', 'company', 'occupation', 'website', 'notes', 'instagram', 'address', 'city', 'region', 'country', 'tier']
+      ['email', 'phone', 'company', 'occupation', 'website', 'notes', 'instagram', 'address', 'city', 'region', 'country', 'tier', 'birthday']
         .forEach((f) => { if (!target[f] && src[f]) target[f] = src[f]; });
       target.tags = [...new Set([...(target.tags || []), ...(src.tags || [])])];
       if (src.lastContacted && (!target.lastContacted || src.lastContacted > target.lastContacted)) target.lastContacted = src.lastContacted;
@@ -2284,6 +2352,7 @@
         country: get('address 1 - country', 'country') || null,
         tier: get('tier') || null,
         lastContacted: get('lastcontacted', 'last contacted', 'last_contacted') || null,
+        birthday: get('birthday', 'bday', 'date of birth') || null,
         tags,
         lat: get('lat', 'latitude'),
         lng: get('lng', 'lon', 'longitude'),
@@ -2312,6 +2381,7 @@
           else if (key === 'ORG') c.company = unescapeV(val.split(';')[0]);
           else if (key === 'TITLE') c.occupation = unescapeV(val);
           else if (key === 'NOTE') c.notes = unescapeV(val);
+          else if (key === 'BDAY' && !c.birthday) c.birthday = val.trim();
           else if (key === 'URL' && !c.website) c.website = val.trim();
           else if (key === 'CATEGORIES') val.split(',').forEach((t) => { if (t.trim()) c.tags.push(t.trim()); });
           else if (key === 'ADR' && !c.adr) {
@@ -2326,7 +2396,7 @@
           email: c.emails[0] || null, phone: c.phones[0] || null,
           altEmails: c.emails.slice(1), altPhones: c.phones.slice(1),
           company: c.company || null, occupation: c.occupation || null, notes: c.notes || null,
-          website: c.website || null, tags: c.tags,
+          website: c.website || null, tags: c.tags, birthday: c.birthday || null,
           address: c.adr ? [c.adr.street, c.adr.city, c.adr.region, c.adr.zip, c.adr.country].filter(Boolean).join(', ') || null : null,
           city: c.adr?.city || null, region: c.adr?.region || null, country: c.adr?.country || null,
         });
@@ -2355,6 +2425,13 @@
       email: `${name.toLowerCase().replace(/[^a-z]+/g, '.')}@example.com`,
     }));
 
+    const TOUR_STEPS = [
+      { sel: null, title: 'Your people, on a map', text: 'Each pin is a contact. Pins that are close join into a numbered bubble: click one to fan out the people inside, or hover it to see them as a list. The map only zooms when you ask it to.' },
+      { sel: '#searchInput', title: 'Find anyone', text: 'Search by name, company, tag or place. Press the / key anywhere to jump straight here.' },
+      { sel: '#toolsBtn', title: 'Tools', text: 'Import contacts, filter by tier or tag, see who needs a catch-up or has a birthday coming, switch to a heatmap, or change the theme.' },
+      { sel: '#tableBtn', title: 'The list', text: 'Everyone in a sortable list, with bulk actions: set tiers, add tags, or mark people as contacted.' },
+      { sel: '#addContactBtn', title: 'Add someone', text: 'Add a contact by hand, or click any pin to open their details. Click any field in the details to edit it. You can replay this tour from Tools, under Help.' },
+    ];
     // How often each tier should hear from you before it shows up as "needs a catch-up"
     const CATCH_UP_DAYS = { 1: 30, 2: 90, 3: 180 };
     const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -2382,6 +2459,35 @@
       const d = daysSince(p.lastContacted, now);
       return d === null || d > CATCH_UP_DAYS[p.tier];
     }
+
+    // ---- birthdays: stored as 'YYYY-MM-DD', or '--MM-DD' when the year isn't known ----
+    const BDAY_SOON_DAYS = 30;
+    function parseBirthday(raw) {
+      const s = String(raw == null ? '' : raw).trim().replace(/[T ].*$/, '');
+      let y = null; let mo; let d; let m;
+      if ((m = s.match(/^(\d{4})[-/.]?(\d{2})[-/.]?(\d{2})$/))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+      else if ((m = s.match(/^-{1,2}(\d{2})-?(\d{2})$/)) || (m = s.match(/^(\d{2})-(\d{2})$/))) { mo = +m[1]; d = +m[2]; } // month-day
+      else return null;
+      if (mo < 1 || mo > 12 || d < 1 || d > new Date(2000, mo, 0).getDate()) return null; // 2000 is a leap year: 29 Feb is allowed
+      if (y !== null && (y < 1900 || y > new Date().getFullYear())) y = null; // Google writes placeholder years (0000, 1604) for "no year"
+      const two = (n) => String(n).padStart(2, '0');
+      return y ? `${y}-${two(mo)}-${two(d)}` : `--${two(mo)}-${two(d)}`;
+    }
+    // Days until the next birthday (0 = today) and the age they turn (null if the year is unknown); null if no birthday
+    function nextBirthday(p, now = new Date()) {
+      const b = parseBirthday(p.birthday);
+      if (!b) return null;
+      const m = b.match(/(\d{2})-(\d{2})$/); const mo = +m[1]; const d = +m[2];
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      let year = today.getFullYear();
+      let at = new Date(year, mo - 1, d);
+      if (at < today) { year++; at = new Date(year, mo - 1, d); }
+      return { days: Math.round((at - today) / 864e5), age: b.startsWith('--') ? null : year - +b.slice(0, 4) };
+    }
+    const bdaySoon = (p, within = BDAY_SOON_DAYS, now = new Date()) => { const n = nextBirthday(p, now); return !!n && n.days <= within; };
+    const birthdayLabel = (days) => (days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`);
+    const prettyBirthday = (b) => { const m = b.match(/(\d{2})-(\d{2})$/); return new Date(2000, +m[1] - 1, +m[2]).toLocaleDateString(undefined, { day: 'numeric', month: 'long' }); };
+    const birthdayInput = (b) => (b ? (b.startsWith('--') ? b.slice(2) : b) : '');
 
     // ---- bloom: where a cluster's contacts go when it fans out (offsets in px from the cluster) ----
     const BLOOM = { gap: 46, hubR: 28, pin: 34, max: 80 };
@@ -2418,6 +2524,10 @@
       if (mode === 'recent') return copy.sort((a, b) => String(b.addedAt || '').localeCompare(String(a.addedAt || '')) || byName(a, b));
       if (mode === 'nopin') return copy.sort((a, b) => (hasCoords(a) ? 1 : 0) - (hasCoords(b) ? 1 : 0) || byName(a, b));
       if (mode === 'tier') return copy.sort((a, b) => (a.tier || 9) - (b.tier || 9) || byName(a, b));
+      if (mode === 'birthday') { // soonest birthday first; people without one go last
+        const gap = (p) => { const n = nextBirthday(p); return n ? n.days : Infinity; };
+        return copy.sort((a, b) => (gap(a) === gap(b) ? 0 : gap(a) < gap(b) ? -1 : 1) || byName(a, b));
+      }
       if (mode === 'catchup') { // due contacts first (longest since you were in touch, never-contacted leading), then the rest
         const gap = (p) => { const d = daysSince(p.lastContacted); return d === null ? Infinity : d; };
         const group = (p) => (needsCatchUp(p) ? 0 : p.tier ? 1 : 2);
@@ -2590,6 +2700,7 @@
         this.listSort = readJson('orbita-list-sort') || 'name';
         this.searchIndex = -1;
         this.catchUpOnly = false;
+        this.birthdayOnly = false;
         this.theme = readJson(THEME_KEY) || 'auto';
         this.clusterRef = null;
         this.selectionMarker = null;
@@ -2606,6 +2717,8 @@
           this.loadFromStorage();
           this.initCloud();
           this.applyTheme(this.theme);
+          this.initPwa();
+          setTimeout(() => { this.announceBirthdays(); this.maybeStartTour(); }, 2200);
           if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
         } catch (error) {
           console.error('Error during initialization:', error);
@@ -2627,15 +2740,27 @@
         });
         this.updateMinZoom();
 
-        // OpenStreetMap's own tiles. (CARTO's free light style now needs an API key: its tiles load, but each one
-        // is stamped "API KEY REQUIRED", so a tile-error fallback never fires.) The calmer look comes from the
-        // `.leaflet-tile-pane` CSS filter instead.
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors',
-          maxZoom: 18,
-          noWrap: true,
-          bounds: WORLD_BOUNDS,
-        }).addTo(this.map);
+        // Esri's light-grey canvas: place names in English, a calm look, and no API key (CARTO's free style now needs
+        // one; OpenStreetMap's own tiles label every country in its local language). It's a free legacy service, so
+        // if its tiles stop answering we fall back to OpenStreetMap.
+        const ESRI = 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/';
+        const esriOpts = { maxNativeZoom: 16, maxZoom: 18, noWrap: true, bounds: WORLD_BOUNDS };
+        const baseLayer = L.tileLayer(`${ESRI}World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`, {
+          ...esriOpts, attribution: 'Tiles © Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors',
+        });
+        const labelLayer = L.tileLayer(`${ESRI}World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`, { ...esriOpts, zIndex: 3, className: 'map-labels' });
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors', maxZoom: 18, noWrap: true, bounds: WORLD_BOUNDS,
+        });
+        let tilesOk = 0; let tilesBad = 0;
+        baseLayer.on('tileload', () => { tilesOk++; });
+        baseLayer.on('tileerror', () => {
+          if (++tilesBad >= 4 && !tilesOk && !this.map.hasLayer(osmLayer)) {
+            this.map.removeLayer(baseLayer); this.map.removeLayer(labelLayer); osmLayer.addTo(this.map);
+          }
+        });
+        baseLayer.addTo(this.map);
+        labelLayer.addTo(this.map);
 
         // No disableClusteringAtZoom, no spiderfy: contacts that share one coordinate (people known only by country)
         // stay in a cluster, and clicking any cluster opens a card listing who is in it, without moving the map.
@@ -2763,6 +2888,15 @@
           window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (this.theme === 'auto') this.applyTheme('auto'); });
         }
         click('catchUpBtn', () => { this.catchUpOnly = !this.catchUpOnly; this.updateMap({ fit: true }); });
+        click('birthdayBtn', () => { this.birthdayOnly = !this.birthdayOnly; this.updateMap({ fit: true }); });
+        click('tourBtn', () => { this.closeToolsPanel(); this.startTour(); });
+        click('feedbackBtn', () => this.openFeedback());
+        click('closeFeedback', () => this.closeModal('feedbackModal'));
+        click('installBtn', () => this.installApp());
+        click('clearSampleBtn', () => this.clearSample());
+        $('feedbackForm').addEventListener('submit', (e) => { e.preventDefault(); this.sendFeedback(); });
+        $('feedbackModal').addEventListener('click', (e) => { if (e.target.id === 'feedbackModal') this.closeModal('feedbackModal'); });
+        $('tour').addEventListener('click', (e) => this.onTourClick(e));
         on('bulkTier', 'change', (e) => { this.bulkTier(e.target.value); e.target.value = ''; });
         $('dupBody').addEventListener('click', (e) => this.onDupClick(e));
         $('dupModal').addEventListener('click', (e) => { if (e.target.id === 'dupModal') this.closeModal('dupModal'); });
@@ -2861,12 +2995,14 @@
         if (e.key !== 'Escape') return;
         if (document.body.classList.contains('presenting')) { this.setPresenting(false); return; }
         if (this.placingContactId) { this.endPlacing(); return; }
+        if (!$('tour').hidden) { this.endTour(); return; }
         if (this.bloom) { this.closeBloom(); return; }
         if (!$('clusterCard').hidden) { this.hideClusterCard(); return; }
         if ($('addContactModal').classList.contains('open')) { this.hideAddContactModal(); return; }
         if ($('analyticsModal').classList.contains('open')) { this.hideAnalytics(); return; }
         if ($('dupModal').classList.contains('open')) { this.closeModal('dupModal'); return; }
         if ($('accountModal').classList.contains('open')) { this.closeModal('accountModal'); return; }
+        if ($('feedbackModal').classList.contains('open')) { this.closeModal('feedbackModal'); return; }
         if ($('contactPanel').style.display === 'flex') { this.closeContactPanel(); return; }
         if ($('toolsPanel').classList.contains('open')) { this.closeToolsPanel(); return; }
         if (this.selectMode) { this.setSelectMode(false); return; }
@@ -2943,6 +3079,125 @@
         if (this.listOpen) this.renderList();
       }
 
+      // ---------------- birthdays ----------------
+      announceBirthdays() {
+        const today = todayStr();
+        if (readJson('orbita-bday-seen') === today) return;
+        const soon = this.people.map((p) => ({ p, n: nextBirthday(p) })).filter((x) => x.n && x.n.days <= 7).sort((a, b) => a.n.days - b.n.days);
+        if (!soon.length) return;
+        try { localStorage.setItem('orbita-bday-seen', JSON.stringify(today)); } catch (e) { /* ignore */ }
+        const names = soon.slice(0, 3).map(({ p, n }) => `${p.name} (${birthdayLabel(n.days)})`).join(', ');
+        this.showNotification(`🎂 Birthdays: ${names}${soon.length > 3 ? ` +${soon.length - 3} more` : ''}`, {
+          actionLabel: 'Show', duration: 12000,
+          onAction: () => { this.birthdayOnly = true; this.updateMap({ fit: true }); },
+        });
+      }
+
+      // ---------------- first-run tour ----------------
+      maybeStartTour() {
+        if (readJson('orbita-tour-done') || !this.people.length || !$('tour').hidden) return;
+        if ($('welcome').classList.contains('show') || document.querySelector('.modal.open')) return;
+        this.startTour();
+      }
+
+      startTour() { this.tourStep = 0; this.renderTour(); }
+
+      renderTour() {
+        const i = this.tourStep; const s = TOUR_STEPS[i]; const last = i === TOUR_STEPS.length - 1;
+        const card = $('tour');
+        document.querySelectorAll('.tour-hl').forEach((el) => el.classList.remove('tour-hl'));
+        const target = s.sel ? document.querySelector(s.sel) : null;
+        const usable = !!target && target.offsetParent !== null;
+        if (usable) target.classList.add('tour-hl');
+        card.innerHTML = `<h3>${esc(s.title)}</h3><p>${esc(s.text)}</p>
+          <div class="tour-foot"><div class="tour-dots" aria-hidden="true">${TOUR_STEPS.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
+            ${last ? '' : '<button class="link-btn" data-tour="skip">Skip</button>'}
+            ${i > 0 ? '<button class="btn" data-tour="back">Back</button>' : ''}
+            <button class="btn btn-primary" data-tour="next">${last ? 'Got it' : 'Next'}</button></div>`;
+        card.hidden = false;
+        if (window.innerWidth <= 600) { card.style.left = card.style.top = ''; }
+        else if (usable) {
+          const r = target.getBoundingClientRect();
+          let y = r.bottom + 16;
+          if (y + card.offsetHeight > window.innerHeight - 12) y = Math.max(12, r.top - card.offsetHeight - 16);
+          card.style.left = `${Math.min(Math.max(12, r.left), window.innerWidth - card.offsetWidth - 12)}px`;
+          card.style.top = `${y}px`;
+        } else {
+          card.style.left = `${Math.max(12, (window.innerWidth - card.offsetWidth) / 2)}px`;
+          card.style.top = `${Math.max(90, window.innerHeight * 0.3)}px`;
+        }
+        card.querySelector('[data-tour="next"]').focus({ preventScroll: true });
+      }
+
+      endTour() {
+        $('tour').hidden = true;
+        document.querySelectorAll('.tour-hl').forEach((el) => el.classList.remove('tour-hl'));
+        try { localStorage.setItem('orbita-tour-done', '1'); } catch (e) { /* ignore */ }
+      }
+
+      onTourClick(e) {
+        const act = e.target.closest('[data-tour]')?.dataset.tour;
+        if (act === 'skip') this.endTour();
+        else if (act === 'back') { this.tourStep = Math.max(0, this.tourStep - 1); this.renderTour(); }
+        else if (act === 'next') {
+          if (this.tourStep >= TOUR_STEPS.length - 1) this.endTour();
+          else { this.tourStep++; this.renderTour(); }
+        }
+      }
+
+      // ---------------- feedback ----------------
+      openFeedback() {
+        this.closeToolsPanel();
+        $('feedbackMsg').textContent = '';
+        const mail = this.session && this.session.user && this.session.user.email;
+        if (mail && !$('feedbackEmail').value) $('feedbackEmail').value = mail;
+        this.openModal('feedbackModal', 'feedbackText');
+      }
+
+      async sendFeedback() {
+        const msg = $('feedbackMsg'); msg.className = 'acc-msg';
+        const message = clean($('feedbackText').value);
+        if (!message) { msg.textContent = 'Please type a message first.'; msg.classList.add('error'); return; }
+        $('feedbackSend').disabled = true;
+        try {
+          await this.api('/rest/v1/orbita_feedback', {
+            method: 'POST', prefer: 'return=minimal',
+            body: { message, contact_email: clean($('feedbackEmail').value) || null, page: location.origin + location.pathname, user_agent: navigator.userAgent.slice(0, 300) },
+          });
+          $('feedbackText').value = '';
+          this.closeModal('feedbackModal');
+          this.showNotification('Thanks! Your feedback was sent.');
+        } catch (e) {
+          msg.textContent = e.status === 404 || /relation|schema cache/i.test(e.message)
+            ? "Feedback isn't switched on yet. Please tell the person who sent you the link."
+            : `Couldn't send that (${e.message}). Please try again in a moment.`;
+          msg.classList.add('error');
+        } finally { $('feedbackSend').disabled = false; }
+      }
+
+      // ---------------- install as an app + offline ----------------
+      initPwa() {
+        const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+        $('installBtn').hidden = !!standalone;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.installPrompt = e; });
+        window.addEventListener('appinstalled', () => { this.installPrompt = null; $('installBtn').hidden = true; });
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+          navigator.serviceWorker.register('sw.js').catch(() => { /* the app works fine without it */ });
+        }
+      }
+
+      installApp() {
+        if (this.installPrompt) {
+          const prompt = this.installPrompt; this.installPrompt = null;
+          prompt.prompt();
+          return;
+        }
+        const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        this.showNotification(ios
+          ? 'On iPhone or iPad: tap the Share button in Safari, then "Add to Home Screen".'
+          : 'Open your browser menu and choose "Install Orbita" (or "Add to Home Screen").', { duration: 12000 });
+      }
+
       // ---------------- theme ----------------
       applyTheme(mode, save = false) {
         this.theme = THEME_LABELS[mode] ? mode : 'auto';
@@ -2962,6 +3217,7 @@
         this.currentTierFilter = null;
         this.currentTagFilter = '';
         this.catchUpOnly = false;
+        this.birthdayOnly = false;
         this.currentSearchQuery = '';
         $('searchInput').value = '';
         this.updateMap({ fit: true });
@@ -2981,6 +3237,7 @@
         if (this.currentTierFilter && p.tier !== this.currentTierFilter) return false;
         if (this.currentTagFilter && !(p.tags || []).includes(this.currentTagFilter)) return false;
         if (this.catchUpOnly && !needsCatchUp(p)) return false;
+        if (this.birthdayOnly && !bdaySoon(p)) return false;
         return this.matchesSearch(p);
       }
 
@@ -3094,6 +3351,11 @@
         $('catchUpBtn').textContent = `Needs a catch-up${due ? ` (${due})` : ''}`;
         $('catchUpBtn').classList.toggle('active', this.catchUpOnly);
         $('catchUpBtn').setAttribute('aria-pressed', String(this.catchUpOnly));
+        const soon = this.people.filter((p) => bdaySoon(p)).length;
+        $('birthdayBtn').textContent = `Birthdays soon${soon ? ` (${soon})` : ''}`;
+        $('birthdayBtn').classList.toggle('active', this.birthdayOnly);
+        $('birthdayBtn').setAttribute('aria-pressed', String(this.birthdayOnly));
+        $('clearSampleBtn').hidden = !this.people.some((p) => (p.tags || []).includes('Sample'));
       }
 
       renderStatus() {
@@ -3137,6 +3399,7 @@
             </span>
             ${hasCoords(p) ? '' : '<span class="list-flag">no pin</span>'}
             ${needsCatchUp(p) ? '<span class="list-flag due">catch up</span>' : ''}
+            ${bdaySoon(p, 7) ? `<span class="list-flag bday">🎂 ${birthdayLabel(nextBirthday(p).days)}</span>` : ''}
           </button>`;
         }).join('') || '<div class="hint list-empty">No contacts match.</div>';
         body.scrollTop = scroll;
@@ -3562,6 +3825,11 @@
             const pretty = new Date(y, mo - 1, dd).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
             return `${esc(pretty)} · ${esc(agoLabel(d))}${needsCatchUp(p) ? '<span class="due">due</span>' : ''}`;
           }
+          case 'birthday': {
+            const n = nextBirthday(p);
+            if (!n) return empty;
+            return `${esc(prettyBirthday(p.birthday))}${n.age ? ` · turns ${n.age}` : ''} · ${esc(birthdayLabel(n.days))}${n.days <= 7 ? ' 🎂' : ''}`;
+          }
           case 'tags': return (p.tags || []).length
             ? (p.tags).map((t) => `<span class="tag-chip">${esc(t)}</span>`).join('') : empty;
           case 'instagram': return p.instagram ? `@${esc(String(p.instagram).replace(/^@/, ''))}` : empty;
@@ -3571,6 +3839,7 @@
 
       rawFieldValue(p, key) {
         if (key === 'tags') return (p.tags || []).join(', ');
+        if (key === 'birthday') return birthdayInput(p.birthday);
         if (key === 'instagram') return p.instagram ? String(p.instagram).replace(/^@/, '') : '';
         return p[key] == null ? '' : String(p[key]);
       }
@@ -3582,7 +3851,7 @@
         const prevScroll = keepScroll ? (panel.querySelector('.panel-content')?.scrollTop || 0) : 0;
         this.activePanelId = personId;
 
-        const allRows = [['email', 'Email'], ['phone', 'Phone'], ['lastContacted', 'Last contact'], ['occupation', 'Occupation'],
+        const allRows = [['email', 'Email'], ['phone', 'Phone'], ['lastContacted', 'Last contact'], ['birthday', 'Birthday'], ['occupation', 'Occupation'],
           ['company', 'Company'], ['website', 'Website'], ['address', 'Address'], ['city', 'City'],
           ['region', 'Region'], ['country', 'Country'], ['instagram', 'Instagram'], ['tags', 'Tags'], ['notes', 'Notes']];
         // Only show what's filled in; empty fields become "+ Add" chips so the panel stays short
@@ -3714,6 +3983,7 @@
           if (key === 'lastContacted') input.max = todayStr();
           input.value = this.rawFieldValue(p, key);
           if (key === 'tags') input.placeholder = 'comma, separated';
+          if (key === 'birthday') input.placeholder = '1990-05-21, or 05-21';
         }
         input.className = 'inline-edit';
         el.textContent = '';
@@ -3744,6 +4014,10 @@
         else if (key === 'tags') p.tags = splitTags(v);
         else if (key === 'instagram') p.instagram = v.replace(/^@/, '') || null;
         else if (key === 'lastContacted') p.lastContacted = DATE_RE.test(v) ? v : null;
+        else if (key === 'birthday') {
+          if (v && !parseBirthday(v)) { this.showNotification('Could not read that date. Try 1990-05-21, or 05-21.'); this.showContactPanel(p.id, { keepScroll: true }); return; }
+          p.birthday = parseBirthday(v);
+        }
         else p[key] = v || null;
 
         const locationChanged = ['address', 'city', 'region', 'country'].includes(key) && v !== before;
@@ -3768,7 +4042,7 @@
         set('contactLocation', person ? [person.city, person.region, person.country].filter(Boolean).join(', ') : '');
         set('contactAddress', person?.address); set('contactCompany', person?.company);
         set('contactWebsite', person?.website); set('contactTags', (person?.tags || []).join(', '));
-        set('contactNotes', person?.notes);
+        set('contactNotes', person?.notes); set('contactBirthday', birthdayInput(person?.birthday));
         this.openModal('addContactModal', 'contactName');
       }
 
@@ -3788,11 +4062,13 @@
         const name = v('contactName');
         if (!name) { this.showNotification('Please enter a name'); return; }
         const loc = parseLocationText(v('contactLocation'));
+        if (v('contactBirthday') && !parseBirthday(v('contactBirthday'))) { this.showNotification('Could not read that birthday. Try 1990-05-21, or 05-21.'); return; }
         const fields = {
           name, occupation: v('contactProfession') || null, email: v('contactEmail') || null,
           phone: v('contactPhone') || null, address: v('contactAddress') || null,
           company: v('contactCompany') || null, website: v('contactWebsite') || null,
           tags: splitTags(v('contactTags')), notes: v('contactNotes') || null,
+          birthday: parseBirthday(v('contactBirthday')),
         };
 
         if (this.editingContactId) {
@@ -3996,6 +4272,13 @@
 
       loadSample() {
         this.finishImport(SAMPLE_PEOPLE.map((p) => ({ ...p })), 'Sample data');
+        setTimeout(() => this.maybeStartTour(), 1500);
+      }
+
+      clearSample() {
+        const n = this.people.filter((p) => (p.tags || []).includes('Sample')).length;
+        if (!n) return;
+        this.withUndo(`Removed ${n} sample contact${n === 1 ? '' : 's'}`, () => { this.people = this.people.filter((p) => !(p.tags || []).includes('Sample')); });
       }
 
       parseCsv(input) {
@@ -4066,14 +4349,14 @@
 
       exportToCSV() {
         const cols = ['name', 'email', 'phone', 'company', 'occupation', 'website', 'address', 'city', 'region', 'country',
-          'lat', 'lng', 'geosource', 'tier', 'lastcontacted', 'tags', 'instagram', 'notes'];
+          'lat', 'lng', 'geosource', 'tier', 'lastcontacted', 'birthday', 'tags', 'instagram', 'notes'];
         const rows = this.people.map((p) => ({
           name: p.name,
           email: [p.email, ...p.altEmails].filter(Boolean).join(' ::: '),
           phone: [p.phone, ...p.altPhones].filter(Boolean).join(' ::: '),
           company: p.company, occupation: p.occupation, website: p.website, address: p.address, city: p.city,
           region: p.region, country: p.country, lat: hasCoords(p) ? p.lat : '', lng: hasCoords(p) ? p.lng : '',
-          geosource: p.geoSource || '', tier: p.tier || '', lastcontacted: p.lastContacted || '', tags: (p.tags || []).join(' ::: '),
+          geosource: p.geoSource || '', tier: p.tier || '', lastcontacted: p.lastContacted || '', birthday: p.birthday || '', tags: (p.tags || []).join(' ::: '),
           instagram: p.instagram, notes: p.notes,
         })).map((r) => Object.fromEntries(cols.map((c) => [c, csvSafe(r[c] ?? '')])));
         const csv = '\uFEFF' + Papa.unparse({ fields: cols, data: rows.map((r) => cols.map((c) => r[c])) });
@@ -4174,6 +4457,9 @@
 
       initCloud() {
         if (!this.cloudEnabled()) return;
+        $('feedbackBtn').hidden = false;
+        const priv = document.querySelector('.welcome-privacy');
+        if (priv) priv.textContent = '🔒 Your contacts stay in this browser unless you create an account to sync them.';
         this.session = readJson(SESSION_KEY);
         this.sync = { userId: null, version: 0, at: 0, dirty: false, ...(readJson(SYNC_KEY) || {}) };
         this.renderAccount();
