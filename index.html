@@ -1506,6 +1506,90 @@
     :root[data-theme="dark"] .map-labels { opacity: 0.72; } /* inverted labels glare a little on the dark map */
     @media (prefers-reduced-motion: reduce) { .tour-hl { animation: none; } }
     @media (max-width: 600px) { .tour { left: 12px !important; right: 12px; width: auto; top: auto !important; bottom: 16px; } }
+
+    /* ===== Together: chat + journals ===== */
+    .toolbar-icon[hidden] { display: none; }
+    #togetherBtn { position: relative; }
+    .tg-badge { position: absolute; top: 3px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #c9736b; color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; box-sizing: border-box; }
+    .tg-badge[hidden] { display: none; }
+    .tg-panel {
+      position: fixed; top: 84px; left: 80px; bottom: 20px; width: 400px; max-width: calc(100vw - 100px); z-index: 1000;
+      background: var(--bg-light); border: 1px solid var(--border-light); border-radius: 12px;
+      box-shadow: 0 4px 20px var(--shadow-lg); display: none; flex-direction: column; overflow: hidden;
+    }
+    .tg-panel.open { display: flex; }
+    .tg-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px 8px; }
+    .tg-title { font-size: 16px; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tg-sub { font-size: 12px; color: var(--text-muted); font-weight: 400; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tg-head-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .tg-head .btn, .tg-bar .btn { padding: 6px 12px; min-height: 32px; font-size: 13px; }
+    .tg-panel .seg { margin: 0 14px 10px; }
+    .tg-panel .seg-btn.active { background: var(--bg); }
+    .tg-invites { margin: 0 14px 10px; display: flex; flex-direction: column; gap: 6px; }
+    .tg-invite { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--primary); border-radius: 10px; font-size: 13px; color: var(--text); }
+    .tg-invite span { flex: 1; min-width: 0; }
+    .tg-invite .btn { padding: 4px 10px; min-height: 28px; font-size: 12px; }
+    .tg-body { flex: 1; overflow-y: auto; border-top: 1px solid var(--border-light); background: var(--bg); min-height: 0; }
+    .tg-bar { display: flex; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border-light); position: sticky; top: 0; background: var(--bg); z-index: 2; }
+    .tg-bar select { flex: 1; min-width: 0; padding: 6px 8px; font: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+    .tg-filter { padding: 8px 14px; font-size: 13px; color: var(--text-light); border-bottom: 1px solid var(--border-light); }
+    .tg-empty { padding: 28px 22px; text-align: center; color: var(--text-muted); font-size: 13.5px; line-height: 1.55; }
+    .tg-empty .btn { margin-top: 12px; }
+    .tg-month { padding: 10px 14px 4px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    .tg-entry { margin: 6px 12px 10px; padding: 12px 14px; background: var(--bg-light); border: 1px solid var(--border-light); border-radius: 12px; }
+    .tg-entry-top { display: flex; align-items: baseline; gap: 8px; font-size: 12px; color: var(--text-muted); }
+    .tg-entry-top .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tg-entry h4 { margin: 4px 0 2px; font-size: 15px; color: var(--text); }
+    .tg-entry-body { margin-top: 4px; font-size: 13.5px; line-height: 1.55; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+    .tg-entry.open .tg-entry-body { display: block; }
+    .tg-more { border: none; background: none; padding: 2px 0; margin-top: 2px; font: inherit; font-size: 12px; color: var(--text-light); cursor: pointer; text-decoration: underline; }
+    .tg-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .tg-chip { font-size: 11.5px; padding: 2px 8px; border-radius: 10px; background: var(--border-light); color: var(--text-light); }
+    .tg-chip.share { background: var(--primary); color: var(--text); }
+    .tg-chip.private { background: transparent; border: 1px dashed var(--secondary); }
+    .tg-by { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+    .tg-link { border: none; background: none; padding: 0; font: inherit; font-size: 12px; color: var(--text-light); cursor: pointer; text-decoration: underline; }
+    .tg-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 14px; border: none; border-bottom: 1px solid var(--border-light); background: transparent; font-family: inherit; cursor: pointer; }
+    .tg-row:hover { background: var(--bg-light); }
+    .tg-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+    .tg-avatar.group { border-radius: 12px; }
+    .tg-row-main { flex: 1; min-width: 0; }
+    .tg-row-name { font-size: 14px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tg-row-last { font-size: 12.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tg-unread { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: #c9736b; color: #fff; font-size: 11px; font-weight: 700; line-height: 20px; text-align: center; box-sizing: border-box; }
+    .tg-chat-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border-light); position: sticky; top: 0; background: var(--bg); z-index: 2; }
+    .tg-chat-head .tg-title { flex: 1; }
+    .tg-icon-btn { border: none; background: transparent; color: var(--text-light); font-size: 18px; line-height: 1; padding: 6px 9px; border-radius: 8px; cursor: pointer; }
+    .tg-icon-btn:hover { background: var(--border-light); color: var(--text); }
+    .tg-msgs { padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 4px; }
+    .tg-day { align-self: center; margin: 8px 0 4px; font-size: 11px; color: var(--text-muted); }
+    .tg-msg { max-width: 82%; align-self: flex-start; padding: 7px 11px; border-radius: 14px 14px 14px 4px; background: var(--bg-light); border: 1px solid var(--border-light); color: var(--text); font-size: 13.5px; line-height: 1.45; overflow-wrap: anywhere; position: relative; }
+    .tg-msg-text { display: block; white-space: pre-wrap; }
+    .tg-msg.mine { align-self: flex-end; background: var(--primary); border-color: transparent; border-radius: 14px 14px 4px 14px; }
+    .tg-msg.pending { opacity: 0.6; }
+    .tg-msg-name { display: block; font-size: 11px; font-weight: 600; color: var(--text-light); margin-bottom: 1px; }
+    .tg-msg-time { display: block; font-size: 10.5px; color: var(--text-muted); margin-top: 2px; text-align: right; }
+    .tg-msg .tg-del { position: absolute; top: -8px; right: -6px; display: none; border: 1px solid var(--border); background: var(--bg-light); color: var(--text-light); border-radius: 10px; font-size: 11px; padding: 0 6px; cursor: pointer; }
+    .tg-msg.mine:hover .tg-del { display: block; }
+    .tg-composer { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border-light); background: var(--bg-light); align-items: flex-end; }
+    .tg-composer[hidden] { display: none; }
+    .tg-composer textarea { flex: 1; resize: none; max-height: 120px; padding: 8px 10px; font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+    .tg-composer .btn { min-height: 36px; padding: 6px 14px; }
+    .tg-share-list { display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+    .tg-share-list label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text); cursor: pointer; }
+    .tg-share-list .none { font-size: 13px; color: var(--text-muted); }
+    .entry-dialog { max-width: 520px; }
+    .ci-list { list-style: none; margin: 0 0 14px; padding: 0; font-size: 14px; color: var(--text); }
+    .ci-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border-light); }
+    .ci-list li span.grow { flex: 1; }
+    .ci-list .muted { color: var(--text-muted); font-size: 12px; }
+    .ci-h { margin: 14px 0 6px; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+    .ci-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .ci-row input, .ci-row textarea { flex: 1; min-width: 0; padding: 8px 10px; font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+    :root[data-theme="dark"] .tg-msg.mine { background: var(--primary); }
+    body.presenting .tg-panel { display: none !important; }
+    @media (max-width: 1100px) { .tg-panel { top: 150px; bottom: 70px; } }
+    @media (max-width: 600px) { .tg-panel { left: 56px; right: 8px; top: 148px; bottom: 8px; width: auto; max-width: none; } body.tg-open .fab { display: none; } }
   </style>
   
   <!-- Scripts -->
@@ -1534,6 +1618,12 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2.5c.8 3.2 4.5 4.8 4.5 9a4.5 4.5 0 0 1-9 0c0-1.7.7-2.9 1.7-3.9.2 1.2.8 1.9 1.5 2.2C10.3 7.2 11 4.8 12 2.5Z"/>
         </svg>
+      </button>
+      <button class="toolbar-icon" id="togetherBtn" title="Chat and journal" aria-label="Chat and journal" hidden>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 20.5l1.6-4.9A8.5 8.5 0 1 1 21 11.5Z"/>
+        </svg>
+        <span class="tg-badge" id="tgBadge" hidden></span>
       </button>
     </div>
 
@@ -1822,12 +1912,16 @@
             <button type="button" class="link-btn" id="accForgot">Forgot password?</button>
           </div>
         </form>
-        <p class="acc-note">This is a prototype. Contacts you sync are stored in a database run by its creator, so use test data if you'd rather not share real people's details.</p>
+        <p class="acc-note">This is a prototype. Contacts you sync are stored in a database run by its creator, so use test data if you'd rather not share real people's details. The same goes for chats and journals: they are not end-to-end encrypted, so whoever runs the project could read them.</p>
       </div>
 
       <div id="accountSignedIn">
         <p class="acc-email" id="accEmailShown"></p>
         <p class="acc-sync" id="accSyncState"></p>
+        <div class="ci-row" id="accNameRow" hidden>
+          <input type="text" id="accDisplayName" maxlength="60" placeholder="Your name in chats and journals" aria-label="Your name in chats and journals" autocomplete="name">
+          <button class="btn" id="accSaveName" type="button">Save name</button>
+        </div>
         <div class="acc-actions">
           <button class="btn" id="accSyncNow">Sync now</button>
           <button class="btn" id="accSignOut">Sign out</button>
@@ -1855,6 +1949,83 @@
   </div>
 
   <aside id="contactPanel" class="contact-panel" aria-label="Contact details"></aside>
+
+  <aside id="togetherPanel" class="tg-panel" aria-label="Chat and journal">
+    <div class="tg-head">
+      <div class="tg-title" id="tgTitle">Together</div>
+      <div class="tg-head-actions">
+        <button class="btn" type="button" data-tg="new" id="tgNewBtn">+ New</button>
+        <button class="btn" type="button" data-tg="close">Close</button>
+      </div>
+    </div>
+    <div id="tgInvites" class="tg-invites" hidden></div>
+    <div class="seg" id="tgTabs">
+      <button type="button" class="seg-btn active" data-tg="tab" data-view="journal">Journal</button>
+      <button type="button" class="seg-btn" data-tg="tab" data-view="chats">Chats</button>
+    </div>
+    <div id="tgBody" class="tg-body"></div>
+    <div id="tgComposer" class="tg-composer" hidden>
+      <textarea id="tgInput" rows="1" maxlength="4000" placeholder="Write a message" aria-label="Message"></textarea>
+      <button class="btn btn-primary" type="button" data-tg="send">Send</button>
+    </div>
+  </aside>
+
+  <div id="newCircleModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="ncTitle">
+    <div class="dialog account-dialog">
+      <div class="dup-head"><h2 id="ncTitle">Start a conversation</h2><button class="btn" id="ncClose" type="button">Close</button></div>
+      <div class="seg" id="ncTabs">
+        <button type="button" class="seg-btn active" data-nc="direct">One person</button>
+        <button type="button" class="seg-btn" data-nc="group">A group</button>
+      </div>
+      <form id="ncForm" novalidate>
+        <div class="form-group" id="ncNameGroup" hidden>
+          <label for="ncName">Group name</label>
+          <input type="text" id="ncName" maxlength="60" placeholder="Trip crew, Family, Book club…" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="ncEmails" id="ncEmailsLabel">Their email address</label>
+          <textarea id="ncEmails" rows="2" placeholder="name@example.com" autocomplete="off"></textarea>
+        </div>
+        <div class="form-group"><select id="ncPick" class="tool-select" aria-label="Add someone from your contacts"></select></div>
+        <p class="acc-note" style="margin-top: 0">Orbita doesn't send emails. They need an Orbita account with that address, and they'll see your invitation as soon as they sign in. Afterwards you can copy a short message to send them yourself.</p>
+        <div id="ncMsg" class="acc-msg" role="alert"></div>
+        <div class="acc-form-actions"><button type="submit" class="btn btn-primary" id="ncSubmit">Start chat</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="circleModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="ciTitle">
+    <div class="dialog account-dialog">
+      <div class="dup-head"><h2 id="ciTitle">Group</h2><button class="btn" id="ciClose" type="button">Close</button></div>
+      <div id="ciBody"></div>
+    </div>
+  </div>
+
+  <div id="entryModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="enTitle">
+    <div class="dialog account-dialog entry-dialog">
+      <div class="dup-head"><h2 id="enTitle">New memory</h2><button class="btn" id="enClose" type="button">Close</button></div>
+      <form id="entryForm" novalidate>
+        <div class="form-group"><label for="enHead">Title (optional)</label><input type="text" id="enHead" maxlength="120" autocomplete="off"></div>
+        <div class="form-group"><label for="enBody">What do you want to remember?</label><textarea id="enBody" rows="6" maxlength="20000"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label for="enDate">When</label><input type="date" id="enDate"></div>
+          <div class="form-group"><label for="enPlace">Where</label><input type="text" id="enPlace" maxlength="120" autocomplete="off"></div>
+        </div>
+        <div class="form-group">
+          <label for="enPeople">Who was there (names, separated by commas)</label>
+          <input type="text" id="enPeople" autocomplete="off">
+          <select id="enPick" class="tool-select" aria-label="Add someone from your contacts"></select>
+        </div>
+        <div class="form-group">
+          <label>Share with</label>
+          <div class="tg-share-list" id="enShare"></div>
+          <p class="acc-note" style="margin-top: 6px">Leave everything unticked to keep it just for you. Whoever you tick can read it, and it still shows up in your own journal.</p>
+        </div>
+        <div id="enMsg" class="acc-msg" role="alert"></div>
+        <div class="acc-form-actions"><button type="submit" class="btn btn-primary" id="enSave">Save memory</button><button type="button" class="btn danger" id="enDelete" hidden>Delete</button></div>
+      </form>
+    </div>
+  </div>
   <div id="statusPill" class="status-pill"></div>
   <div id="toasts" class="toasts" aria-live="polite"></div>
   <button id="exitPresent" class="btn exit-present">Exit presentation (Esc)</button>
@@ -2460,6 +2631,32 @@
       return d === null || d > CATCH_UP_DAYS[p.tier];
     }
 
+    // ---- Together (chat + journals) helpers ----
+    // "a@x.com, B@y.com;c@z.com" -> { valid: ['a@x.com', ...], invalid: [...] } (lower-cased, de-duplicated)
+    function parseEmails(text) {
+      const seen = new Set(); const valid = []; const invalid = [];
+      String(text || '').split(/[\s,;]+/).map((s) => s.trim().replace(/^<|>$/g, '').toLowerCase()).filter(Boolean).forEach((e) => {
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) invalid.push(e);
+        else if (!seen.has(e)) { seen.add(e); valid.push(e); }
+      });
+      return { valid, invalid };
+    }
+    // "Ana, Bob Smith\nana" -> ['Ana', 'Bob Smith'] (trimmed, unique ignoring case, at most 30)
+    function splitNames(text) {
+      const seen = new Set();
+      return String(text || '').split(/[,;\n]+/).map((s) => s.trim().slice(0, 60)).filter((n) => {
+        const k = n.toLowerCase();
+        if (!n || seen.has(k)) return false;
+        seen.add(k); return true;
+      }).slice(0, 30);
+    }
+    // A circle's display name: groups have one; a one-to-one chat shows the other person (or who it is waiting for)
+    function circleTitle(c, myId) {
+      if (c.kind === 'group') return c.name || 'Group';
+      const other = (c.members || []).find((m) => m.user_id !== myId);
+      return other ? other.name : (((c.pending || [])[0] || {}).email || 'New chat');
+    }
+
     // ---- birthdays: stored as 'YYYY-MM-DD', or '--MM-DD' when the year isn't known ----
     const BDAY_SOON_DAYS = 30;
     function parseBirthday(raw) {
@@ -2701,6 +2898,8 @@
         this.searchIndex = -1;
         this.catchUpOnly = false;
         this.birthdayOnly = false;
+        this.tg = this.tgBlank();
+        this.tgOpen = false;
         this.theme = readJson(THEME_KEY) || 'auto';
         this.clusterRef = null;
         this.selectionMarker = null;
@@ -2866,6 +3065,7 @@
         click('tabSignUp', () => this.setAccountMode('signup'));
         click('accForgot', () => this.setAccountMode(this.accMode === 'forgot' ? 'signin' : 'forgot'));
         click('accSyncNow', () => this.syncNow({ manual: true }));
+        click('accSaveName', () => this.saveDisplayName());
         click('accSignOut', () => this.signOut());
         click('accDeleteCloud', () => this.deleteCloudData());
         $('accountForm').addEventListener('submit', (e) => { e.preventDefault(); this.submitAccountForm(); });
@@ -2891,6 +3091,25 @@
         click('birthdayBtn', () => { this.birthdayOnly = !this.birthdayOnly; this.updateMap({ fit: true }); });
         click('tourBtn', () => { this.closeToolsPanel(); this.startTour(); });
         click('feedbackBtn', () => this.openFeedback());
+        click('togetherBtn', () => this.tgToggle());
+        $('togetherPanel').addEventListener('click', (e) => this.onTogetherClick(e));
+        $('togetherPanel').addEventListener('change', (e) => {
+          if (e.target.id === 'tgScope') { this.tg.scope = e.target.value || null; this.tg.entries = null; this.tgRenderBody(); }
+        });
+        $('tgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.tgSend(); } });
+        $('tgInput').addEventListener('input', (e) => { e.target.style.height = 'auto'; e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`; });
+        click('ncClose', () => this.closeModal('newCircleModal'));
+        $('newCircleModal').addEventListener('click', (e) => { if (e.target.id === 'newCircleModal') this.closeModal('newCircleModal'); });
+        $('ncTabs').addEventListener('click', (e) => { const b = e.target.closest('[data-nc]'); if (b) this.setNewCircleKind(b.dataset.nc); });
+        $('ncForm').addEventListener('submit', (e) => { e.preventDefault(); this.submitNewCircle(); });
+        $('ncPick').addEventListener('change', (e) => { if (e.target.value) { const box = $('ncEmails'); box.value = (box.value.trim() ? `${box.value.trim()}, ` : '') + e.target.value; e.target.value = ''; } });
+        click('ciClose', () => this.closeModal('circleModal'));
+        $('circleModal').addEventListener('click', (e) => { if (e.target.id === 'circleModal') this.closeModal('circleModal'); else this.onCircleInfoClick(e); });
+        click('enClose', () => this.closeModal('entryModal'));
+        $('entryModal').addEventListener('click', (e) => { if (e.target.id === 'entryModal') this.closeModal('entryModal'); });
+        $('entryForm').addEventListener('submit', (e) => { e.preventDefault(); this.saveEntry(); });
+        click('enDelete', () => this.deleteEntry());
+        $('enPick').addEventListener('change', (e) => { if (e.target.value) { const box = $('enPeople'); box.value = (box.value.trim() ? `${box.value.trim()}, ` : '') + e.target.value; e.target.value = ''; } });
         click('closeFeedback', () => this.closeModal('feedbackModal'));
         click('installBtn', () => this.installApp());
         click('clearSampleBtn', () => this.clearSample());
@@ -3003,7 +3222,9 @@
         if ($('dupModal').classList.contains('open')) { this.closeModal('dupModal'); return; }
         if ($('accountModal').classList.contains('open')) { this.closeModal('accountModal'); return; }
         if ($('feedbackModal').classList.contains('open')) { this.closeModal('feedbackModal'); return; }
+        for (const id of ['entryModal', 'newCircleModal', 'circleModal']) { if ($(id).classList.contains('open')) { this.closeModal(id); return; } }
         if ($('contactPanel').style.display === 'flex') { this.closeContactPanel(); return; }
+        if (this.tgOpen) { this.tgToggle(false); return; }
         if ($('toolsPanel').classList.contains('open')) { this.closeToolsPanel(); return; }
         if (this.selectMode) { this.setSelectMode(false); return; }
         if (this.listOpen) this.toggleList(false);
@@ -3076,7 +3297,493 @@
         this.listOpen = typeof force === 'boolean' ? force : !this.listOpen;
         $('listPanel').classList.toggle('open', this.listOpen);
         $('tableBtn').classList.toggle('active', this.listOpen);
-        if (this.listOpen) this.renderList();
+        if (this.listOpen) { if (this.tgOpen) this.tgToggle(false); this.renderList(); }
+      }
+
+      // ---------------- Together: chat + journals ----------------
+      // Circles are groups of Orbita accounts (or just two people). Each has a chat and a journal; a memory belongs to its
+      // author and can be shared into circles, so "my journal" = my memories + everything shared with me.
+      tgBlank() {
+        return { available: null, me: null, circles: [], invites: [], view: 'journal', scope: null, person: null, entries: null, chat: null, messages: [], sending: false };
+      }
+
+      tgSignedIn() { return this.cloudEnabled() && !!this.session; }
+
+      async rpc(name, args = {}) {
+        await this.ensureToken();
+        return this.api(`/rest/v1/rpc/${name}`, { method: 'POST', body: args });
+      }
+
+      tgOnAccountChange() {
+        $('togetherBtn').hidden = !this.cloudEnabled();
+        const on = this.tgSignedIn();
+        if (on && !this.tgTimers) {
+          this.tg = this.tgBlank();
+          this.tgRefresh();
+          this.tgTimers = [
+            setInterval(() => { if (!document.hidden && this.tgSignedIn()) this.tgRefresh({ quiet: true }); }, 30000),
+            setInterval(() => { if (!document.hidden && this.tgOpen && this.tg.view === 'chat') this.tgPoll(); }, 4000),
+          ];
+        } else if (!on && this.tgTimers) {
+          this.tgTimers.forEach(clearInterval); this.tgTimers = null;
+          this.tg = this.tgBlank();
+          if (this.tgOpen) this.tgToggle(false);
+          this.tgBadge();
+        }
+      }
+
+      async saveDisplayName() {
+        const name = $('accDisplayName').value.trim();
+        if (!name) { this.showNotification('Type the name you would like people to see.'); return; }
+        try {
+          await this.rpc('orbita_set_display_name', { p_name: name });
+          await this.tgRefresh({ quiet: true });
+          this.tg.entries = null;
+          this.showNotification('Name saved');
+        } catch (e) { this.showNotification(e.message); }
+      }
+
+      async tgRefresh({ quiet = false } = {}) {
+        if (!this.tgSignedIn() || this.tgRefreshing) return;
+        this.tgRefreshing = true;
+        try {
+          const [me, circles, invites] = await Promise.all([this.rpc('orbita_me'), this.rpc('orbita_my_circles'), this.rpc('orbita_my_invites')]);
+          this.tg.available = true; this.tg.me = me; this.tg.circles = circles || []; this.tg.invites = invites || [];
+        } catch (e) {
+          if (e.status === 404 || /could not find the function|schema cache/i.test(e.message || '')) this.tg.available = false;
+          else if (!quiet) this.showNotification(`Couldn't load chats: ${e.message}`);
+        } finally { this.tgRefreshing = false; }
+        this.tgBadge();
+        if (this.tgOpen) {
+          this.tgRenderInvites();
+          if (this.tg.view === 'chats' || this.tg.available === false) this.tgRenderBody();
+          else if (this.tg.view === 'journal' && this.tg.entries && !document.querySelector('.modal.open')) this.tgLoadJournal();
+        }
+        if (document.getElementById('accountModal').classList.contains('open')) this.renderAccount();
+      }
+
+      tgBadge() {
+        const n = this.tg.invites.length + this.tg.circles.reduce((s, c) => s + (c.unread || 0), 0);
+        const b = $('tgBadge');
+        b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
+        document.title = n ? `(${n}) Orbita` : 'Orbita';
+      }
+
+      tgToggle(force) {
+        const open = typeof force === 'boolean' ? force : !this.tgOpen;
+        this.tgOpen = open;
+        $('togetherPanel').classList.toggle('open', open);
+        $('togetherBtn').classList.toggle('active', open);
+        document.body.classList.toggle('tg-open', open);
+        if (!open) return;
+        if (this.listOpen) this.toggleList(false);
+        this.closeToolsPanel();
+        this.tgRender();
+        this.tgRefresh({ quiet: true });
+        if (this.tg.view === 'journal' && this.tg.entries) this.tgLoadJournal();
+      }
+
+      tgRender() {
+        const t = this.tg; const signed = this.tgSignedIn(); const usable = signed && t.available !== false;
+        $('tgTabs').hidden = !usable || t.view === 'chat';
+        $('tgNewBtn').hidden = !usable || t.view === 'chat';
+        document.querySelectorAll('#tgTabs .seg-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === t.view));
+        $('tgComposer').hidden = !usable || t.view !== 'chat';
+        const c = t.view === 'chat' ? t.circles.find((x) => x.id === t.chat) : null;
+        $('tgTitle').textContent = 'Together';
+        this.tgRenderInvites();
+        this.tgRenderBody();
+        if (c) setTimeout(() => $('tgInput').focus(), 50);
+      }
+
+      tgRenderInvites() {
+        const box = $('tgInvites'); const t = this.tg;
+        box.hidden = !t.invites.length || !this.tgSignedIn();
+        box.innerHTML = t.invites.map((i) => `<div class="tg-invite"><span><strong>${esc(i.from)}</strong> invited you to ${i.kind === 'direct' ? 'chat' : `<strong>${esc(i.name)}</strong>`}</span>
+          <button class="btn btn-primary" data-tg="accept" data-id="${esc(i.id)}">Join</button><button class="btn" data-tg="decline" data-id="${esc(i.id)}">No thanks</button></div>`).join('');
+      }
+
+      tgRenderBody() {
+        const t = this.tg; const body = $('tgBody');
+        if (!this.tgSignedIn()) {
+          body.innerHTML = '<div class="tg-empty">Sign in to chat with friends and keep a journal of shared and private memories.<br><button class="btn btn-primary" data-tg="signin">Sign in or create an account</button></div>';
+          return;
+        }
+        if (t.available === null) { body.innerHTML = '<div class="tg-empty">Loading…</div>'; return; }
+        if (t.available === false) { body.innerHTML = "<div class=\"tg-empty\">Chats and journals aren't switched on for this site yet.</div>"; return; }
+        const keep = body.scrollTop;
+        if (t.view === 'journal') {
+          body.innerHTML = this.tgJournalHtml();
+          if (t.entries === null) this.tgLoadJournal();
+        } else if (t.view === 'chats') body.innerHTML = this.tgChatsHtml();
+        else this.tgRenderChat();
+        if (t.view !== 'chat') body.scrollTop = keep;
+      }
+
+      // ---- journal ----
+      tgJournalHtml() {
+        const t = this.tg; const me = t.me && t.me.user_id;
+        const opts = ['<option value="">All my memories</option>'].concat(t.circles.map((c) =>
+          `<option value="${esc(c.id)}"${t.scope === c.id ? ' selected' : ''}>Shared with ${esc(circleTitle(c, me))}</option>`)).join('');
+        const person = t.person ? `<div class="tg-filter">Memories with <strong>${esc(t.person)}</strong> · <button class="tg-link" data-tg="clear-person">show all</button></div>` : '';
+        let list;
+        if (t.entries === null) list = '<div class="tg-empty">Loading…</div>';
+        else if (!t.entries.length) {
+          list = `<div class="tg-empty">${t.person ? `No memories with ${esc(t.person)} yet.` : t.scope ? 'Nothing shared here yet.' : 'No memories yet.'}<br>Keep a memory to yourself, or share it with a friend or a whole group: it still lives in your own journal.<br><button class="btn btn-primary" data-tg="write">✎ Write a memory</button></div>`;
+        } else {
+          let month = '';
+          list = t.entries.map((e) => {
+            const [y, mo, d] = e.happened_on.split('-').map(Number);
+            const heading = new Date(y, mo - 1, d).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+            const head = heading !== month ? `<div class="tg-month">${esc(heading)}</div>` : '';
+            month = heading;
+            return head + this.tgEntryHtml(e, new Date(y, mo - 1, d));
+          }).join('');
+        }
+        return `<div class="tg-bar"><select id="tgScope" aria-label="Which memories to show">${opts}</select><button class="btn btn-primary" data-tg="write">✎ Write</button></div>${person}<div class="tg-list">${list}</div>`;
+      }
+
+      tgEntryHtml(e, date) {
+        const me = this.tg.me && this.tg.me.user_id;
+        const when = date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+        const shared = (e.circles || []).length
+          ? e.circles.map((c) => `<span class="tg-chip share">👥 ${esc(circleTitle(this.tg.circles.find((x) => x.id === c.id) || c, me))}</span>`).join('')
+          : '<span class="tg-chip private">🔒 Only me</span>';
+        const long = (e.body || '').length > 320 || (e.body || '').split('\n').length > 7;
+        return `<article class="tg-entry" data-id="${esc(e.id)}">
+          <div class="tg-entry-top"><span>${esc(when)}</span><span class="grow">${e.place ? `📍 ${esc(e.place)}` : ''}</span>${e.mine ? `<button class="tg-link" data-tg="edit" data-id="${esc(e.id)}">Edit</button>` : ''}</div>
+          ${e.title ? `<h4>${esc(e.title)}</h4>` : ''}
+          <div class="tg-entry-body">${esc(e.body)}</div>
+          ${long ? '<button class="tg-more" data-tg="more">Read more</button>' : ''}
+          <div class="tg-chips">${(e.people || []).map((n) => `<span class="tg-chip">${esc(n)}</span>`).join('')}${shared}</div>
+          ${e.mine ? '' : `<div class="tg-by">Written by ${esc(e.author_name)}</div>`}
+        </article>`;
+      }
+
+      async tgLoadJournal() {
+        const t = this.tg; const key = `${t.scope}|${t.person}`;
+        t.loadKey = key;
+        try {
+          const list = await this.rpc('orbita_journal', { p_circle: t.scope, p_person: t.person, p_limit: 200 });
+          if (t.loadKey !== key) return;
+          t.entries = list || [];
+        } catch (e) {
+          t.entries = [];
+          this.showNotification(`Couldn't load memories: ${e.message}`);
+        }
+        if (this.tgOpen && t.view === 'journal') this.tgRenderBody();
+      }
+
+      openEntryEditor(entry, preset = {}) {
+        const t = this.tg; const me = t.me && t.me.user_id;
+        if (!this.tgSignedIn()) { this.openAccount('signin'); return; }
+        this.tgEditing = entry ? entry.id : null;
+        this.tgFromContact = !!preset.fromContact;
+        $('enTitle').textContent = entry ? 'Edit memory' : 'New memory';
+        $('enHead').value = entry ? entry.title || '' : '';
+        $('enBody').value = entry ? entry.body : '';
+        $('enDate').value = entry ? entry.happened_on : todayStr();
+        $('enDate').max = todayStr();
+        $('enPlace').value = entry ? entry.place || '' : '';
+        $('enPeople').value = (entry ? entry.people : preset.people || []).join(', ');
+        const pick = [...this.people].sort((a, b) => a.name.localeCompare(b.name)).slice(0, 400);
+        $('enPick').innerHTML = '<option value="">Add someone from your contacts…</option>' + pick.map((p) => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
+        const chosen = new Set(entry ? (entry.circles || []).map((c) => c.id) : (preset.circleId || (t.view !== 'chat' ? t.scope : t.chat)) ? [preset.circleId || (t.view !== 'chat' ? t.scope : t.chat)] : []);
+        $('enShare').innerHTML = t.circles.length
+          ? t.circles.map((c) => `<label><input type="checkbox" value="${esc(c.id)}"${chosen.has(c.id) ? ' checked' : ''}> ${c.kind === 'direct' ? 'Just ' : ''}${esc(circleTitle(c, me))}${c.kind === 'group' ? ` <span class="muted">(${c.members.length} people)</span>` : ''}</label>`).join('')
+          : '<span class="none">No groups or chats yet, so this stays private. Start one with + New to share memories.</span>';
+        $('enDelete').hidden = !entry;
+        $('enMsg').textContent = '';
+        this.openModal('entryModal', 'enBody');
+      }
+
+      async saveEntry() {
+        const msg = $('enMsg'); msg.className = 'acc-msg';
+        const body = $('enBody').value.trim();
+        if (!body) { msg.textContent = 'Write something first.'; msg.classList.add('error'); return; }
+        $('enSave').disabled = true;
+        try {
+          await this.rpc('orbita_save_entry', {
+            p_id: this.tgEditing, p_title: $('enHead').value, p_body: body, p_happened_on: $('enDate').value || todayStr(),
+            p_place: $('enPlace').value, p_people: splitNames($('enPeople').value),
+            p_circles: [...document.querySelectorAll('#enShare input:checked')].map((i) => i.value),
+          });
+          this.closeModal('entryModal');
+          this.tg.entries = null;
+          this.showNotification(this.tgEditing ? 'Memory updated' : 'Memory saved');
+          if (this.tgFromContact) { this.tg.person = splitNames($('enPeople').value)[0] || null; this.tg.scope = null; this.tg.view = 'journal'; this.tgToggle(true); }
+          else if (this.tgOpen && this.tg.view === 'journal') this.tgRenderBody();
+        } catch (e) {
+          msg.textContent = e.message; msg.classList.add('error');
+        } finally { $('enSave').disabled = false; }
+      }
+
+      async deleteEntry() {
+        if (!this.tgEditing || !confirm('Delete this memory for everyone it is shared with?')) return;
+        try {
+          await this.ensureToken();
+          await this.api(`/rest/v1/orbita_entries?id=eq.${encodeURIComponent(this.tgEditing)}`, { method: 'DELETE', prefer: 'return=minimal' });
+          this.closeModal('entryModal');
+          this.tg.entries = null;
+          if (this.tgOpen && this.tg.view === 'journal') this.tgRenderBody();
+          this.showNotification('Memory deleted');
+        } catch (e) { $('enMsg').textContent = e.message; $('enMsg').className = 'acc-msg error'; }
+      }
+
+      // ---- chats ----
+      tgChatsHtml() {
+        const t = this.tg; const me = t.me && t.me.user_id;
+        if (!t.circles.length) {
+          return '<div class="tg-empty">No chats yet. Start one with a friend, or make a group.<br>Each chat also gets its own shared journal.<br><button class="btn btn-primary" data-tg="new">+ New chat or group</button></div>';
+        }
+        return t.circles.map((c) => {
+          const title = circleTitle(c, me);
+          const initials = this.getInitials(title);
+          const waiting = c.kind === 'direct' && c.members.length < 2;
+          const last = c.last ? `${c.last.author_id === me ? 'You: ' : ''}${c.last.body}` : waiting ? 'Waiting for them to join' : c.kind === 'group' ? `${c.members.length} people${c.pending.length ? ` · ${c.pending.length} invited` : ''}` : 'Say hello';
+          return `<button class="tg-row" data-tg="open-chat" data-id="${esc(c.id)}"><span class="tg-avatar ${c.kind}">${esc(initials)}</span>
+            <span class="tg-row-main"><span class="tg-row-name">${esc(title)}</span><span class="tg-row-last">${esc(last)}</span></span>
+            ${c.unread ? `<span class="tg-unread">${c.unread > 99 ? '99+' : c.unread}</span>` : ''}</button>`;
+        }).join('');
+      }
+
+      async tgOpenChat(cid) {
+        const t = this.tg;
+        t.view = 'chat'; t.chat = cid; t.messages = []; t.msgsLoaded = false;
+        this.tgRender();
+        try {
+          t.messages = (await this.rpc('orbita_messages', { p_circle: cid, p_limit: 100 })) || [];
+          t.msgsLoaded = true;
+          if (t.chat === cid) this.tgRenderMessages({ stick: true });
+          this.tgMarkRead(cid);
+        } catch (e) { this.showNotification(`Couldn't open the chat: ${e.message}`); t.view = 'chats'; t.chat = null; this.tgRender(); }
+      }
+
+      tgMarkRead(cid) {
+        const c = this.tg.circles.find((x) => x.id === cid);
+        if (c && c.unread) { c.unread = 0; this.tgBadge(); }
+        this.rpc('orbita_mark_read', { p_circle: cid }).catch(() => {});
+      }
+
+      tgRenderChat() {
+        const t = this.tg; const me = t.me && t.me.user_id;
+        const c = t.circles.find((x) => x.id === t.chat);
+        if (!c) { t.view = 'chats'; this.tgRenderBody(); return; }
+        const sub = c.kind === 'group' ? `${c.members.length} people${c.pending.length ? ` · ${c.pending.length} invited` : ''}` : (c.members.length < 2 ? 'waiting for them to join' : 'one-to-one');
+        $('tgBody').innerHTML = `<div class="tg-chat-head"><button class="tg-icon-btn" data-tg="back" aria-label="Back to chats">‹</button>
+          <div class="tg-title">${esc(circleTitle(c, me))}<span class="tg-sub">${esc(sub)}</span></div>
+          <button class="tg-icon-btn" data-tg="journal-of" data-id="${esc(c.id)}" title="Shared journal" aria-label="Shared journal">📖</button>
+          <button class="tg-icon-btn" data-tg="info" aria-label="People and settings" title="People and settings">⋯</button></div>
+          <div class="tg-msgs" id="tgMsgs" aria-live="polite"></div>`;
+        this.tgRenderMessages({ stick: true });
+      }
+
+      tgRenderMessages({ stick = false } = {}) {
+        const t = this.tg; const box = $('tgMsgs'); if (!box) return;
+        const c = t.circles.find((x) => x.id === t.chat);
+        const near = box.parentElement.scrollHeight - box.parentElement.scrollTop - box.parentElement.clientHeight < 80;
+        let day = '';
+        const html = t.messages.map((m) => {
+          const dt = new Date(m.created_at);
+          const dayLabel = dt.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+          const sep = dayLabel !== day ? `<div class="tg-day">${esc(dayLabel)}</div>` : '';
+          day = dayLabel;
+          const who = !m.mine && c && c.kind === 'group' ? `<span class="tg-msg-name">${esc(m.author_name)}</span>` : '';
+          const time = esc(dt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+          const del = m.mine && !m.pending ? `<button class="tg-del" data-tg="del-msg" data-id="${esc(m.id)}" title="Delete this message">Delete</button>` : '';
+          return `${sep}<div class="tg-msg${m.mine ? ' mine' : ''}${m.pending ? ' pending' : ''}">${who}<span class="tg-msg-text">${esc(m.body)}</span><span class="tg-msg-time">${time}</span>${del}</div>`;
+        }).join('');
+        box.innerHTML = html || (t.msgsLoaded ? '<div class="tg-empty">No messages yet. Say hello!</div>' : '<div class="tg-empty">Loading…</div>');
+        if (stick || near) box.parentElement.scrollTop = box.parentElement.scrollHeight;
+      }
+
+      async tgPoll() {
+        const t = this.tg;
+        if (!t.chat || !t.msgsLoaded || t.sending || t.polling) return;
+        t.polling = true;
+        const cid = t.chat;
+        try {
+          const real = t.messages.filter((m) => !m.pending);
+          const last = real.length ? real[real.length - 1].created_at : null;
+          const fresh = (await this.rpc('orbita_messages', last ? { p_circle: cid, p_after: last, p_limit: 100 } : { p_circle: cid, p_limit: 100 })) || [];
+          if (t.chat !== cid || t.sending) return;
+          const have = new Set(t.messages.map((m) => m.id));
+          const add = fresh.filter((m) => !have.has(m.id));
+          if (add.length) { t.messages.push(...add); this.tgRenderMessages(); this.tgMarkRead(cid); }
+        } catch (e) { /* offline or signed out: the next tick tries again */ } finally { t.polling = false; }
+      }
+
+      async tgSend() {
+        const t = this.tg; const input = $('tgInput'); const text = input.value.trim();
+        if (!text || !t.chat || t.sending) return;
+        t.sending = true;
+        input.value = ''; input.style.height = 'auto';
+        const tmp = { id: `tmp-${Date.now()}`, mine: true, author_name: 'You', body: text, created_at: new Date().toISOString(), pending: true };
+        t.messages.push(tmp);
+        this.tgRenderMessages({ stick: true });
+        try {
+          const r = await this.rpc('orbita_send_message', { p_circle: t.chat, p_body: text });
+          tmp.id = r.id; tmp.created_at = r.created_at; tmp.pending = false;
+        } catch (e) {
+          t.messages = t.messages.filter((m) => m !== tmp);
+          input.value = text;
+          this.showNotification(`Couldn't send: ${e.message}`);
+        } finally { t.sending = false; }
+        this.tgRenderMessages({ stick: true });
+      }
+
+      async tgDeleteMessage(id) {
+        const t = this.tg;
+        try {
+          await this.ensureToken();
+          await this.api(`/rest/v1/orbita_messages?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', prefer: 'return=minimal' });
+          t.messages = t.messages.filter((m) => m.id !== id);
+          this.tgRenderMessages();
+        } catch (e) { this.showNotification(`Couldn't delete: ${e.message}`); }
+      }
+
+      // ---- invitations, new circles, circle settings ----
+      async tgAccept(id) {
+        try {
+          const cid = await this.rpc('orbita_accept_invite', { p_invite: id });
+          await this.tgRefresh({ quiet: true });
+          this.tg.entries = null;
+          this.showNotification('You joined');
+          if (cid) this.tgOpenChat(cid);
+        } catch (e) { this.showNotification(e.message); this.tgRefresh({ quiet: true }); }
+      }
+
+      async tgDecline(id) {
+        try { await this.rpc('orbita_decline_invite', { p_invite: id }); } catch (e) { this.showNotification(e.message); }
+        this.tgRefresh({ quiet: true });
+      }
+
+      contactEmailOptions() {
+        const rows = this.people.filter((p) => p.email).sort((a, b) => a.name.localeCompare(b.name)).slice(0, 400);
+        return '<option value="">Add someone from your contacts…</option>' + rows.map((p) => `<option value="${esc(p.email)}">${esc(p.name)} (${esc(p.email)})</option>`).join('');
+      }
+
+      openNewCircle(kind = 'direct') {
+        if (!this.tgSignedIn()) { this.openAccount('signin'); return; }
+        $('ncPick').innerHTML = this.contactEmailOptions();
+        $('ncEmails').value = ''; $('ncName').value = ''; $('ncMsg').textContent = '';
+        this.setNewCircleKind(kind);
+        this.openModal('newCircleModal', 'ncEmails');
+      }
+
+      setNewCircleKind(kind) {
+        this.ncKind = kind;
+        document.querySelectorAll('#ncTabs .seg-btn').forEach((b) => b.classList.toggle('active', b.dataset.nc === kind));
+        $('ncNameGroup').hidden = kind !== 'group';
+        $('ncEmailsLabel').textContent = kind === 'group' ? 'Invite people (email addresses, separated by commas)' : 'Their email address';
+        $('ncSubmit').textContent = kind === 'group' ? 'Create group' : 'Start chat';
+      }
+
+      async submitNewCircle() {
+        const msg = $('ncMsg'); msg.className = 'acc-msg error';
+        const { valid, invalid } = parseEmails($('ncEmails').value);
+        const kind = this.ncKind; const name = $('ncName').value.trim();
+        if (invalid.length) { msg.textContent = `That doesn't look like an email address: ${invalid[0]}`; return; }
+        if (kind === 'direct' && valid.length !== 1) { msg.textContent = 'Enter one email address.'; return; }
+        if (kind === 'group' && !name) { msg.textContent = 'Give the group a name.'; return; }
+        $('ncSubmit').disabled = true;
+        try {
+          const cid = await this.rpc('orbita_create_circle', { p_name: name, p_kind: kind, p_emails: valid });
+          this.closeModal('newCircleModal');
+          await this.tgRefresh({ quiet: true });
+          const c = this.tg.circles.find((x) => x.id === cid);
+          this.tgOpenChat(cid);
+          if (c && c.pending.length) {
+            this.showNotification(`Invited ${c.pending.map((x) => x.email).join(', ')}. They'll see it when they sign in to Orbita.`, {
+              actionLabel: 'Copy a message to send', duration: 14000, onAction: () => this.copyInviteMessage(c),
+            });
+          }
+        } catch (e) { msg.textContent = e.message; } finally { $('ncSubmit').disabled = false; }
+      }
+
+      copyInviteMessage(c) {
+        const emails = (c.pending || []).map((x) => x.email).join(' or ');
+        const text = `Join me on Orbita: ${location.origin}${location.pathname}\nCreate an account (or sign in) with ${emails || 'your email'} and you'll see my invitation${c.kind === 'group' ? ` to "${c.name}"` : ''}.`;
+        const done = () => this.showNotification('Copied. Paste it into a message to them.');
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => this.showNotification('Could not copy. Share the site address with them directly.'));
+        else this.showNotification('Could not copy. Share the site address with them directly.');
+      }
+
+      openCircleInfo(cid) {
+        this.ciCircle = cid;
+        this.renderCircleInfo();
+        this.openModal('circleModal', 'ciClose');
+      }
+
+      renderCircleInfo() {
+        const t = this.tg; const me = t.me && t.me.user_id; const c = t.circles.find((x) => x.id === this.ciCircle);
+        if (!c) { this.closeModal('circleModal'); return; }
+        const owner = c.role === 'owner'; const group = c.kind === 'group';
+        $('ciTitle').textContent = circleTitle(c, me);
+        $('ciBody').innerHTML = `
+          <h3 class="ci-h">People</h3>
+          <ul class="ci-list">${c.members.map((m) => `<li><span class="grow">${esc(m.name)}${m.user_id === me ? ' (you)' : ''}</span>${m.role === 'owner' && group ? '<span class="muted">runs the group</span>' : ''}</li>`).join('')}
+            ${c.pending.map((p) => `<li><span class="grow muted">${esc(p.email)} · invited</span><button class="tg-link" data-ci="cancel" data-id="${esc(p.id)}">Cancel</button></li>`).join('')}</ul>
+          ${group ? `<h3 class="ci-h">Invite more people</h3>
+            <div class="ci-row"><textarea id="ciEmails" rows="2" placeholder="email addresses, separated by commas"></textarea></div>
+            <div class="ci-row"><select id="ciPick" class="tool-select" aria-label="Add someone from your contacts">${this.contactEmailOptions()}</select><button class="btn btn-primary" data-ci="invite">Invite</button></div>` : ''}
+          ${group && owner ? `<h3 class="ci-h">Group name</h3><div class="ci-row"><input id="ciName" maxlength="60" value="${esc(c.name)}"><button class="btn" data-ci="rename">Rename</button></div>` : ''}
+          <div id="ciMsg" class="acc-msg" role="alert"></div>
+          <div class="acc-form-actions">${c.pending.length ? '<button class="btn" data-ci="copy">Copy a message to send them</button>' : ''}<button class="btn danger" data-ci="leave">${group ? 'Leave this group' : 'Leave this chat'}</button></div>
+          <p class="acc-note">Memories you shared here stay with the people in it. Leaving removes your access to the chat and its shared journal.</p>`;
+        const pick = $('ciPick');
+        if (pick) pick.addEventListener('change', (e) => { if (e.target.value) { const box = $('ciEmails'); box.value = (box.value.trim() ? `${box.value.trim()}, ` : '') + e.target.value; e.target.value = ''; } });
+      }
+
+      async onCircleInfoClick(e) {
+        const el = e.target.closest('[data-ci]'); if (!el) return;
+        const act = el.dataset.ci; const cid = this.ciCircle; const msg = $('ciMsg');
+        const fail = (err) => { if (msg) { msg.textContent = err.message; msg.className = 'acc-msg error'; } };
+        try {
+          if (act === 'invite') {
+            const { valid, invalid } = parseEmails($('ciEmails').value);
+            if (invalid.length) { fail(new Error(`That doesn't look like an email address: ${invalid[0]}`)); return; }
+            if (!valid.length) { fail(new Error('Enter at least one email address.')); return; }
+            await this.rpc('orbita_invite', { p_circle: cid, p_emails: valid });
+            await this.tgRefresh({ quiet: true }); this.renderCircleInfo();
+            this.showNotification("Invited. They'll see it when they sign in.", { actionLabel: 'Copy a message to send', duration: 12000, onAction: () => this.copyInviteMessage(this.tg.circles.find((x) => x.id === cid)) });
+          } else if (act === 'cancel') {
+            await this.rpc('orbita_cancel_invite', { p_invite: el.dataset.id });
+            await this.tgRefresh({ quiet: true }); this.renderCircleInfo();
+          } else if (act === 'rename') {
+            await this.rpc('orbita_rename_circle', { p_circle: cid, p_name: $('ciName').value });
+            await this.tgRefresh({ quiet: true }); this.renderCircleInfo(); this.tgRender();
+          } else if (act === 'copy') {
+            this.copyInviteMessage(this.tg.circles.find((x) => x.id === cid));
+          } else if (act === 'leave') {
+            if (!confirm('Leave? You will lose access to this chat and its shared journal.')) return;
+            await this.rpc('orbita_leave_circle', { p_circle: cid });
+            this.closeModal('circleModal');
+            this.tg.view = 'chats'; this.tg.chat = null; this.tg.entries = null; if (this.tg.scope === cid) this.tg.scope = null;
+            await this.tgRefresh({ quiet: true }); this.tgRender();
+          }
+        } catch (err) { fail(err); }
+      }
+
+      onTogetherClick(e) {
+        const el = e.target.closest('[data-tg]'); if (!el) return;
+        const act = el.dataset.tg; const id = el.dataset.id; const t = this.tg;
+        if (act === 'close') this.tgToggle(false);
+        else if (act === 'tab') { t.view = el.dataset.view; t.chat = null; this.tgRender(); if (t.view === 'journal' && t.entries) this.tgLoadJournal(); }
+        else if (act === 'new') this.openNewCircle(t.view === 'chats' ? 'direct' : 'group');
+        else if (act === 'signin') this.openAccount('signin');
+        else if (act === 'write') this.openEntryEditor(null);
+        else if (act === 'edit') { const entry = (t.entries || []).find((x) => x.id === id); if (entry) this.openEntryEditor(entry); }
+        else if (act === 'more') { const card = el.closest('.tg-entry'); card.classList.toggle('open'); el.textContent = card.classList.contains('open') ? 'Show less' : 'Read more'; }
+        else if (act === 'open-chat') this.tgOpenChat(id);
+        else if (act === 'back') { t.view = 'chats'; t.chat = null; this.tgRender(); }
+        else if (act === 'info') this.openCircleInfo(t.chat);
+        else if (act === 'journal-of') { t.view = 'journal'; t.scope = id; t.person = null; t.entries = null; t.chat = null; this.tgRender(); }
+        else if (act === 'accept') this.tgAccept(id);
+        else if (act === 'decline') this.tgDecline(id);
+        else if (act === 'clear-person') { t.person = null; t.entries = null; this.tgRenderBody(); }
+        else if (act === 'del-msg') this.tgDeleteMessage(id);
+        else if (act === 'send') this.tgSend();
       }
 
       // ---------------- birthdays ----------------
@@ -3892,6 +4599,7 @@
               ${p.phone ? `<a class="chip-link" href="tel:${esc(String(p.phone).replace(/[^\d+]/g, ''))}">☎ Call</a>` : ''}
               ${site ? `<a class="chip-link" href="${esc(siteUrl)}" target="_blank" rel="noopener noreferrer">↗ Website</a>` : ''}
               <button class="chip-link" data-action="contacted-today">✓ Contacted today</button>
+              ${this.cloudEnabled() ? '<button class="chip-link" data-action="memory-new">✎ Write a memory</button><button class="chip-link" data-action="memory-list">📖 Memories</button>' : ''}
             </div>
             <div class="tier-buttons" role="group" aria-label="Tier">
               ${[1, 2, 3].map((t) => `<button class="tier-btn${p.tier === t ? ' active' : ''}" data-action="tier" data-tier="${t}" style="--tier:${TIER_COLORS[t]}" aria-pressed="${p.tier === t}">${esc(TIER_LABELS[t])}</button>`).join('')}
@@ -3943,6 +4651,13 @@
           this.showContactPanel(id, { keepScroll: true });
           const row = $('contactPanel').querySelector(`[data-edit="${btn.dataset.field}"]`);
           if (row) this.startEdit(id, btn.dataset.field, row);
+        }
+        else if (action === 'memory-new' || action === 'memory-list') {
+          const p = this.people.find((x) => x.id === id);
+          if (!p) return;
+          if (!this.tgSignedIn()) { this.showNotification('Sign in to keep a journal and share memories.'); this.openAccount('signin'); return; }
+          if (action === 'memory-new') this.openEntryEditor(null, { people: [p.name], fromContact: true });
+          else { this.tg.person = p.name; this.tg.scope = null; this.tg.entries = null; this.tg.view = 'journal'; this.tg.chat = null; this.tgToggle(true); }
         }
         else if (action === 'contacted-today') {
           const p = this.people.find((x) => x.id === id);
@@ -4626,11 +5341,14 @@
         const showForm = !signedIn || this.accMode === 'reset';
         $('accountBtn').hidden = false;
         $('accountBtn').textContent = signedIn ? '☁ Account' : 'Sign in';
+        this.tgOnAccountChange();
         $('welcomeAccount').hidden = signedIn;
         $('accountSignedOut').hidden = !showForm;
         $('accountSignedIn').hidden = showForm;
         $('accountTitle').textContent = signedIn && !showForm ? 'Your account' : 'Account';
         if (signedIn) {
+          $('accNameRow').hidden = this.tg.available === false;
+          if (this.tg.me && document.activeElement !== $('accDisplayName')) $('accDisplayName').value = this.tg.me.name || '';
           $('accEmailShown').textContent = this.session.user.email;
           $('accSyncState').textContent = (this.cloudStatusText() || '').replace('☁ ', '');
         }
@@ -4701,7 +5419,7 @@
 
       async deleteCloudData() {
         if (!this.session) return;
-        if (!confirm('Delete your saved contacts from the cloud? A copy stays on this device.')) return;
+        if (!confirm('Delete your saved contacts, journal memories and messages from the cloud? A copy of your contacts stays on this device.')) return;
         try {
           await this.ensureToken();
           await this.api(`/rest/v1/orbita_data?user_id=eq.${this.session.user.id}`, { method: 'DELETE' });
@@ -4709,6 +5427,7 @@
           this.showNotification(`Couldn't delete: ${this.friendlyAuthError(err)}`);
           return;
         }
+        try { await this.rpc('orbita_delete_my_together_data'); } catch (e) { /* not switched on, or nothing to delete */ }
         try { await this.api('/auth/v1/logout', { method: 'POST' }); } catch (e) { /* ignore */ }
         this.dropSession();
         this.sync = { userId: null, version: 0, at: 0, dirty: false };

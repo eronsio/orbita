@@ -43,10 +43,13 @@ removed under Authentication -> Users (deleting a user also deletes their saved 
 ## 7. Feedback box (optional)
 `orbita_setup.sql` also creates an `orbita_feedback` table behind Tools -> Help -> Send feedback. Anyone can send a message, nobody can read them through the app; you read them in the Supabase dashboard under Table Editor -> `orbita_feedback`. Re-running the whole file is safe.
 
+## 8. Chat + journals (optional)
+Paste all of [`orbita_together.sql`](orbita_together.sql) into the SQL Editor and run it (safe to run again). It adds groups and one-to-one chats, a chat for each, and shared/private journals, all protected by row-level security. Keep **Confirm email** ON: invitations are matched to confirmed email addresses. To test the SQL locally: `npm install --no-save @electric-sql/pglite` then `node tests/together.sql.test.js` (set `PGLITE_PATH` if it is installed elsewhere).
+
 ## Notes
 - Contacts are stored as one JSON document per user (`orbita_data`), capped at about 8 MB. Two devices that edit at the
   same time are reconciled with a three-way merge (see `threeWayMerge` in `index.html`).
-- This is a prototype: whoever runs the Supabase project can technically read what testers sync. The dialog says so.
+- This is a prototype: whoever runs the Supabase project can technically read what testers sync, including chats and journals (nothing is end-to-end encrypted). The dialog says so.
 - Free Supabase projects pause after about a week of no use; open the dashboard to resume one.
 - To test locally without a project: `node tests/mock-supabase.js`, then open
   `http://localhost:8766/?supabase=http://localhost:54321&key=test` (that override only works on localhost). Using

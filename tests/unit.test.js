@@ -13,7 +13,7 @@ src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListe
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
   parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS, bloomLayout, bloomFit, BLOOM,
-  parseBirthday, nextBirthday, bdaySoon, birthdayLabel, birthdayInput };`;
+  parseBirthday, nextBirthday, bdaySoon, birthdayLabel, birthdayInput, parseEmails, splitNames, circleTitle };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
 fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } }; const L = { Map: { mergeOptions() {}, addInitHook() {} }, Handler: { extend: (o) => o }, DomEvent: {} };"));
 const m = require(sandbox);
@@ -335,6 +335,19 @@ eq('csv: last contacted column is read', m.normalizePerson(m.rowToPerson({ Name:
     eq('sync merge: a birthday added on one device survives', m.threeWayMerge(base4, local, JSON.parse(JSON.stringify(base4))).list[0].birthday, '--05-21'); }
   const today = new Date(); const rel = (n) => { const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + n); return `--${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
   eq('sort: next birthday first, people without one last', m.sortPeople([person({ id: 'x', name: 'None' }), person({ id: 'y', name: 'Later', birthday: rel(20) }), person({ id: 'z', name: 'Soon', birthday: rel(2) })], 'birthday').map((q) => q.name), ['Soon', 'Later', 'None']);
+}
+
+// ---- Together helpers ----
+{ const pe = m.parseEmails('Ana@Example.test, bob@example.test;  <carol@example.test>\nana@example.test not-an-email x@y');
+  eq('emails: lower-cased, de-duplicated, separators of every kind', pe.valid, ['ana@example.test', 'bob@example.test', 'carol@example.test']);
+  eq('emails: junk is reported, not invited', pe.invalid, ['not-an-email', 'x@y']);
+  eq('emails: empty input', m.parseEmails('  '), { valid: [], invalid: [] });
+  eq('names: split, trimmed, unique ignoring case', m.splitNames('Ana,  Bob Smith\nana; '), ['Ana', 'Bob Smith']);
+  eq('names: capped at 30 and 60 characters each', [m.splitNames(Array.from({ length: 40 }, (_, i) => `n${i}`).join(',')).length, m.splitNames('x'.repeat(100))[0].length], [30, 60]);
+  const me = 'u1';
+  eq('circle title: a group uses its name', m.circleTitle({ kind: 'group', name: 'Trip crew', members: [] }, me), 'Trip crew');
+  eq('circle title: a one-to-one chat shows the other person', m.circleTitle({ kind: 'direct', members: [{ user_id: 'u1', name: 'me' }, { user_id: 'u2', name: 'Bob' }], pending: [] }, me), 'Bob');
+  eq('circle title: a chat still waiting shows who was invited', m.circleTitle({ kind: 'direct', members: [{ user_id: 'u1', name: 'me' }], pending: [{ id: 'i', email: 'dave@example.test' }] }, me), 'dave@example.test');
 }
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
