@@ -1590,6 +1590,103 @@
     body.presenting .tg-panel { display: none !important; }
     @media (max-width: 1100px) { .tg-panel { top: 150px; bottom: 70px; } }
     @media (max-width: 600px) { .tg-panel { left: 56px; right: 8px; top: 148px; bottom: 8px; width: auto; max-width: none; } body.tg-open .fab { display: none; } }
+
+    /* ===== Round 8: clearer navigation ===== */
+    .left-toolbar { width: 60px; padding: 10px 0; gap: 4px; }
+    .nav-btn {
+      position: relative; width: 52px; height: 56px; border: none; border-radius: 10px; background: transparent; color: var(--text-light);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-family: inherit;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .nav-btn span:not(.tg-badge) { font-size: 10.5px; font-weight: 600; letter-spacing: 0.01em; }
+    .nav-btn:hover { background: var(--bg-dark); color: var(--text); }
+    .nav-btn.active { background: var(--primary); color: var(--accent); }
+    .nav-btn[hidden] { display: none; }
+    .nav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .nav-more { margin-top: auto; }
+    .nav-btn .tg-badge { top: 4px; right: 4px; }
+    :root[data-theme="dark"] .nav-btn.active { color: var(--text); }
+    :root[data-theme="dark"] .nav-btn:focus-visible { outline-color: #9fc5bf; }
+
+    .view-pill {
+      position: fixed; top: 84px; right: 20px; z-index: 1001; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 20px;
+      background: var(--bg-light); border: 1px solid var(--border-light); box-shadow: 0 2px 10px var(--shadow); color: var(--text-light); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .view-pill:hover { color: var(--text); }
+    .view-pill[aria-pressed="true"] { background: var(--primary); color: var(--accent); border-color: var(--primary-dark); }
+    :root[data-theme="dark"] .view-pill[aria-pressed="true"] { color: var(--text); }
+    body.presenting .view-pill, body.presenting .fab-menu { display: none !important; }
+
+    /* chips: one-tap filters */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 15px; border: 1px solid var(--border); background: var(--bg); color: var(--text-light);
+      font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; transition: background 0.12s ease;
+    }
+    .chip:hover { background: var(--bg-dark); color: var(--text); }
+    .chip.active, .chip-check:has(input:checked) { background: var(--primary); border-color: var(--primary-dark); color: var(--text); font-weight: 600; }
+    .chip.ghost { border-color: transparent; background: transparent; text-decoration: underline; }
+    .chip .dot { margin-right: 0; }
+    .chip-check input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .chip-check { position: relative; }
+    .chip-check:has(input:focus-visible), .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    :root[data-theme="dark"] .chip.active, :root[data-theme="dark"] .chip-check:has(input:checked) { color: var(--text); }
+
+    .list-filters { display: flex; flex-direction: column; gap: 8px; padding: 2px 14px 12px; }
+    .list-selects { display: flex; gap: 8px; }
+    .list-selects select { flex: 1; min-width: 0; padding: 6px 8px; font: inherit; font-size: 12.5px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+
+    /* More panel */
+    .more-panel { max-height: calc(100vh - 100px); overflow-y: auto; width: 340px; }
+    .account-btn { font-weight: 600; background: var(--primary); }
+    .account-btn:hover { background: var(--primary-dark); }
+
+    /* + button menu */
+    .fab-menu {
+      position: fixed; right: 24px; bottom: 92px; z-index: 1002; display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--bg-light);
+      border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+    }
+    .fab-menu[hidden] { display: none; }
+    .fab-menu button { border: none; background: transparent; color: var(--text); font: inherit; font-size: 14px; text-align: left; padding: 10px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+    .fab-menu button:hover { background: var(--primary); }
+
+    /* Journal: scope chips, then a write box right at the top (no pop-up needed) */
+    .tg-scope { display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px; position: sticky; top: 0; z-index: 3; background: var(--bg); border-bottom: 1px solid var(--border-light); scrollbar-width: none; }
+    .tg-scope::-webkit-scrollbar { display: none; }
+    .tg-scope .chip { flex-shrink: 0; }
+    .tg-compose { margin: 10px 12px 6px; padding: 10px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 12px; }
+    .tg-compose textarea { width: 100%; resize: vertical; padding: 4px 2px; font: inherit; font-size: 14px; line-height: 1.5; color: var(--text); background: transparent; border: none; outline: none; box-sizing: border-box; min-height: 44px; }
+    .tg-compose:focus-within { border-color: var(--secondary); }
+    .tg-compose-more { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 8px; }
+    .tg-compose-more[hidden] { display: none; }
+    .tg-compose-more input { padding: 7px 9px; font: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; min-width: 0; }
+    .tg-compose-row { display: flex; gap: 8px; }
+    .tg-compose-row input { flex: 1; }
+    .tg-share { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted); }
+    .tg-compose-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .tg-hint { font-size: 12px; color: var(--text-muted); }
+    .tg-compose-actions .btn { min-height: 34px; padding: 6px 16px; font-size: 13px; }
+    .btn.wide { width: 100%; }
+    .tg-newchat { padding: 10px 14px; border-bottom: 1px solid var(--border-light); }
+    .tg-newchat .btn { min-height: 38px; }
+
+    /* phones: the rail becomes a tab bar along the bottom (thumb reach), panels sit above it */
+    @media (max-width: 600px) {
+      .left-toolbar { top: auto; bottom: 0; left: 0; right: 0; width: 100%; height: 58px; flex-direction: row; justify-content: space-around; padding: 4px 4px; gap: 0; border-right: none; border-top: 1px solid var(--border-light); box-shadow: 0 -2px 10px var(--shadow); }
+      .nav-btn { flex: 1; width: auto; height: 50px; }
+      .nav-more { margin-top: 0; }
+      .floating-header-left { left: 12px; right: 12px; top: 12px; }
+      .floating-header-right { left: 12px; top: 68px; right: auto; }
+      .view-pill { top: 68px; right: 12px; }
+      .tools-panel, .list-panel, .tg-panel { left: 8px; right: 8px; top: 118px; bottom: 66px; width: auto; max-width: none; min-width: 0; }
+      .more-panel { width: auto; max-height: none; }
+      .status-pill { left: 12px; right: 84px; bottom: 66px; }
+      .fab { bottom: 70px; right: 16px; }
+      .fab-menu { right: 16px; bottom: 134px; }
+      body.tg-open .fab, body.list-open .fab { display: none; }
+      .bloom-bar { bottom: 126px; }
+      .tour { bottom: 74px; }
+    }
   </style>
   
   <!-- Scripts -->
@@ -1601,31 +1698,30 @@
 
 <body>
   <div class="app">
-    <!-- Left Vertical Toolbar -->
-    <div class="left-toolbar">
-      <button class="toolbar-icon" id="tableBtn" title="Contact list" aria-label="Contact list">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/>
-          <circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>
-        </svg>
+    <!-- Main navigation: a labelled rail on the left (a tab bar along the bottom on phones) -->
+    <nav class="left-toolbar" aria-label="Main">
+      <button class="nav-btn active" id="navMap" data-nav="map" aria-label="Map">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span>Map</span>
       </button>
-      <button class="toolbar-icon" id="statsBtn" title="Analytics" aria-label="Analytics">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/>
-        </svg>
+      <button class="nav-btn" id="navPeople" data-nav="people" aria-label="People">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.7.2 4.5 2.4 4.5 5.8"/></svg>
+        <span>People</span>
       </button>
-      <button class="toolbar-icon" id="heatBtn" title="Heatmap" aria-label="Heatmap" aria-pressed="false">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2.5c.8 3.2 4.5 4.8 4.5 9a4.5 4.5 0 0 1-9 0c0-1.7.7-2.9 1.7-3.9.2 1.2.8 1.9 1.5 2.2C10.3 7.2 11 4.8 12 2.5Z"/>
-        </svg>
+      <button class="nav-btn" id="navJournal" data-nav="journal" aria-label="Journal" hidden>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5v-15Z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6"/></svg>
+        <span>Journal</span>
       </button>
-      <button class="toolbar-icon" id="togetherBtn" title="Chat and journal" aria-label="Chat and journal" hidden>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 20.5l1.6-4.9A8.5 8.5 0 1 1 21 11.5Z"/>
-        </svg>
+      <button class="nav-btn" id="navChats" data-nav="chats" aria-label="Chats" hidden>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 20.5l1.6-4.9A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+        <span>Chats</span>
         <span class="tg-badge" id="tgBadge" hidden></span>
       </button>
-    </div>
+      <button class="nav-btn nav-more" id="navMore" data-nav="more" aria-label="More: import, export, insights, account and help">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+        <span>More</span>
+      </button>
+    </nav>
 
     <!-- Floating Top Left Panel -->
     <div class="floating-header-left">
@@ -1638,54 +1734,44 @@
         <input type="text" id="searchInput" placeholder="Search contacts..." class="search-input" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults">
         <div id="searchResults" class="search-results" role="listbox" hidden></div>
       </div>
-      <button id="toolsBtn" class="header-button">Tools</button>
     </div>
 
     <!-- Floating Top Right Panel -->
     <div class="floating-header-right">
       <button id="addContactBtn" class="header-button">+ Add Contact</button>
-      <button id="accountBtn" class="header-button" hidden>Sign in</button>
-      <button id="presentBtn" class="header-button" title="Hide the interface for presenting (Esc to exit)">Present</button>
     </div>
+    <button id="heatBtn" class="view-pill" aria-pressed="false" title="Show where your people cluster, as a heatmap">🔥 Heatmap</button>
 
-    <!-- Collapsible Tools Panel -->
-    <div id="toolsPanel" class="tools-panel">
+    <!-- "More": everything that isn't a place you visit every day, grouped by what it is for -->
+    <div id="toolsPanel" class="tools-panel more-panel">
       <div class="tools-section">
-        <h3>Filter</h3>
-        <div class="tools-grid">
-          <button id="filterTier1Btn" class="tool-btn"><span class="dot" style="background:#c9736b"></span>Close friends</button>
-          <button id="filterTier2Btn" class="tool-btn"><span class="dot" style="background:#6f9fa0"></span>Friends</button>
-          <button id="filterTier3Btn" class="tool-btn"><span class="dot" style="background:#8f9bb3"></span>Acquaintances</button>
-          <button id="clearTierFilterBtn" class="tool-btn">Show all</button>
-        </div>
-        <select id="tagFilter" class="tool-select" aria-label="Filter by tag"><option value="">All tags</option></select>
-        <button id="birthdayBtn" class="tool-btn wide" aria-pressed="false" title="Birthdays in the next 30 days">Birthdays soon</button>
-        <button id="catchUpBtn" class="tool-btn wide" aria-pressed="false" title="Tiered contacts you haven't been in touch with lately: Close friends 30 days, Friends 90, Acquaintances 180">Needs a catch-up</button>
+        <h3>Account</h3>
+        <button id="accountBtn" class="tool-btn wide account-btn" hidden>Sign in</button>
       </div>
 
       <div class="tools-section">
-        <h3>Import / Export</h3>
+        <h3>Your data</h3>
         <div class="tools-grid">
           <button id="importCsvBtn" class="tool-btn" title="Google Contacts CSV, or any CSV with name/email/phone columns">Import CSV</button>
           <button id="importVcfBtn" class="tool-btn">Import vCard</button>
-          <button id="loadJsonBtn" class="tool-btn">Load JSON</button>
-          <button id="exportJsonBtn" class="tool-btn">Export JSON</button>
+          <button id="loadJsonBtn" class="tool-btn">Restore backup</button>
+          <button id="exportJsonBtn" class="tool-btn">Back up (JSON)</button>
           <button id="exportCsvBtn" class="tool-btn">Export CSV</button>
         </div>
       </div>
 
       <div class="tools-section">
-        <h3>Map</h3>
+        <h3>See your network</h3>
         <div class="tools-grid">
           <button id="toggleHeatmapBtn" class="tool-btn">Heatmap</button>
           <button id="analyticsBtn" class="tool-btn">Analytics</button>
-          <button id="fitAllBtn" class="tool-btn">Fit to pins</button>
-          <button id="themeBtn" class="tool-btn" title="Light, dark, or follow your device">Theme: Auto</button>
+          <button id="fitAllBtn" class="tool-btn">Fit map to pins</button>
+          <button id="presentBtn" class="tool-btn" title="Hide the interface for presenting (Esc to exit)">Present</button>
         </div>
       </div>
 
       <div class="tools-section">
-        <h3>Clean up</h3>
+        <h3>Tidy up</h3>
         <div class="tools-grid">
           <button id="placeQueueBtn" class="tool-btn" title="Walk through contacts that have no pin and click the map for each">Place unpinned</button>
           <button id="locateMissingBtn" class="tool-btn" title="Look up pins from addresses and cities">Locate from addresses</button>
@@ -1694,11 +1780,12 @@
       </div>
 
       <div class="tools-section">
-        <h3>Help</h3>
+        <h3>App</h3>
         <div class="tools-grid">
+          <button id="themeBtn" class="tool-btn" title="Light, dark, or follow your device">Theme: Auto</button>
           <button id="tourBtn" class="tool-btn">Take the tour</button>
-          <button id="feedbackBtn" class="tool-btn" hidden>Send feedback</button>
           <button id="installBtn" class="tool-btn" title="Add Orbita to your home screen or desktop">Install app</button>
+          <button id="feedbackBtn" class="tool-btn" hidden>Send feedback</button>
           <button id="clearSampleBtn" class="tool-btn" hidden title="Delete the example contacts, keep everyone else">Remove sample contacts</button>
         </div>
       </div>
@@ -1785,7 +1872,7 @@
   <aside id="listPanel" class="list-panel" aria-label="Contact list">
     <div class="list-head">
       <div>
-        <h3>Contacts</h3>
+        <h3>People</h3>
         <div id="listCount" class="list-count"></div>
       </div>
       <div class="list-head-actions">
@@ -1793,16 +1880,29 @@
         <button class="btn" id="closeList">Close</button>
       </div>
     </div>
-    <div class="list-controls">
-      <label class="list-filter"><input type="checkbox" id="listNoLoc"> Without a pin</label>
-      <select id="listSort" aria-label="Sort contacts">
-        <option value="name">A to Z</option>
-        <option value="recent">Recently added</option>
-        <option value="nopin">No pin first</option>
-        <option value="tier">By tier</option>
-        <option value="catchup">Longest since contact</option>
-        <option value="birthday">Next birthday</option>
-      </select>
+    <div class="list-filters">
+      <div class="chip-row" aria-label="Needs attention">
+        <button id="birthdayBtn" class="chip" aria-pressed="false" title="Birthdays in the next 30 days">🎂 Birthdays</button>
+        <button id="catchUpBtn" class="chip" aria-pressed="false" title="Tiered contacts you haven't been in touch with lately: Close friends 30 days, Friends 90, Acquaintances 180">🤝 Catch up</button>
+        <label class="chip chip-check" for="listNoLoc" title="Contacts that aren't on the map yet"><input type="checkbox" id="listNoLoc"> 📍 No pin<span id="noPinCount"></span></label>
+      </div>
+      <div class="chip-row" aria-label="Closeness">
+        <button id="filterTier1Btn" class="chip"><span class="dot" style="background:#c9736b"></span>Close</button>
+        <button id="filterTier2Btn" class="chip"><span class="dot" style="background:#6f9fa0"></span>Friends</button>
+        <button id="filterTier3Btn" class="chip"><span class="dot" style="background:#8f9bb3"></span>Acquaintances</button>
+        <button id="clearTierFilterBtn" class="chip ghost" title="Remove every filter and search">Clear</button>
+      </div>
+      <div class="list-selects">
+        <select id="tagFilter" aria-label="Filter by tag"><option value="">All tags</option></select>
+        <select id="listSort" aria-label="Sort contacts">
+          <option value="name">A to Z</option>
+          <option value="recent">Recently added</option>
+          <option value="nopin">No pin first</option>
+          <option value="tier">By tier</option>
+          <option value="catchup">Longest since contact</option>
+          <option value="birthday">Next birthday</option>
+        </select>
+      </div>
     </div>
     <div id="bulkBar" class="bulk-bar">
       <div class="bulk-top">
@@ -1954,15 +2054,10 @@
     <div class="tg-head">
       <div class="tg-title" id="tgTitle">Together</div>
       <div class="tg-head-actions">
-        <button class="btn" type="button" data-tg="new" id="tgNewBtn">+ New</button>
         <button class="btn" type="button" data-tg="close">Close</button>
       </div>
     </div>
     <div id="tgInvites" class="tg-invites" hidden></div>
-    <div class="seg" id="tgTabs">
-      <button type="button" class="seg-btn active" data-tg="tab" data-view="journal">Journal</button>
-      <button type="button" class="seg-btn" data-tg="tab" data-view="chats">Chats</button>
-    </div>
     <div id="tgBody" class="tg-body"></div>
     <div id="tgComposer" class="tg-composer" hidden>
       <textarea id="tgInput" rows="1" maxlength="4000" placeholder="Write a message" aria-label="Message"></textarea>
@@ -2031,7 +2126,12 @@
   <button id="exitPresent" class="btn exit-present">Exit presentation (Esc)</button>
 
   <!-- Floating Action Button -->
-  <button class="fab" id="fab" title="Add Contact" aria-label="Add contact">＋</button>
+  <button class="fab" id="fab" title="Add" aria-label="Add something new">＋</button>
+  <div class="fab-menu" id="fabMenu" role="menu" hidden>
+    <button role="menuitem" data-fab="contact">👤 Add a contact</button>
+    <button role="menuitem" data-fab="memory">📖 Write a memory</button>
+    <button role="menuitem" data-fab="chat">💬 Start a chat</button>
+  </div>
 
   <!-- Analytics Modal -->
   <div id="analyticsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="analyticsTitle">
@@ -2599,9 +2699,11 @@
     const TOUR_STEPS = [
       { sel: null, title: 'Your people, on a map', text: 'Each pin is a contact. Pins that are close join into a numbered bubble: click one to fan out the people inside, or hover it to see them as a list. The map only zooms when you ask it to.' },
       { sel: '#searchInput', title: 'Find anyone', text: 'Search by name, company, tag or place. Press the / key anywhere to jump straight here.' },
-      { sel: '#toolsBtn', title: 'Tools', text: 'Import contacts, filter by tier or tag, see who needs a catch-up or has a birthday coming, switch to a heatmap, or change the theme.' },
-      { sel: '#tableBtn', title: 'The list', text: 'Everyone in a sortable list, with bulk actions: set tiers, add tags, or mark people as contacted.' },
-      { sel: '#addContactBtn', title: 'Add someone', text: 'Add a contact by hand, or click any pin to open their details. Click any field in the details to edit it. You can replay this tour from Tools, under Help.' },
+      { sel: '#navPeople', title: 'People', text: 'Everyone in a list. At the top, one tap shows who has a birthday coming (🎂), who needs a catch-up (🤝) or who is not on the map yet (📍), and you can filter by how close you are.' },
+      { sel: '#navJournal', title: 'Journal', text: 'Write a memory right at the top. Keep it private, or share it with friends: memories shared with you appear here too.', cloud: true },
+      { sel: '#navChats', title: 'Chats', text: 'Chat one-to-one or in groups. Each chat also has its own shared journal. Invite people by email; they need an Orbita account.', cloud: true },
+      { sel: '#navMore', title: 'More', text: 'Import and export, the heatmap, analytics, tidy-up tools, your account, the theme and help. You can replay this tour from here.' },
+      { sel: '#fab', title: 'Add something', text: 'The + button is where you start anything new: a contact, a memory or a chat. Or click any pin to see and edit someone\'s details.' },
     ];
     // How often each tier should hear from you before it shows up as "needs a catch-up"
     const CATCH_UP_DAYS = { 1: 30, 2: 90, 3: 180 };
@@ -3044,15 +3146,14 @@
         click('locateMissingBtn', () => this.locateMissing());
         click('fitAllBtn', () => this.fitToPins());
         click('addContactBtn', () => this.showAddContactModal());
-        click('fab', () => this.showAddContactModal());
-        click('toolsBtn', (e) => { e.stopPropagation(); this.toggleToolsPanel(); });
+        click('fab', (e) => { e.stopPropagation(); this.onFab(); });
+        $('fabMenu').addEventListener('click', (e) => this.onFabMenu(e));
         click('toggleHeatmapBtn', () => this.toggleHeatmap());
         click('analyticsBtn', () => this.showAnalytics());
         click('closeAnalytics', () => this.hideAnalytics());
         click('presentBtn', () => this.setPresenting(true));
         click('exitPresent', () => this.setPresenting(false));
-        click('tableBtn', () => this.toggleList());
-        click('statsBtn', () => this.showAnalytics());
+        document.querySelectorAll('[data-nav]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); this.navTo(b.dataset.nav); }));
         click('heatBtn', () => this.toggleHeatmap());
         click('welcomeImport', () => $('csvFileInput').click());
         click('welcomeAdd', () => this.showAddContactModal());
@@ -3091,11 +3192,10 @@
         click('birthdayBtn', () => { this.birthdayOnly = !this.birthdayOnly; this.updateMap({ fit: true }); });
         click('tourBtn', () => { this.closeToolsPanel(); this.startTour(); });
         click('feedbackBtn', () => this.openFeedback());
-        click('togetherBtn', () => this.tgToggle());
         $('togetherPanel').addEventListener('click', (e) => this.onTogetherClick(e));
-        $('togetherPanel').addEventListener('change', (e) => {
-          if (e.target.id === 'tgScope') { this.tg.scope = e.target.value || null; this.tg.entries = null; this.tgRenderBody(); }
-        });
+        $('togetherPanel').addEventListener('input', (e) => this.onNoteInput(e));
+        $('togetherPanel').addEventListener('focusin', (e) => { if (e.target.id === 'tgNote') this.openNoteComposer(); });
+        $('togetherPanel').addEventListener('keydown', (e) => { if (e.target.id === 'tgNote' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); this.saveNote(); } });
         $('tgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.tgSend(); } });
         $('tgInput').addEventListener('input', (e) => { e.target.style.height = 'auto'; e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`; });
         click('ncClose', () => this.closeModal('newCircleModal'));
@@ -3202,7 +3302,8 @@
         $('listBody').addEventListener('click', (e) => this.onListClick(e));
 
         document.addEventListener('click', (e) => {
-          if (!e.target.closest('#toolsPanel') && !e.target.closest('#toolsBtn')) this.closeToolsPanel();
+          if (!e.target.closest('#toolsPanel') && !e.target.closest('#navMore') && $('toolsPanel').classList.contains('open')) this.closeToolsPanel();
+          if (!e.target.closest('#fabMenu') && !e.target.closest('#fab')) $('fabMenu').hidden = true;
         });
         document.addEventListener('keydown', (e) => this.onKeydown(e));
       }
@@ -3283,8 +3384,66 @@
         $('searchInput').setAttribute('aria-expanded', 'true');
       }
 
-      toggleToolsPanel() { $('toolsPanel').classList.toggle('open'); }
-      closeToolsPanel() { $('toolsPanel').classList.remove('open'); }
+      toggleToolsPanel() {
+        const open = !$('toolsPanel').classList.contains('open');
+        if (open) { if (this.listOpen) this.toggleList(false); if (this.tgOpen) this.tgToggle(false); }
+        $('toolsPanel').classList.toggle('open', open);
+        this.renderNav();
+      }
+      closeToolsPanel() { $('toolsPanel').classList.remove('open'); this.renderNav(); }
+
+      // ---------------- navigation ----------------
+      // Map · People · Journal · Chats · More. Tapping the section you are already in goes back to the map.
+      currentNav() {
+        if (this.listOpen) return 'people';
+        if (this.tgOpen) return this.tg.view === 'journal' ? 'journal' : 'chats';
+        if ($('toolsPanel').classList.contains('open')) return 'more';
+        return 'map';
+      }
+
+      renderNav() {
+        const cur = this.currentNav();
+        document.querySelectorAll('[data-nav]').forEach((b) => {
+          const on = b.dataset.nav === cur;
+          b.classList.toggle('active', on);
+          if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+        });
+        document.body.classList.toggle('list-open', !!this.listOpen);
+      }
+
+      navTo(dest) {
+        $('fabMenu').hidden = true;
+        if (dest !== 'map' && dest === this.currentNav()) dest = 'map';
+        if (dest === 'map') {
+          if (this.listOpen) this.toggleList(false);
+          if (this.tgOpen) this.tgToggle(false);
+          this.closeToolsPanel();
+        } else if (dest === 'people') this.toggleList(true);
+        else if (dest === 'journal' || dest === 'chats') this.showTogether(dest);
+        else if (dest === 'more') this.toggleToolsPanel();
+        this.renderNav();
+      }
+
+      showTogether(view) {
+        this.tg.view = view; this.tg.chat = null;
+        if (this.listOpen) this.toggleList(false);
+        this.closeToolsPanel();
+        this.tgToggle(true);
+      }
+
+      // the + button: one place to start anything
+      onFab() {
+        if (!this.tgSignedIn()) { this.showAddContactModal(); return; }
+        $('fabMenu').hidden = !$('fabMenu').hidden;
+      }
+
+      onFabMenu(e) {
+        const b = e.target.closest('[data-fab]'); if (!b) return;
+        $('fabMenu').hidden = true;
+        if (b.dataset.fab === 'contact') this.showAddContactModal();
+        else if (b.dataset.fab === 'memory') { this.showTogether('journal'); this.tg.scope = null; this.openNoteComposer(); setTimeout(() => $('tgNote') && $('tgNote').focus(), 120); }
+        else if (b.dataset.fab === 'chat') { this.showTogether('chats'); this.openNewCircle('direct'); }
+      }
 
       setPresenting(on) {
         document.body.classList.toggle('presenting', on);
@@ -3296,15 +3455,15 @@
       toggleList(force) {
         this.listOpen = typeof force === 'boolean' ? force : !this.listOpen;
         $('listPanel').classList.toggle('open', this.listOpen);
-        $('tableBtn').classList.toggle('active', this.listOpen);
-        if (this.listOpen) { if (this.tgOpen) this.tgToggle(false); this.renderList(); }
+        if (this.listOpen) { if (this.tgOpen) this.tgToggle(false); this.closeToolsPanel(); this.renderList(); }
+        this.renderNav();
       }
 
       // ---------------- Together: chat + journals ----------------
       // Circles are groups of Orbita accounts (or just two people). Each has a chat and a journal; a memory belongs to its
       // author and can be shared into circles, so "my journal" = my memories + everything shared with me.
       tgBlank() {
-        return { available: null, me: null, circles: [], invites: [], view: 'journal', scope: null, person: null, entries: null, chat: null, messages: [], sending: false };
+        return { available: null, me: null, circles: [], invites: [], view: 'journal', scope: null, person: null, entries: null, chat: null, messages: [], sending: false, draft: this.tgBlankDraft() };
       }
 
       tgSignedIn() { return this.cloudEnabled() && !!this.session; }
@@ -3315,7 +3474,8 @@
       }
 
       tgOnAccountChange() {
-        $('togetherBtn').hidden = !this.cloudEnabled();
+        $('navJournal').hidden = !this.cloudEnabled();
+        $('navChats').hidden = !this.cloudEnabled();
         const on = this.tgSignedIn();
         if (on && !this.tgTimers) {
           this.tg = this.tgBlank();
@@ -3373,24 +3533,22 @@
         const open = typeof force === 'boolean' ? force : !this.tgOpen;
         this.tgOpen = open;
         $('togetherPanel').classList.toggle('open', open);
-        $('togetherBtn').classList.toggle('active', open);
         document.body.classList.toggle('tg-open', open);
-        if (!open) return;
+        if (!open) { this.renderNav(); return; }
         if (this.listOpen) this.toggleList(false);
         this.closeToolsPanel();
         this.tgRender();
+        this.renderNav();
         this.tgRefresh({ quiet: true });
         if (this.tg.view === 'journal' && this.tg.entries) this.tgLoadJournal();
       }
 
       tgRender() {
         const t = this.tg; const signed = this.tgSignedIn(); const usable = signed && t.available !== false;
-        $('tgTabs').hidden = !usable || t.view === 'chat';
-        $('tgNewBtn').hidden = !usable || t.view === 'chat';
-        document.querySelectorAll('#tgTabs .seg-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === t.view));
         $('tgComposer').hidden = !usable || t.view !== 'chat';
         const c = t.view === 'chat' ? t.circles.find((x) => x.id === t.chat) : null;
-        $('tgTitle').textContent = 'Together';
+        $('tgTitle').textContent = t.view === 'journal' ? 'Journal' : 'Chats';
+        this.renderNav();
         this.tgRenderInvites();
         this.tgRenderBody();
         if (c) setTimeout(() => $('tgInput').focus(), 50);
@@ -3414,6 +3572,7 @@
         const keep = body.scrollTop;
         if (t.view === 'journal') {
           body.innerHTML = this.tgJournalHtml();
+          this.tgRenderEntries();
           if (t.entries === null) this.tgLoadJournal();
         } else if (t.view === 'chats') body.innerHTML = this.tgChatsHtml();
         else this.tgRenderChat();
@@ -3421,33 +3580,107 @@
       }
 
       // ---- journal ----
+      tgBlankDraft() { return { text: '', date: '', place: '', people: '', circles: null, open: false }; }
+
+      // who a new memory is shared with: whatever was ticked, else the group you are looking at, else nobody
+      tgShareSet() {
+        const t = this.tg; const d = t.draft;
+        if (d.circles) return new Set(d.circles);
+        return t.scope && t.scope !== 'private' && t.circles.some((c) => c.id === t.scope) ? new Set([t.scope]) : new Set();
+      }
+
+      tgShareHint(set) {
+        if (!set.size) return '🔒 Only you can see this';
+        const me = this.tg.me && this.tg.me.user_id;
+        const names = this.tg.circles.filter((c) => set.has(c.id)).map((c) => circleTitle(c, me));
+        return `👥 Shared with ${names.slice(0, 2).join(', ')}${names.length > 2 ? ` +${names.length - 2}` : ''}`;
+      }
+
       tgJournalHtml() {
-        const t = this.tg; const me = t.me && t.me.user_id;
-        const opts = ['<option value="">All my memories</option>'].concat(t.circles.map((c) =>
-          `<option value="${esc(c.id)}"${t.scope === c.id ? ' selected' : ''}>Shared with ${esc(circleTitle(c, me))}</option>`)).join('');
+        const t = this.tg; const me = t.me && t.me.user_id; const d = t.draft;
+        const scopes = [['', 'Everything'], ['private', '🔒 Only me']].concat(t.circles.map((c) => [c.id, `${c.kind === 'direct' ? '💬' : '👥'} ${circleTitle(c, me)}`]));
+        const pills = scopes.map(([id, label]) => `<button class="chip${(t.scope || '') === id ? ' active' : ''}" data-tg="scope" data-id="${esc(id)}">${esc(label)}</button>`).join('');
         const person = t.person ? `<div class="tg-filter">Memories with <strong>${esc(t.person)}</strong> · <button class="tg-link" data-tg="clear-person">show all</button></div>` : '';
-        let list;
-        if (t.entries === null) list = '<div class="tg-empty">Loading…</div>';
-        else if (!t.entries.length) {
-          list = `<div class="tg-empty">${t.person ? `No memories with ${esc(t.person)} yet.` : t.scope ? 'Nothing shared here yet.' : 'No memories yet.'}<br>Keep a memory to yourself, or share it with a friend or a whole group: it still lives in your own journal.<br><button class="btn btn-primary" data-tg="write">✎ Write a memory</button></div>`;
-        } else {
-          let month = '';
-          list = t.entries.map((e) => {
-            const [y, mo, d] = e.happened_on.split('-').map(Number);
-            const heading = new Date(y, mo - 1, d).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-            const head = heading !== month ? `<div class="tg-month">${esc(heading)}</div>` : '';
-            month = heading;
-            return head + this.tgEntryHtml(e, new Date(y, mo - 1, d));
-          }).join('');
+        const set = this.tgShareSet();
+        const share = t.circles.length
+          ? `<div class="tg-share"><span>Share with</span>${t.circles.map((c) => `<button type="button" class="chip${set.has(c.id) ? ' active' : ''}" data-tg="cshare" data-id="${esc(c.id)}">${esc(circleTitle(c, me))}</button>`).join('')}</div>`
+          : '<div class="tg-share"><span>Start a group in Chats to share memories with friends.</span></div>';
+        return `<div class="tg-scope" role="group" aria-label="Which memories to show">${pills}</div>${person}
+          <div class="tg-compose">
+            <textarea id="tgNote" rows="${d.open ? 4 : 2}" maxlength="20000" placeholder="Write a memory…" aria-label="Write a memory">${esc(d.text)}</textarea>
+            <div class="tg-compose-more" id="tgNoteMore"${d.open ? '' : ' hidden'}>
+              <div class="tg-compose-row"><input type="date" id="tgNoteDate" value="${esc(d.date || todayStr())}" max="${todayStr()}" aria-label="When it happened"><input type="text" id="tgNotePlace" value="${esc(d.place)}" maxlength="120" placeholder="Where?" aria-label="Where"></div>
+              <input type="text" id="tgNotePeople" value="${esc(d.people)}" placeholder="Who was there? (names, separated by commas)" aria-label="Who was there">
+              ${share}
+              <div class="tg-compose-actions"><span class="tg-hint" id="tgNoteHint">${esc(this.tgShareHint(set))}</span><button class="btn btn-primary" type="button" data-tg="note-save">Save memory</button></div>
+            </div>
+          </div>
+          <div class="tg-list" id="tgList"></div>`;
+      }
+
+      openNoteComposer() {
+        const t = this.tg; if (t.draft.open) return;
+        t.draft.open = true;
+        const more = $('tgNoteMore'); if (more) more.hidden = false;
+        const box = $('tgNote'); if (box) box.rows = 4;
+      }
+
+      onNoteInput(e) {
+        const d = this.tg.draft; const id = e.target.id;
+        if (id === 'tgNote') d.text = e.target.value;
+        else if (id === 'tgNoteDate') d.date = e.target.value;
+        else if (id === 'tgNotePlace') d.place = e.target.value;
+        else if (id === 'tgNotePeople') d.people = e.target.value;
+      }
+
+      toggleNoteShare(id) {
+        const t = this.tg; const set = this.tgShareSet();
+        if (set.has(id)) set.delete(id); else set.add(id);
+        t.draft.circles = [...set];
+        document.querySelectorAll('#tgNoteMore [data-tg="cshare"]').forEach((b) => b.classList.toggle('active', set.has(b.dataset.id)));
+        $('tgNoteHint').textContent = this.tgShareHint(set);
+      }
+
+      async saveNote() {
+        const t = this.tg; const d = t.draft; const text = d.text.trim();
+        if (!text) { this.showNotification('Write something first.'); const b = $('tgNote'); if (b) b.focus(); return; }
+        const btn = document.querySelector('[data-tg="note-save"]'); if (btn) btn.disabled = true;
+        try {
+          await this.rpc('orbita_save_entry', {
+            p_id: null, p_title: '', p_body: text, p_happened_on: d.date || todayStr(), p_place: d.place,
+            p_people: splitNames(d.people), p_circles: [...this.tgShareSet()],
+          });
+          t.draft = this.tgBlankDraft();
+          this.showNotification('Memory saved');
+          t.entries = null;
+          this.tgRenderBody();
+        } catch (e) { this.showNotification(e.message); } finally { if (btn) btn.disabled = false; }
+      }
+
+      // the list part only, so reloading it never disturbs what you are typing above
+      tgRenderEntries() {
+        const t = this.tg; const box = $('tgList'); if (!box) return;
+        if (t.entries === null) { box.innerHTML = '<div class="tg-empty">Loading…</div>'; return; }
+        const rows = t.scope === 'private' ? t.entries.filter((e) => e.mine && !(e.circles || []).length) : t.entries;
+        if (!rows.length) {
+          box.innerHTML = `<div class="tg-empty">${t.person ? `No memories with ${esc(t.person)} yet.` : t.scope === 'private' ? 'No private memories yet.' : t.scope ? 'Nothing shared here yet.' : 'No memories yet.'}<br>Write the first one above. Keep it to yourself, or share it with a friend or a group: it always stays in your own journal too.</div>`;
+          return;
         }
-        return `<div class="tg-bar"><select id="tgScope" aria-label="Which memories to show">${opts}</select><button class="btn btn-primary" data-tg="write">✎ Write</button></div>${person}<div class="tg-list">${list}</div>`;
+        let month = '';
+        box.innerHTML = rows.map((e) => {
+          const [y, mo, d] = e.happened_on.split('-').map(Number);
+          const heading = new Date(y, mo - 1, d).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+          const head = heading !== month ? `<div class="tg-month">${esc(heading)}</div>` : '';
+          month = heading;
+          return head + this.tgEntryHtml(e, new Date(y, mo - 1, d));
+        }).join('');
       }
 
       tgEntryHtml(e, date) {
         const me = this.tg.me && this.tg.me.user_id;
         const when = date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         const shared = (e.circles || []).length
-          ? e.circles.map((c) => `<span class="tg-chip share">👥 ${esc(circleTitle(this.tg.circles.find((x) => x.id === c.id) || c, me))}</span>`).join('')
+          ? e.circles.map((c) => `<span class="tg-chip share">${c.kind === 'direct' ? '💬' : '👥'} ${esc(circleTitle(this.tg.circles.find((x) => x.id === c.id) || c, me))}</span>`).join('')
           : '<span class="tg-chip private">🔒 Only me</span>';
         const long = (e.body || '').length > 320 || (e.body || '').split('\n').length > 7;
         return `<article class="tg-entry" data-id="${esc(e.id)}">
@@ -3464,14 +3697,14 @@
         const t = this.tg; const key = `${t.scope}|${t.person}`;
         t.loadKey = key;
         try {
-          const list = await this.rpc('orbita_journal', { p_circle: t.scope, p_person: t.person, p_limit: 200 });
+          const list = await this.rpc('orbita_journal', { p_circle: t.scope && t.scope !== 'private' ? t.scope : null, p_person: t.person, p_limit: 200 });
           if (t.loadKey !== key) return;
           t.entries = list || [];
         } catch (e) {
           t.entries = [];
           this.showNotification(`Couldn't load memories: ${e.message}`);
         }
-        if (this.tgOpen && t.view === 'journal') this.tgRenderBody();
+        if (this.tgOpen && t.view === 'journal') this.tgRenderEntries();
       }
 
       openEntryEditor(entry, preset = {}) {
@@ -3511,8 +3744,7 @@
           this.closeModal('entryModal');
           this.tg.entries = null;
           this.showNotification(this.tgEditing ? 'Memory updated' : 'Memory saved');
-          if (this.tgFromContact) { this.tg.person = splitNames($('enPeople').value)[0] || null; this.tg.scope = null; this.tg.view = 'journal'; this.tgToggle(true); }
-          else if (this.tgOpen && this.tg.view === 'journal') this.tgRenderBody();
+          if (this.tgOpen && this.tg.view === 'journal') { this.tgRenderEntries(); this.tgLoadJournal(); }
         } catch (e) {
           msg.textContent = e.message; msg.classList.add('error');
         } finally { $('enSave').disabled = false; }
@@ -3525,7 +3757,7 @@
           await this.api(`/rest/v1/orbita_entries?id=eq.${encodeURIComponent(this.tgEditing)}`, { method: 'DELETE', prefer: 'return=minimal' });
           this.closeModal('entryModal');
           this.tg.entries = null;
-          if (this.tgOpen && this.tg.view === 'journal') this.tgRenderBody();
+          if (this.tgOpen && this.tg.view === 'journal') { this.tgRenderEntries(); this.tgLoadJournal(); }
           this.showNotification('Memory deleted');
         } catch (e) { $('enMsg').textContent = e.message; $('enMsg').className = 'acc-msg error'; }
       }
@@ -3536,7 +3768,7 @@
         if (!t.circles.length) {
           return '<div class="tg-empty">No chats yet. Start one with a friend, or make a group.<br>Each chat also gets its own shared journal.<br><button class="btn btn-primary" data-tg="new">+ New chat or group</button></div>';
         }
-        return t.circles.map((c) => {
+        return '<div class="tg-newchat"><button class="btn btn-primary wide" data-tg="new">+ New chat or group</button></div>' + t.circles.map((c) => {
           const title = circleTitle(c, me);
           const initials = this.getInitials(title);
           const waiting = c.kind === 'direct' && c.members.length < 2;
@@ -3640,6 +3872,24 @@
           t.messages = t.messages.filter((m) => m.id !== id);
           this.tgRenderMessages();
         } catch (e) { this.showNotification(`Couldn't delete: ${e.message}`); }
+      }
+
+      // one click from a contact to a conversation: opens the existing chat with them, or invites their email
+      async startChatWith(p) {
+        if (!p) return;
+        if (!this.tgSignedIn()) { this.showNotification('Sign in to chat.'); this.openAccount('signin'); return; }
+        const email = parseEmails(p.email).valid[0];
+        if (!email) { this.showNotification(`Add an email address for ${p.name} first, so they can be invited.`); return; }
+        try {
+          const cid = await this.rpc('orbita_create_circle', { p_name: '', p_kind: 'direct', p_emails: [email] });
+          await this.tgRefresh({ quiet: true });
+          this.showTogether('chats');
+          await this.tgOpenChat(cid);
+          const c = this.tg.circles.find((x) => x.id === cid);
+          if (c && c.members.length < 2) {
+            this.showNotification(`${p.name} isn't on Orbita yet. They'll see your chat when they sign up with ${email}.`, { actionLabel: 'Copy a message to send', duration: 14000, onAction: () => this.copyInviteMessage(c) });
+          }
+        } catch (e) { this.showNotification(e.message); }
       }
 
       // ---- invitations, new circles, circle settings ----
@@ -3769,16 +4019,17 @@
         const el = e.target.closest('[data-tg]'); if (!el) return;
         const act = el.dataset.tg; const id = el.dataset.id; const t = this.tg;
         if (act === 'close') this.tgToggle(false);
-        else if (act === 'tab') { t.view = el.dataset.view; t.chat = null; this.tgRender(); if (t.view === 'journal' && t.entries) this.tgLoadJournal(); }
         else if (act === 'new') this.openNewCircle(t.view === 'chats' ? 'direct' : 'group');
         else if (act === 'signin') this.openAccount('signin');
-        else if (act === 'write') this.openEntryEditor(null);
         else if (act === 'edit') { const entry = (t.entries || []).find((x) => x.id === id); if (entry) this.openEntryEditor(entry); }
         else if (act === 'more') { const card = el.closest('.tg-entry'); card.classList.toggle('open'); el.textContent = card.classList.contains('open') ? 'Show less' : 'Read more'; }
         else if (act === 'open-chat') this.tgOpenChat(id);
         else if (act === 'back') { t.view = 'chats'; t.chat = null; this.tgRender(); }
         else if (act === 'info') this.openCircleInfo(t.chat);
-        else if (act === 'journal-of') { t.view = 'journal'; t.scope = id; t.person = null; t.entries = null; t.chat = null; this.tgRender(); }
+        else if (act === 'journal-of') { t.scope = id; t.person = null; t.entries = null; this.showTogether('journal'); }
+        else if (act === 'scope') { t.scope = id || null; t.entries = null; this.tgRenderBody(); }
+        else if (act === 'cshare') this.toggleNoteShare(id);
+        else if (act === 'note-save') this.saveNote();
         else if (act === 'accept') this.tgAccept(id);
         else if (act === 'decline') this.tgDecline(id);
         else if (act === 'clear-person') { t.person = null; t.entries = null; this.tgRenderBody(); }
@@ -3807,17 +4058,19 @@
         this.startTour();
       }
 
+      tourSteps() { return TOUR_STEPS.filter((s) => !s.cloud || this.cloudEnabled()); }
+
       startTour() { this.tourStep = 0; this.renderTour(); }
 
       renderTour() {
-        const i = this.tourStep; const s = TOUR_STEPS[i]; const last = i === TOUR_STEPS.length - 1;
+        const steps = this.tourSteps(); const i = Math.min(this.tourStep, steps.length - 1); const s = steps[i]; const last = i === steps.length - 1;
         const card = $('tour');
         document.querySelectorAll('.tour-hl').forEach((el) => el.classList.remove('tour-hl'));
         const target = s.sel ? document.querySelector(s.sel) : null;
-        const usable = !!target && target.offsetParent !== null;
+        const usable = !!target && target.getClientRects().length > 0; // not offsetParent: fixed-position buttons have none
         if (usable) target.classList.add('tour-hl');
         card.innerHTML = `<h3>${esc(s.title)}</h3><p>${esc(s.text)}</p>
-          <div class="tour-foot"><div class="tour-dots" aria-hidden="true">${TOUR_STEPS.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
+          <div class="tour-foot"><div class="tour-dots" aria-hidden="true">${steps.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
             ${last ? '' : '<button class="link-btn" data-tour="skip">Skip</button>'}
             ${i > 0 ? '<button class="btn" data-tour="back">Back</button>' : ''}
             <button class="btn btn-primary" data-tour="next">${last ? 'Got it' : 'Next'}</button></div>`;
@@ -3847,7 +4100,7 @@
         if (act === 'skip') this.endTour();
         else if (act === 'back') { this.tourStep = Math.max(0, this.tourStep - 1); this.renderTour(); }
         else if (act === 'next') {
-          if (this.tourStep >= TOUR_STEPS.length - 1) this.endTour();
+          if (this.tourStep >= this.tourSteps().length - 1) this.endTour();
           else { this.tourStep++; this.renderTour(); }
         }
       }
@@ -4055,11 +4308,13 @@
           `<option value="${esc(t)}">${esc(t)} (${counts[t]})</option>`).join('');
         select.value = options.includes(this.currentTagFilter) ? this.currentTagFilter : '';
         const due = this.people.filter((p) => needsCatchUp(p)).length;
-        $('catchUpBtn').textContent = `Needs a catch-up${due ? ` (${due})` : ''}`;
+        $('catchUpBtn').textContent = `🤝 Catch up${due ? ` (${due})` : ''}`;
         $('catchUpBtn').classList.toggle('active', this.catchUpOnly);
         $('catchUpBtn').setAttribute('aria-pressed', String(this.catchUpOnly));
         const soon = this.people.filter((p) => bdaySoon(p)).length;
-        $('birthdayBtn').textContent = `Birthdays soon${soon ? ` (${soon})` : ''}`;
+        $('birthdayBtn').textContent = `🎂 Birthdays${soon ? ` (${soon})` : ''}`;
+        const unpinned = this.people.filter((p) => !hasCoords(p)).length;
+        $('noPinCount').textContent = unpinned ? ` (${unpinned})` : '';
         $('birthdayBtn').classList.toggle('active', this.birthdayOnly);
         $('birthdayBtn').setAttribute('aria-pressed', String(this.birthdayOnly));
         $('clearSampleBtn').hidden = !this.people.some((p) => (p.tags || []).includes('Sample'));
@@ -4278,7 +4533,7 @@
         const panel = $('contactPanel');
         const room = { x: size.x - (window.innerWidth > 600 && panel.style.display === 'flex' ? panel.offsetWidth : 0), y: size.y };
         const bar = document.querySelector('.left-toolbar').getBoundingClientRect(); // the map runs underneath the left toolbar
-        const inset = Math.max(0, bar.right - this.map.getContainer().getBoundingClientRect().left);
+        const inset = bar.width < 100 ? Math.max(0, bar.right - this.map.getContainer().getBoundingClientRect().left) : 0;
         const padX = shown.length <= 8 ? 150 : 26; // ring-sized fans show name labels beside the pins
         const fit = (lo, hi, max) => (hi - lo >= max ? (max - (hi + lo)) / 2 : lo < 0 ? -lo : hi > max ? max - hi : 0);
         const xs = lay.map((o) => o.x); const ys = lay.map((o) => o.y);
@@ -4599,7 +4854,7 @@
               ${p.phone ? `<a class="chip-link" href="tel:${esc(String(p.phone).replace(/[^\d+]/g, ''))}">☎ Call</a>` : ''}
               ${site ? `<a class="chip-link" href="${esc(siteUrl)}" target="_blank" rel="noopener noreferrer">↗ Website</a>` : ''}
               <button class="chip-link" data-action="contacted-today">✓ Contacted today</button>
-              ${this.cloudEnabled() ? '<button class="chip-link" data-action="memory-new">✎ Write a memory</button><button class="chip-link" data-action="memory-list">📖 Memories</button>' : ''}
+              ${this.cloudEnabled() ? `${p.email ? '<button class="chip-link" data-action="chat">💬 Chat</button>' : ''}<button class="chip-link" data-action="memory-new">✎ Write a memory</button><button class="chip-link" data-action="memory-list">📖 Memories</button>` : ''}
             </div>
             <div class="tier-buttons" role="group" aria-label="Tier">
               ${[1, 2, 3].map((t) => `<button class="tier-btn${p.tier === t ? ' active' : ''}" data-action="tier" data-tier="${t}" style="--tier:${TIER_COLORS[t]}" aria-pressed="${p.tier === t}">${esc(TIER_LABELS[t])}</button>`).join('')}
@@ -4656,9 +4911,14 @@
           const p = this.people.find((x) => x.id === id);
           if (!p) return;
           if (!this.tgSignedIn()) { this.showNotification('Sign in to keep a journal and share memories.'); this.openAccount('signin'); return; }
-          if (action === 'memory-new') this.openEntryEditor(null, { people: [p.name], fromContact: true });
-          else { this.tg.person = p.name; this.tg.scope = null; this.tg.entries = null; this.tg.view = 'journal'; this.tg.chat = null; this.tgToggle(true); }
+          this.tg.scope = null; this.tg.entries = null;
+          if (action === 'memory-new') {
+            this.tg.person = null; this.tg.draft = { ...this.tgBlankDraft(), people: p.name, open: true };
+            this.showTogether('journal');
+            setTimeout(() => { const box = $('tgNote'); if (box) box.focus(); }, 150);
+          } else { this.tg.person = p.name; this.showTogether('journal'); }
         }
+        else if (action === 'chat') this.startChatWith(this.people.find((x) => x.id === id));
         else if (action === 'contacted-today') {
           const p = this.people.find((x) => x.id === id);
           if (!p) return;
@@ -5340,7 +5600,7 @@
         const signedIn = !!this.session;
         const showForm = !signedIn || this.accMode === 'reset';
         $('accountBtn').hidden = false;
-        $('accountBtn').textContent = signedIn ? '☁ Account' : 'Sign in';
+        $('accountBtn').textContent = signedIn ? `☁ ${this.session.user.email}` : 'Sign in or create an account';
         this.tgOnAccountChange();
         $('welcomeAccount').hidden = signedIn;
         $('accountSignedOut').hidden = !showForm;

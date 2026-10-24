@@ -41,7 +41,7 @@ Sign up two throwaway accounts in two browsers and confirm each sees only its ow
 removed under Authentication -> Users (deleting a user also deletes their saved contacts).
 
 ## 7. Feedback box (optional)
-`orbita_setup.sql` also creates an `orbita_feedback` table behind Tools -> Help -> Send feedback. Anyone can send a message, nobody can read them through the app; you read them in the Supabase dashboard under Table Editor -> `orbita_feedback`. Re-running the whole file is safe.
+`orbita_setup.sql` also creates an `orbita_feedback` table behind More -> App -> Send feedback. Anyone can send a message, nobody can read them through the app; you read them in the Supabase dashboard under Table Editor -> `orbita_feedback`. Re-running the whole file is safe.
 
 ## 8. Chat + journals (optional)
 Paste all of [`orbita_together.sql`](orbita_together.sql) into the SQL Editor and run it (safe to run again). It adds groups and one-to-one chats, a chat for each, and shared/private journals, all protected by row-level security. Keep **Confirm email** ON: invitations are matched to confirmed email addresses. To test the SQL locally: `npm install --no-save @electric-sql/pglite` then `node tests/together.sql.test.js` (set `PGLITE_PATH` if it is installed elsewhere).
