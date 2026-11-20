@@ -1687,6 +1687,117 @@
       .bloom-bar { bottom: 126px; }
       .tour { bottom: 74px; }
     }
+
+    /* ===== Round 9: Today, near me, photos ===== */
+    .list-seg { margin: 0 14px 10px; }
+    .list-panel .seg-btn.active { background: var(--bg); }
+    .seg-count { display: inline-block; min-width: 18px; margin-left: 6px; padding: 0 5px; border-radius: 9px; background: #c9736b; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; }
+    .seg-count:empty { display: none; }
+    .everyone-pane { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .everyone-pane[hidden], .today-pane[hidden] { display: none; }
+    .today-pane { flex: 1; overflow-y: auto; border-top: 1px solid var(--border-light); background: var(--bg); min-height: 0; padding-bottom: 12px; }
+    .today-h { display: flex; align-items: baseline; justify-content: space-between; padding: 14px 14px 6px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    .today-h .tg-link { text-transform: none; letter-spacing: 0; }
+    .today-row { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border-light); }
+    .today-main { flex: 1; min-width: 0; text-align: left; border: none; background: transparent; padding: 2px 0; cursor: pointer; font-family: inherit; }
+    .today-name { display: block; font-size: 14px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .today-sub { display: block; font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .today-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .today-actions .chip { padding: 4px 10px; }
+    .today-actions .chip.done { background: var(--primary); border-color: var(--primary-dark); color: var(--text); font-weight: 600; }
+    .today-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 14px 0; padding: 10px 12px; border-radius: 10px; background: var(--primary); color: var(--text); font-size: 13px; }
+    .today-note button { flex-shrink: 0; }
+    .today-empty { padding: 30px 22px; text-align: center; color: var(--text-muted); font-size: 13.5px; line-height: 1.55; }
+    .today-empty strong { display: block; font-size: 16px; color: var(--text); margin-bottom: 4px; }
+    .today-foot { margin: 14px 14px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .near-row { display: flex; gap: 6px; }
+    .near-row[hidden], .near-banner[hidden] { display: none; }
+    .near-row input { flex: 1; min-width: 0; padding: 6px 9px; font: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+    .near-row select { padding: 6px 6px; font: inherit; font-size: 12.5px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+    .near-row .btn { padding: 5px 10px; min-height: 32px; font-size: 12.5px; }
+    .near-banner { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; border-radius: 9px; background: var(--primary); color: var(--text); font-size: 12.5px; }
+    .near-banner .note { color: var(--text-light); font-size: 11.5px; display: block; }
+
+    /* photos */
+    .tg-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 4px; margin-top: 8px; }
+    .tg-photo { position: relative; aspect-ratio: 1; padding: 0; border: none; border-radius: 8px; overflow: hidden; background: var(--border-light); cursor: zoom-in; }
+    .tg-photo img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.2s ease; }
+    .tg-photo img.ready { opacity: 1; }
+    .tg-photo-more { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.5); color: #fff; font-size: 16px; font-weight: 700; }
+    .tg-photo-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .tg-thumb { position: relative; width: 56px; height: 56px; border-radius: 8px; overflow: hidden; background: var(--border-light); }
+    .tg-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .tg-thumb button { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; padding: 0; border: none; border-radius: 9px; background: rgba(0, 0, 0, 0.65); color: #fff; font-size: 12px; line-height: 18px; cursor: pointer; }
+    .tg-thumb.busy::after { content: ''; position: absolute; inset: 0; background: rgba(255, 255, 255, 0.55); }
+    .lightbox { position: fixed; inset: 0; z-index: 4000; background: rgba(8, 9, 11, 0.92); display: flex; align-items: center; justify-content: center; }
+    .lightbox[hidden] { display: none; }
+    .lightbox figure { margin: 0; max-width: min(92vw, 1200px); text-align: center; }
+    .lightbox img { max-width: 100%; max-height: 82vh; border-radius: 6px; background: #1b1e22; }
+    .lightbox figcaption { margin-top: 10px; color: #d7dbe0; font-size: 13px; }
+    .lb-x, .lb-nav { position: absolute; border: none; background: rgba(255, 255, 255, 0.12); color: #fff; cursor: pointer; border-radius: 50%; width: 44px; height: 44px; font-size: 26px; line-height: 44px; padding: 0; }
+    .lb-x:hover, .lb-nav:hover { background: rgba(255, 255, 255, 0.24); }
+    .lb-x { top: 16px; right: 16px; }
+    .lb-nav.prev { left: 16px; } .lb-nav.next { right: 16px; }
+    .lb-nav[hidden] { display: none; }
+    body.presenting .lightbox { display: none !important; }
+    @media (max-width: 600px) { .lb-nav { width: 38px; height: 38px; line-height: 38px; } .today-actions { flex-direction: column; } }
+
+    /* ===== Round 9b: interface polish ===== */
+    /* motion: panels, dialogs and toasts ease in instead of popping */
+    @keyframes panelIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes dialogIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .list-panel.open, .tg-panel.open, .tools-panel.open { animation: panelIn 0.16s ease-out; }
+    .toast { animation: fadeUp 0.2s ease-out; }
+    .modal.open .dialog { animation: dialogIn 0.18s ease-out; }
+    .fab-menu:not([hidden]) { animation: fadeUp 0.14s ease-out; }
+    .btn, .chip, .nav-btn, .tg-link, .chip-link, .tier-btn { transition: background 0.12s ease, border-color 0.12s ease, transform 0.08s ease, color 0.12s ease; }
+    .btn:active, .chip:active, .nav-btn:active, .chip-link:active, .fab:active { transform: scale(0.97); }
+    @media (prefers-reduced-motion: reduce) { .list-panel.open, .tg-panel.open, .tools-panel.open, .toast, .modal.open .dialog, .fab-menu:not([hidden]) { animation: none; } }
+
+    /* one panel width and one look for everything that slides in from the left */
+    .list-panel, .tg-panel, .more-panel { width: 372px; border-radius: 14px; }
+    .list-panel, .tg-panel { max-width: calc(100vw - 100px); }
+    .list-head, .tg-head { padding: 14px 16px 10px; }
+    .list-head h3, .tg-title { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+    .icon-btn { width: 32px; height: 32px; min-height: 32px; padding: 0 !important; border-radius: 50% !important; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+    .list-body, .today-pane, .tg-body, .more-panel { scrollbar-width: thin; }
+
+    /* the filter block: tighter, so the list gets the room */
+    .list-filters { gap: 6px; padding: 0 16px 10px; }
+    .chip { padding: 4px 9px; font-size: 12.5px; }
+    .list-selects { gap: 6px; }
+    .near-banner { align-items: flex-start; }
+    .near-banner .near-links { display: flex; gap: 10px; flex-shrink: 0; }
+
+    /* Today rows: name and detail on the left, one clear action on the right, quiet links under it */
+    .today-row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "main primary" "main secondary"; gap: 3px 10px; align-items: center; padding: 10px 16px; }
+    .today-main { grid-area: main; }
+    .today-primary { grid-area: primary; justify-self: end; }
+    .today-secondary { grid-area: secondary; justify-self: end; display: flex; gap: 12px; }
+    .today-row:hover { background: var(--bg-light); }
+    .today-primary .chip { padding: 5px 12px; }
+
+    /* contact card: actions in an even grid instead of a ragged wrap */
+    .quick-actions { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+    .quick-actions .chip-link { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 8px; border-radius: 10px; font-size: 13px; text-align: center; white-space: nowrap; }
+
+    /* header: the common action stands alone as a real button */
+    .floating-header-right { background: transparent; border: none; box-shadow: none; backdrop-filter: none; padding: 0; top: 20px; }
+    .floating-header-right .header-button { background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 600; box-shadow: 0 4px 16px var(--shadow-lg); }
+    .floating-header-right .header-button:hover { filter: brightness(1.12); }
+    :root[data-theme="dark"] .floating-header-right .header-button { background: #3b5b57; }
+    .view-pill { top: 78px; }
+
+    /* toasts above the bottom bar on phones, never over the panels' action areas */
+    @media (max-width: 600px) {
+      .toasts { bottom: 74px; }
+      .floating-header-right { top: 68px; left: 12px; right: auto; }
+      .floating-header-right .header-button { padding: 8px 14px; }
+      .view-pill { top: 68px; right: 12px; }
+      .list-panel, .tg-panel, .more-panel { width: auto; max-width: none; }
+    }
   </style>
   
   <!-- Scripts -->
@@ -1877,15 +1988,32 @@
       </div>
       <div class="list-head-actions">
         <button class="btn" id="listSelectBtn">Select</button>
-        <button class="btn" id="closeList">Close</button>
+        <button class="btn icon-btn" id="closeList" aria-label="Close people" title="Close">✕</button>
       </div>
     </div>
+    <div class="seg list-seg" id="listTabs" role="tablist" aria-label="People view">
+      <button type="button" class="seg-btn active" role="tab" data-ltab="today">Today<span class="seg-count" id="todayCount"></span></button>
+      <button type="button" class="seg-btn" role="tab" data-ltab="all">Everyone</button>
+    </div>
+    <div id="todayPane" class="today-pane"></div>
+    <div id="everyonePane" class="everyone-pane">
     <div class="list-filters">
       <div class="chip-row" aria-label="Needs attention">
         <button id="birthdayBtn" class="chip" aria-pressed="false" title="Birthdays in the next 30 days">🎂 Birthdays</button>
         <button id="catchUpBtn" class="chip" aria-pressed="false" title="Tiered contacts you haven't been in touch with lately: Close friends 30 days, Friends 90, Acquaintances 180">🤝 Catch up</button>
         <label class="chip chip-check" for="listNoLoc" title="Contacts that aren't on the map yet"><input type="checkbox" id="listNoLoc"> 📍 No pin<span id="noPinCount"></span></label>
+        <button id="nearChip" class="chip" aria-pressed="false" title="Who lives near a place, and how long since you spoke">🧭 Near…</button>
       </div>
+      <div class="near-row" id="nearRow" hidden>
+        <input type="text" id="nearInput" placeholder="City or address…" autocomplete="off" aria-label="Near this place">
+        <select id="nearRadius" aria-label="Distance">
+          <option value="10">10 km</option><option value="25">25 km</option><option value="50" selected>50 km</option>
+          <option value="100">100 km</option><option value="250">250 km</option><option value="500">500 km</option>
+        </select>
+        <button class="btn" id="nearGo" type="button">Find</button>
+        <button class="btn" id="nearMe" type="button" title="Use my current location">📍 Me</button>
+      </div>
+      <div class="near-banner" id="nearBanner" hidden></div>
       <div class="chip-row" aria-label="Closeness">
         <button id="filterTier1Btn" class="chip"><span class="dot" style="background:#c9736b"></span>Close</button>
         <button id="filterTier2Btn" class="chip"><span class="dot" style="background:#6f9fa0"></span>Friends</button>
@@ -1926,6 +2054,7 @@
       <button class="btn danger" id="bulkDelete">Delete selected</button>
     </div>
     <div id="listBody" class="list-body"></div>
+    </div>
   </aside>
 
   <!-- First-run welcome (shown while there are no contacts) -->
@@ -2054,7 +2183,7 @@
     <div class="tg-head">
       <div class="tg-title" id="tgTitle">Together</div>
       <div class="tg-head-actions">
-        <button class="btn" type="button" data-tg="close">Close</button>
+        <button class="btn icon-btn" type="button" data-tg="close" aria-label="Close" title="Close">✕</button>
       </div>
     </div>
     <div id="tgInvites" class="tg-invites" hidden></div>
@@ -2116,10 +2245,21 @@
           <div class="tg-share-list" id="enShare"></div>
           <p class="acc-note" style="margin-top: 6px">Leave everything unticked to keep it just for you. Whoever you tick can read it, and it still shows up in your own journal.</p>
         </div>
+        <div class="form-group">
+          <label>Photos</label>
+          <div class="tg-photo-row" id="enPhotos"></div>
+          <input type="file" id="enPhotoInput" accept="image/*" multiple hidden>
+        </div>
         <div id="enMsg" class="acc-msg" role="alert"></div>
         <div class="acc-form-actions"><button type="submit" class="btn btn-primary" id="enSave">Save memory</button><button type="button" class="btn danger" id="enDelete" hidden>Delete</button></div>
       </form>
     </div>
+  </div>
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo" hidden>
+    <button class="lb-x" data-lb="close" aria-label="Close photo">×</button>
+    <button class="lb-nav prev" data-lb="prev" aria-label="Previous photo">‹</button>
+    <figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+    <button class="lb-nav next" data-lb="next" aria-label="Next photo">›</button>
   </div>
   <div id="statusPill" class="status-pill"></div>
   <div id="toasts" class="toasts" aria-live="polite"></div>
@@ -2452,6 +2592,10 @@
       const last = String(p.lastContacted || '').slice(0, 10);
       p.lastContacted = DATE_RE.test(last) ? last : null;
       p.birthday = parseBirthday(p.birthday);
+      const snooze = String(p.snoozedUntil || '').slice(0, 10);
+      p.snoozedUntil = DATE_RE.test(snooze) ? snooze : null;
+      const wished = parseInt(p.wishedYear, 10);
+      p.wishedYear = wished >= 2000 && wished <= 2200 ? wished : null;
       const lat = parseFloat(p.lat ?? p.latitude);
       const lng = parseFloat(p.lng ?? p.longitude);
       delete p.latitude; delete p.longitude;
@@ -2708,10 +2852,8 @@
     // How often each tier should hear from you before it shows up as "needs a catch-up"
     const CATCH_UP_DAYS = { 1: 30, 2: 90, 3: 180 };
     const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-    const todayStr = () => {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    };
+    const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const todayStr = () => ymd(new Date());
     function daysSince(dateStr, now = new Date()) {
       if (!DATE_RE.test(dateStr || '')) return null;
       const [y, mo, d] = dateStr.split('-').map(Number);
@@ -2729,6 +2871,7 @@
     // Only contacts you've given a tier can be "due". One you've never logged contact with counts as due.
     function needsCatchUp(p, now = new Date()) {
       if (!p.tier) return false;
+      if (p.snoozedUntil && p.snoozedUntil > ymd(now)) return false; // "remind me later"
       const d = daysSince(p.lastContacted, now);
       return d === null || d > CATCH_UP_DAYS[p.tier];
     }
@@ -2759,6 +2902,40 @@
       return other ? other.name : (((c.pending || [])[0] || {}).email || 'New chat');
     }
 
+    // ---- near me / today / photos: pure helpers ----
+    function haversineKm(a, b) {
+      const rad = (x) => (x * Math.PI) / 180;
+      const dLat = rad(b.lat - a.lat); const dLng = rad(b.lng - a.lng);
+      const s = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+      return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(s)));
+    }
+    // Pins that really mean "this is where they live": a country-wide or phone-prefix guess would put half your contacts "near" you
+    const geoPrecise = (p) => hasCoords(p) && !['country', 'phone', 'email-domain', 'region'].includes(p.geoSource);
+    function nearbyPeople(people, center, km) {
+      return people.filter(geoPrecise).map((p) => ({ p, km: haversineKm(center, p) })).filter((x) => x.km <= km).sort((a, b) => a.km - b.km);
+    }
+    // What needs doing today: birthdays this week (not yet wished) and tiered people overdue for a catch-up, most overdue first
+    function buildToday(people, now = new Date()) {
+      const byName = (a, b) => a.p.name.localeCompare(b.p.name);
+      const birthdays = []; const catchUp = [];
+      people.forEach((p) => {
+        const n = nextBirthday(p, now);
+        if (n && n.days <= 7 && p.wishedYear !== n.year) birthdays.push({ p, n });
+        if (needsCatchUp(p, now)) {
+          const d = daysSince(p.lastContacted, now);
+          catchUp.push({ p, days: d, over: d === null ? 99999 : d - CATCH_UP_DAYS[p.tier] });
+        }
+      });
+      birthdays.sort((a, b) => a.n.days - b.n.days || byName(a, b));
+      catchUp.sort((a, b) => b.over - a.over || byName(a, b));
+      return { birthdays, catchUp };
+    }
+    // the size a photo is shrunk to (fits inside max x max, never enlarged)
+    function fitWithin(w, h, max) {
+      const k = Math.min(1, max / Math.max(w, h));
+      return { w: Math.max(1, Math.round(w * k)), h: Math.max(1, Math.round(h * k)) };
+    }
+
     // ---- birthdays: stored as 'YYYY-MM-DD', or '--MM-DD' when the year isn't known ----
     const BDAY_SOON_DAYS = 30;
     function parseBirthday(raw) {
@@ -2781,7 +2958,7 @@
       let year = today.getFullYear();
       let at = new Date(year, mo - 1, d);
       if (at < today) { year++; at = new Date(year, mo - 1, d); }
-      return { days: Math.round((at - today) / 864e5), age: b.startsWith('--') ? null : year - +b.slice(0, 4) };
+      return { days: Math.round((at - today) / 864e5), age: b.startsWith('--') ? null : year - +b.slice(0, 4), year };
     }
     const bdaySoon = (p, within = BDAY_SOON_DAYS, now = new Date()) => { const n = nextBirthday(p, now); return !!n && n.days <= within; };
     const birthdayLabel = (days) => (days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`);
@@ -3002,6 +3179,9 @@
         this.birthdayOnly = false;
         this.tg = this.tgBlank();
         this.tgOpen = false;
+        this.listTab = null; // 'today' | 'all' (decided the first time People opens)
+        this.near = null; // { lat, lng, km, label } while a "who is near" search is active
+        this.photoCache = new Map(); // photo id -> { thumb, data }
         this.theme = readJson(THEME_KEY) || 'auto';
         this.clusterRef = null;
         this.selectionMarker = null;
@@ -3194,8 +3374,20 @@
         click('feedbackBtn', () => this.openFeedback());
         $('togetherPanel').addEventListener('click', (e) => this.onTogetherClick(e));
         $('togetherPanel').addEventListener('input', (e) => this.onNoteInput(e));
+        $('togetherPanel').addEventListener('change', (e) => { if (e.target.id === 'tgPhotoInput') this.addNotePhotos(e.target.files); });
         $('togetherPanel').addEventListener('focusin', (e) => { if (e.target.id === 'tgNote') this.openNoteComposer(); });
         $('togetherPanel').addEventListener('keydown', (e) => { if (e.target.id === 'tgNote' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); this.saveNote(); } });
+        $('listTabs').addEventListener('click', (e) => { const b = e.target.closest('[data-ltab]'); if (b) this.setListTab(b.dataset.ltab, true); });
+        $('todayPane').addEventListener('click', (e) => this.onTodayClick(e));
+        click('nearChip', () => this.toggleNearRow());
+        click('nearGo', () => this.applyNearFromText($('nearInput').value));
+        click('nearMe', () => this.useMyLocation());
+        $('nearInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this.applyNearFromText(e.target.value); } });
+        $('nearRadius').addEventListener('change', () => { if (this.near) this.setNear({ lat: this.near.lat, lng: this.near.lng, label: this.near.label }); });
+        $('nearBanner').addEventListener('click', (e) => { const a = e.target.closest('[data-near]')?.dataset.near; if (a === 'clear') this.clearNear(); else if (a === 'change') { $('nearRow').hidden = false; $('nearInput').focus(); $('nearInput').select(); } });
+        $('lightbox').addEventListener('click', (e) => this.onLightboxClick(e));
+        $('enPhotoInput').addEventListener('change', (e) => this.addEditPhotos(e.target.files));
+        $('enPhotos').addEventListener('click', (e) => this.onEditPhotosClick(e));
         $('tgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.tgSend(); } });
         $('tgInput').addEventListener('input', (e) => { e.target.style.height = 'auto'; e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`; });
         click('ncClose', () => this.closeModal('newCircleModal'));
@@ -3312,6 +3504,11 @@
         if (e.key === 'Tab') { this.trapTab(e); return; }
         const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
         if (e.key === '/' && !typing) { e.preventDefault(); $('searchInput').focus(); return; }
+        if (!$('lightbox').hidden) {
+          if (e.key === 'Escape') { this.closeLightbox(); e.preventDefault(); return; }
+          if (e.key === 'ArrowLeft') { this.stepLightbox(-1); return; }
+          if (e.key === 'ArrowRight') { this.stepLightbox(1); return; }
+        }
         if (e.key !== 'Escape') return;
         if (document.body.classList.contains('presenting')) { this.setPresenting(false); return; }
         if (this.placingContactId) { this.endPlacing(); return; }
@@ -3459,6 +3656,331 @@
         this.renderNav();
       }
 
+      // ---------------- People: Today / Everyone ----------------
+      todayCounts() {
+        const d = buildToday(this.people);
+        const unread = this.tgSignedIn() ? this.tg.circles.reduce((s, c) => s + (c.unread || 0), 0) : 0;
+        const invites = this.tgSignedIn() ? this.tg.invites.length : 0;
+        return { ...d, unread, invites, total: d.birthdays.length + d.catchUp.length + (unread ? 1 : 0) + (invites ? 1 : 0) };
+      }
+
+      // first time People opens: Today if there is something to do, otherwise Everyone; after that, whatever you last chose
+      syncListTab() {
+        if (!this.listTab) this.listTab = readJson('orbita-list-tab') || (this.todayCounts().total ? 'today' : 'all');
+        const today = this.listTab === 'today';
+        $('todayPane').hidden = !today; $('everyonePane').hidden = today;
+        $('listSelectBtn').hidden = today;
+        document.querySelectorAll('#listTabs .seg-btn').forEach((b) => { b.classList.toggle('active', b.dataset.ltab === this.listTab); b.setAttribute('aria-selected', String(b.dataset.ltab === this.listTab)); });
+        const n = this.todayCounts().total;
+        $('todayCount').textContent = n ? String(n) : '';
+      }
+
+      setListTab(tab, remember = false) {
+        this.listTab = tab;
+        if (remember) { try { localStorage.setItem('orbita-list-tab', JSON.stringify(tab)); } catch (e) { /* ignore */ } }
+        if (!this.listOpen) return;
+        this.renderList();
+      }
+
+      renderToday() {
+        const d = this.todayCounts(); const box = $('todayPane');
+        const dot = (p) => (p.tier ? `<span class="tier-dot" style="background:${TIER_COLORS[p.tier]}" title="${esc(TIER_LABELS[p.tier])}"></span>` : '');
+        const row = (p, sub, primary, secondary) => `<div class="today-row" data-id="${esc(p.id)}"><button class="today-main" data-t="open"><span class="today-name">${dot(p)}${esc(p.name)}</span><span class="today-sub">${esc(sub)}</span></button><span class="today-primary">${primary}</span><span class="today-secondary">${secondary}</span></div>`;
+        const chatBtn = (p) => (this.cloudEnabled() && p.email ? '<button class="tg-link" data-t="chat" title="Message them in Chats">Message</button>' : '');
+        let html = '';
+        if (d.unread || d.invites) {
+          const bits = [d.unread ? `${d.unread} unread message${d.unread === 1 ? '' : 's'}` : '', d.invites ? `${d.invites} invitation${d.invites === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+          html += `<div class="today-note"><span>💬 ${esc(bits)}</span><button class="chip done" data-t="messages">Open chats</button></div>`;
+        }
+        if (d.birthdays.length) {
+          html += '<div class="today-h"><span>🎂 Birthdays</span></div>' + d.birthdays.map(({ p, n }) =>
+            row(p, `${prettyBirthday(p.birthday)}${n.age ? ` · turns ${n.age}` : ''} · ${birthdayLabel(n.days)}`, '<button class="chip done" data-t="wished" title="Mark the birthday as done and log contact">✓ Done</button>', chatBtn(p))).join('');
+        }
+        if (d.catchUp.length) {
+          const shown = d.catchUp.slice(0, 8);
+          html += `<div class="today-h"><span>🤝 Catch up</span>${d.catchUp.length > shown.length ? `<button class="tg-link" data-t="all-catchup">See all ${d.catchUp.length}</button>` : ''}</div>` + shown.map(({ p, days }) =>
+            row(p, days === null ? 'Never contacted' : `Last contact ${agoLabel(days)}`, '<button class="chip done" data-t="done" title="Log that you were in touch today">✓ Contacted</button>', `${chatBtn(p)}<button class="tg-link" data-t="later" title="Hide for a week">Later</button>`)).join('');
+        }
+        if (!d.total) html += '<div class="today-empty"><strong>You\'re all caught up 🎉</strong>No birthdays this week and nobody overdue.<br>Tier your closest people in Everyone and they will show up here when it is time to get in touch.</div>';
+        const unpinned = this.people.filter((p) => !hasCoords(p)).length;
+        html += '<div class="today-foot"><button class="chip" data-t="near">🧭 Who is near me?</button>' + (unpinned ? `<button class="chip" data-t="unpinned">📍 Place ${unpinned} unpinned</button>` : '') + '</div>';
+        $('listCount').textContent = d.total ? `${d.total} thing${d.total === 1 ? '' : 's'} to do` : 'Nothing due';
+        const keep = box.scrollTop;
+        box.innerHTML = html;
+        box.scrollTop = keep;
+      }
+
+      onTodayClick(e) {
+        const el = e.target.closest('[data-t]'); if (!el) return;
+        const act = el.dataset.t; const rowEl = el.closest('.today-row');
+        const p = rowEl && this.people.find((x) => x.id === rowEl.dataset.id);
+        if (act === 'open' && p) this.openContact(p);
+        else if (act === 'done' && p) this.withUndo(`Logged contact with ${p.name}`, () => { p.lastContacted = todayStr(); });
+        else if (act === 'wished' && p) { const n = nextBirthday(p); this.withUndo(`Birthday done for ${p.name}`, () => { p.wishedYear = n ? n.year : null; p.lastContacted = todayStr(); }); }
+        else if (act === 'later' && p) { const d = new Date(); d.setDate(d.getDate() + 7); this.withUndo(`${p.name} will come back next week`, () => { p.snoozedUntil = ymd(d); }); }
+        else if (act === 'chat' && p) this.startChatWith(p);
+        else if (act === 'messages') this.navTo('chats');
+        else if (act === 'unpinned') $('placeQueueBtn').click();
+        else if (act === 'all-catchup') { this.setListTab('all', true); this.catchUpOnly = true; this.updateMap({ fit: true }); }
+        else if (act === 'near') this.openNear();
+      }
+
+      // ---------------- who is near ----------------
+      openNear() {
+        if (!this.listOpen) this.navTo('people');
+        this.setListTab('all', true);
+        $('nearRow').hidden = false;
+        $('nearChip').setAttribute('aria-pressed', 'true');
+        setTimeout(() => $('nearInput').focus(), 60);
+      }
+
+      toggleNearRow() {
+        const show = $('nearRow').hidden;
+        $('nearRow').hidden = !show;
+        $('nearChip').setAttribute('aria-pressed', String(show || !!this.near));
+        if (show) $('nearInput').focus();
+      }
+
+      async applyNearFromText(text) {
+        const q = clean(text); if (!q) { $('nearInput').focus(); return; }
+        const btn = $('nearGo'); btn.disabled = true; btn.textContent = '…';
+        try {
+          const hit = await this.geocode(q);
+          if (!hit) { this.showNotification(`Couldn't find "${q}". Try a city and country.`); return; }
+          this.setNear({ lat: hit.lat, lng: hit.lng, label: q });
+        } catch (err) { this.showNotification(`Couldn't look that up: ${err.message}`); } finally { btn.disabled = false; btn.textContent = 'Find'; }
+      }
+
+      useMyLocation() {
+        if (!navigator.geolocation) { this.showNotification("This browser can't share your location. Type a city instead."); return; }
+        this.showNotification('Asking for your location…');
+        navigator.geolocation.getCurrentPosition(
+          (pos) => this.setNear({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: 'your location' }),
+          () => this.showNotification("Couldn't get your location. Type a city instead."),
+          { timeout: 12000, maximumAge: 300000 });
+      }
+
+      setNear(center) {
+        this.near = { lat: center.lat, lng: center.lng, label: center.label, km: parseInt($('nearRadius').value, 10) || 50 };
+        $('nearInput').value = center.label === 'your location' ? '' : center.label;
+        $('nearRow').hidden = true;
+        this.drawNearCircle();
+        this.updateMap();
+        this.renderNearUi();
+        const b = this.nearLayer && this.nearLayer.getBounds();
+        if (b && b.isValid()) this.map.flyToBounds(b, { padding: [50, 50], maxZoom: 12, duration: 0.7 }); // you asked for this place, so the map goes there
+      }
+
+      clearNear(quiet = false) {
+        if (!this.near) return;
+        this.near = null;
+        if (this.nearLayer) { this.map.removeLayer(this.nearLayer); this.nearLayer = null; }
+        if (!quiet) this.updateMap();
+        this.renderNearUi();
+      }
+
+      drawNearCircle() {
+        if (this.nearLayer) this.map.removeLayer(this.nearLayer);
+        const n = this.near;
+        this.nearLayer = L.featureGroup([
+          L.circle([n.lat, n.lng], { radius: n.km * 1000, color: '#6f9fa0', weight: 2, dashArray: '6 6', fillColor: '#6f9fa0', fillOpacity: 0.08, interactive: false }),
+          L.circleMarker([n.lat, n.lng], { radius: 5, color: '#fff', weight: 2, fillColor: '#444143', fillOpacity: 1, interactive: false }),
+        ]).addTo(this.map);
+      }
+
+      renderNearUi() {
+        const n = this.near; const banner = $('nearBanner');
+        $('nearChip').classList.toggle('active', !!n);
+        $('nearChip').setAttribute('aria-pressed', String(!!n));
+        $('nearChip').textContent = n ? `🧭 ${n.label === 'your location' ? 'Near me' : `Near ${n.label}`}` : '🧭 Near…';
+        banner.hidden = !n;
+        if (!n) return;
+        const found = this.visiblePeople.filter((p) => hasCoords(p)).length;
+        const guesses = this.people.filter((p) => hasCoords(p) && !geoPrecise(p)).length;
+        banner.innerHTML = `<span><strong>${found}</strong> within ${n.km} km of ${esc(n.label)} · longest since you spoke first${guesses ? `<span class="note">${guesses} more only have a rough location (country or phone) and aren't counted</span>` : ''}</span><span class="near-links"><button class="tg-link" data-near="change">Change</button><button class="tg-link" data-near="clear">Clear</button></span>`;
+      }
+
+      // ---------------- photos ----------------
+      async shrinkImage(file, maxSide, quality) {
+        let src;
+        try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) {
+          src = await new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file); const img = new Image();
+            img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("That file isn't a picture this browser can read.")); };
+            img.src = url;
+          });
+        }
+        const { w, h } = fitWithin(src.width || src.naturalWidth, src.height || src.naturalHeight, maxSide);
+        const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(src, 0, 0, w, h);
+        if (src.close) src.close();
+        return { url: canvas.toDataURL('image/jpeg', quality), w, h };
+      }
+
+      // a full copy (1280 px) for viewing and a small one (320 px) for lists, both JPEG, both kept under the database limits
+      async processPhoto(file) {
+        if (file.size > 60 * 1024 * 1024) throw new Error('That picture is too large.');
+        let full = await this.shrinkImage(file, 1280, 0.8);
+        for (const q of [0.7, 0.6, 0.5, 0.4]) { if (full.url.length <= 1100000) break; full = await this.shrinkImage(file, 1280, q); }
+        let thumb = await this.shrinkImage(file, 320, 0.7);
+        for (const q of [0.55, 0.4]) { if (thumb.url.length <= 70000) break; thumb = await this.shrinkImage(file, 320, q); }
+        if (full.url.length > 1150000 || thumb.url.length > 75000) throw new Error('That picture is too detailed to shrink enough.');
+        return { thumb: thumb.url, data: full.url, w: full.w, h: full.h };
+      }
+
+      async processFiles(files, room, onEach) {
+        const list = [...files].slice(0, Math.max(0, room));
+        if (files.length > list.length) this.showNotification('A memory can have up to 6 photos.');
+        for (const f of list) {
+          try { onEach(await this.processPhoto(f)); } catch (e) { this.showNotification(`${f.name || 'Photo'}: ${e.message}`); }
+        }
+      }
+
+      thumbsHtml(items) {
+        return items.map((x, i) => `<span class="tg-thumb"><img alt="" src="${esc(x.thumb)}"><button type="button" data-tg="remove-photo" data-i="${i}" aria-label="Remove photo" title="Remove">×</button></span>`).join('');
+      }
+
+      // --- in the journal write box ---
+      renderNotePhotos() {
+        const row = $('tgPhotoRow'); if (!row) return;
+        const d = this.tg.draft;
+        row.innerHTML = this.thumbsHtml(d.photos) + (d.photos.length < 6 ? '<button type="button" class="chip" data-tg="add-photo">📷 Add photos</button>' : '');
+      }
+
+      async addNotePhotos(files) {
+        const d = this.tg.draft; const btn = document.querySelector('#tgPhotoRow [data-tg="add-photo"]');
+        if (btn) btn.textContent = 'Preparing…';
+        await this.processFiles(files, 6 - d.photos.length, (ph) => { d.photos.push(ph); this.renderNotePhotos(); });
+        this.renderNotePhotos();
+        const input = $('tgPhotoInput'); if (input) input.value = '';
+      }
+
+      async uploadPhotos(entryId, photos) {
+        let failed = 0; const toast = photos.length ? this.showNotification(`Uploading ${photos.length} photo${photos.length === 1 ? '' : 's'}…`, { duration: 0 }) : null;
+        for (let i = 0; i < photos.length; i++) {
+          if (toast) toast.update(`Uploading photo ${i + 1} of ${photos.length}…`);
+          try { await this.rpc('orbita_add_photo', { p_entry: entryId, p_thumb: photos[i].thumb, p_data: photos[i].data, p_w: photos[i].w, p_h: photos[i].h }); }
+          catch (e) { failed++; this.showNotification(`A photo didn't upload: ${e.message}`, { duration: 6000 }); }
+        }
+        if (toast) toast.close();
+        return failed;
+      }
+
+      // --- on memory cards ---
+      tgPhotosHtml(e) {
+        const ph = e.photos || [];
+        if (!ph.length) return '';
+        const show = ph.slice(0, 4); const more = ph.length - show.length;
+        return `<div class="tg-photos">${show.map((x, i) => `<button class="tg-photo" data-tg="photo" data-entry="${esc(e.id)}" data-idx="${i}" aria-label="Open photo ${i + 1} of ${ph.length}"><img alt="" data-photo="${esc(x.id)}" ${this.photoCache.get(x.id)?.thumb ? `src="${esc(this.photoCache.get(x.id).thumb)}" class="ready"` : ''}>${i === 3 && more > 0 ? `<span class="tg-photo-more">+${more}</span>` : ''}</button>`).join('')}</div>`;
+      }
+
+      // fetch the small copies for whatever is on screen (one request per dozen), then fade them in
+      async tgLoadThumbs() {
+        const imgs = [...document.querySelectorAll('#tgList img[data-photo]')];
+        const need = [...new Set(imgs.map((i) => i.dataset.photo).filter((id) => id && !this.photoCache.get(id)?.thumb))];
+        for (let i = 0; i < need.length; i += 12) {
+          const ids = need.slice(i, i + 12);
+          try {
+            await this.ensureToken();
+            const rows = await this.api(`/rest/v1/orbita_entry_photos?id=in.(${ids.join(',')})&select=id,thumb`);
+            (rows || []).forEach((r) => { this.photoCache.set(r.id, { ...(this.photoCache.get(r.id) || {}), thumb: r.thumb }); });
+          } catch (e) { break; }
+        }
+        document.querySelectorAll('#tgList img[data-photo]').forEach((img) => {
+          const c = this.photoCache.get(img.dataset.photo);
+          if (c && c.thumb) { img.src = c.thumb; img.classList.add('ready'); }
+        });
+      }
+
+      async fetchPhotoData(id) {
+        const c = this.photoCache.get(id) || {};
+        if (c.data) return c.data;
+        await this.ensureToken();
+        const rows = await this.api(`/rest/v1/orbita_entry_photos?id=eq.${encodeURIComponent(id)}&select=id,data`);
+        if (!rows || !rows[0]) throw new Error('That photo is no longer available.');
+        this.photoCache.set(id, { ...c, data: rows[0].data });
+        return rows[0].data;
+      }
+
+      // --- viewer ---
+      openLightbox(entryId, idx) {
+        const e = (this.tg.entries || []).find((x) => x.id === entryId); if (!e || !(e.photos || []).length) return;
+        this.lb = { photos: e.photos, idx: Math.min(Math.max(0, idx), e.photos.length - 1), entry: e };
+        $('lightbox').hidden = false;
+        this.showLightbox();
+      }
+
+      async showLightbox() {
+        const lb = this.lb; if (!lb) return;
+        const ph = lb.photos[lb.idx]; const img = $('lbImg'); const token = `${ph.id}`;
+        lb.token = token;
+        const small = this.photoCache.get(ph.id)?.thumb;
+        img.src = small || ''; img.style.opacity = small ? '0.6' : '0.2';
+        const [y, mo, d] = (lb.entry.happened_on || '').split('-').map(Number);
+        const when = y ? new Date(y, mo - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        $('lbCap').textContent = `${lb.entry.title || lb.entry.body.slice(0, 60)}${when ? ` · ${when}` : ''} · ${lb.idx + 1} of ${lb.photos.length}`;
+        document.querySelector('.lb-nav.prev').hidden = document.querySelector('.lb-nav.next').hidden = lb.photos.length < 2;
+        try {
+          const data = await this.fetchPhotoData(ph.id);
+          if (this.lb && this.lb.token === token) { img.src = data; img.style.opacity = '1'; }
+          const next = lb.photos[(lb.idx + 1) % lb.photos.length]; if (next && lb.photos.length > 1) this.fetchPhotoData(next.id).catch(() => {});
+        } catch (err) { this.showNotification(err.message); }
+      }
+
+      stepLightbox(dir) {
+        const lb = this.lb; if (!lb || lb.photos.length < 2) return;
+        lb.idx = (lb.idx + dir + lb.photos.length) % lb.photos.length;
+        this.showLightbox();
+      }
+
+      closeLightbox() { $('lightbox').hidden = true; this.lb = null; $('lbImg').removeAttribute('src'); }
+
+      onLightboxClick(e) {
+        const a = e.target.closest('[data-lb]')?.dataset.lb;
+        if (a === 'close' || e.target.id === 'lightbox') this.closeLightbox();
+        else if (a === 'prev') this.stepLightbox(-1);
+        else if (a === 'next') this.stepLightbox(1);
+      }
+
+      // --- in the edit dialog ---
+      renderEditPhotos() {
+        const s = this.enPh; if (!s) return;
+        const x = '<button type="button" data-ph="%K" %A aria-label="Remove photo" title="Remove">×</button>';
+        const kept = s.existing.filter((p) => !s.removed.has(p.id));
+        const old = kept.map((p) => `<span class="tg-thumb"><img alt="" data-photo="${esc(p.id)}" src="${esc(this.photoCache.get(p.id)?.thumb || '')}">${x.replace('%K', 'remove-old').replace('%A', `data-id="${esc(p.id)}"`)}</span>`).join('');
+        const added = s.added.map((p, i) => `<span class="tg-thumb"><img alt="" src="${esc(p.thumb)}">${x.replace('%K', 'remove-new').replace('%A', `data-i="${i}"`)}</span>`).join('');
+        $('enPhotos').innerHTML = old + added + (kept.length + s.added.length < 6 ? '<button type="button" class="chip" data-ph="add">📷 Add photos</button>' : '');
+        this.tgLoadEditThumbs();
+      }
+
+      async tgLoadEditThumbs() {
+        const s = this.enPh; if (!s) return;
+        const need = s.existing.filter((x) => !this.photoCache.get(x.id)?.thumb).map((x) => x.id);
+        if (need.length) {
+          try {
+            await this.ensureToken();
+            const rows = await this.api(`/rest/v1/orbita_entry_photos?id=in.(${need.join(',')})&select=id,thumb`);
+            (rows || []).forEach((r) => this.photoCache.set(r.id, { ...(this.photoCache.get(r.id) || {}), thumb: r.thumb }));
+          } catch (e) { return; }
+        }
+        document.querySelectorAll('#enPhotos img[data-photo]').forEach((img) => { const c = this.photoCache.get(img.dataset.photo); if (c && c.thumb) img.src = c.thumb; });
+      }
+
+      async addEditPhotos(files) {
+        const s = this.enPh; if (!s) return;
+        const kept = s.existing.filter((x) => !s.removed.has(x.id)).length;
+        await this.processFiles(files, 6 - kept - s.added.length, (ph) => { s.added.push(ph); this.renderEditPhotos(); });
+        $('enPhotoInput').value = '';
+      }
+
+      onEditPhotosClick(e) {
+        const el = e.target.closest('[data-ph]'); const s = this.enPh; if (!el || !s) return;
+        if (el.dataset.ph === 'add') $('enPhotoInput').click();
+        else if (el.dataset.ph === 'remove-old') { s.removed.add(el.dataset.id); this.renderEditPhotos(); }
+        else if (el.dataset.ph === 'remove-new') { s.added.splice(+el.dataset.i, 1); this.renderEditPhotos(); }
+      }
+
       // ---------------- Together: chat + journals ----------------
       // Circles are groups of Orbita accounts (or just two people). Each has a chat and a journal; a memory belongs to its
       // author and can be shared into circles, so "my journal" = my memories + everything shared with me.
@@ -3580,7 +4102,7 @@
       }
 
       // ---- journal ----
-      tgBlankDraft() { return { text: '', date: '', place: '', people: '', circles: null, open: false }; }
+      tgBlankDraft() { return { text: '', date: '', place: '', people: '', circles: null, open: false, photos: [] }; }
 
       // who a new memory is shared with: whatever was ticked, else the group you are looking at, else nobody
       tgShareSet() {
@@ -3611,6 +4133,8 @@
             <div class="tg-compose-more" id="tgNoteMore"${d.open ? '' : ' hidden'}>
               <div class="tg-compose-row"><input type="date" id="tgNoteDate" value="${esc(d.date || todayStr())}" max="${todayStr()}" aria-label="When it happened"><input type="text" id="tgNotePlace" value="${esc(d.place)}" maxlength="120" placeholder="Where?" aria-label="Where"></div>
               <input type="text" id="tgNotePeople" value="${esc(d.people)}" placeholder="Who was there? (names, separated by commas)" aria-label="Who was there">
+              <div class="tg-photo-row" id="tgPhotoRow">${this.thumbsHtml(d.photos)}${d.photos.length < 6 ? '<button type="button" class="chip" data-tg="add-photo">📷 Add photos</button>' : ''}</div>
+              <input type="file" id="tgPhotoInput" accept="image/*" multiple hidden>
               ${share}
               <div class="tg-compose-actions"><span class="tg-hint" id="tgNoteHint">${esc(this.tgShareHint(set))}</span><button class="btn btn-primary" type="button" data-tg="note-save">Save memory</button></div>
             </div>
@@ -3646,12 +4170,13 @@
         if (!text) { this.showNotification('Write something first.'); const b = $('tgNote'); if (b) b.focus(); return; }
         const btn = document.querySelector('[data-tg="note-save"]'); if (btn) btn.disabled = true;
         try {
-          await this.rpc('orbita_save_entry', {
+          const entryId = await this.rpc('orbita_save_entry', {
             p_id: null, p_title: '', p_body: text, p_happened_on: d.date || todayStr(), p_place: d.place,
             p_people: splitNames(d.people), p_circles: [...this.tgShareSet()],
           });
+          const failed = d.photos.length ? await this.uploadPhotos(entryId, d.photos) : 0;
           t.draft = this.tgBlankDraft();
-          this.showNotification('Memory saved');
+          this.showNotification(failed ? 'Memory saved, but some photos did not upload. Edit it to add them again.' : 'Memory saved');
           t.entries = null;
           this.tgRenderBody();
         } catch (e) { this.showNotification(e.message); } finally { if (btn) btn.disabled = false; }
@@ -3674,6 +4199,7 @@
           month = heading;
           return head + this.tgEntryHtml(e, new Date(y, mo - 1, d));
         }).join('');
+        this.tgLoadThumbs();
       }
 
       tgEntryHtml(e, date) {
@@ -3688,6 +4214,7 @@
           ${e.title ? `<h4>${esc(e.title)}</h4>` : ''}
           <div class="tg-entry-body">${esc(e.body)}</div>
           ${long ? '<button class="tg-more" data-tg="more">Read more</button>' : ''}
+          ${this.tgPhotosHtml(e)}
           <div class="tg-chips">${(e.people || []).map((n) => `<span class="tg-chip">${esc(n)}</span>`).join('')}${shared}</div>
           ${e.mine ? '' : `<div class="tg-by">Written by ${esc(e.author_name)}</div>`}
         </article>`;
@@ -3725,6 +4252,8 @@
         $('enShare').innerHTML = t.circles.length
           ? t.circles.map((c) => `<label><input type="checkbox" value="${esc(c.id)}"${chosen.has(c.id) ? ' checked' : ''}> ${c.kind === 'direct' ? 'Just ' : ''}${esc(circleTitle(c, me))}${c.kind === 'group' ? ` <span class="muted">(${c.members.length} people)</span>` : ''}</label>`).join('')
           : '<span class="none">No groups or chats yet, so this stays private. Start one with + New to share memories.</span>';
+        this.enPh = { existing: entry ? (entry.photos || []).slice() : [], removed: new Set(), added: [] };
+        this.renderEditPhotos();
         $('enDelete').hidden = !entry;
         $('enMsg').textContent = '';
         this.openModal('entryModal', 'enBody');
@@ -3736,11 +4265,14 @@
         if (!body) { msg.textContent = 'Write something first.'; msg.classList.add('error'); return; }
         $('enSave').disabled = true;
         try {
-          await this.rpc('orbita_save_entry', {
+          const entryId = await this.rpc('orbita_save_entry', {
             p_id: this.tgEditing, p_title: $('enHead').value, p_body: body, p_happened_on: $('enDate').value || todayStr(),
             p_place: $('enPlace').value, p_people: splitNames($('enPeople').value),
             p_circles: [...document.querySelectorAll('#enShare input:checked')].map((i) => i.value),
           });
+          const ph = this.enPh || { removed: new Set(), added: [] };
+          for (const pid of ph.removed) { try { await this.rpc('orbita_delete_photo', { p_photo: pid }); } catch (e) { /* already gone */ } }
+          if (ph.added.length) await this.uploadPhotos(entryId, ph.added);
           this.closeModal('entryModal');
           this.tg.entries = null;
           this.showNotification(this.tgEditing ? 'Memory updated' : 'Memory saved');
@@ -4030,6 +4562,9 @@
         else if (act === 'scope') { t.scope = id || null; t.entries = null; this.tgRenderBody(); }
         else if (act === 'cshare') this.toggleNoteShare(id);
         else if (act === 'note-save') this.saveNote();
+        else if (act === 'add-photo') $('tgPhotoInput').click();
+        else if (act === 'remove-photo') { t.draft.photos.splice(+el.dataset.i, 1); this.renderNotePhotos(); }
+        else if (act === 'photo') this.openLightbox(el.dataset.entry, +el.dataset.idx);
         else if (act === 'accept') this.tgAccept(id);
         else if (act === 'decline') this.tgDecline(id);
         else if (act === 'clear-person') { t.person = null; t.entries = null; this.tgRenderBody(); }
@@ -4047,7 +4582,7 @@
         const names = soon.slice(0, 3).map(({ p, n }) => `${p.name} (${birthdayLabel(n.days)})`).join(', ');
         this.showNotification(`🎂 Birthdays: ${names}${soon.length > 3 ? ` +${soon.length - 3} more` : ''}`, {
           actionLabel: 'Show', duration: 12000,
-          onAction: () => { this.birthdayOnly = true; this.updateMap({ fit: true }); },
+          onAction: () => { this.setListTab('today'); if (!this.listOpen) this.navTo('people'); },
         });
       }
 
@@ -4178,6 +4713,7 @@
         this.currentTagFilter = '';
         this.catchUpOnly = false;
         this.birthdayOnly = false;
+        this.clearNear(true);
         this.currentSearchQuery = '';
         $('searchInput').value = '';
         this.updateMap({ fit: true });
@@ -4198,6 +4734,7 @@
         if (this.currentTagFilter && !(p.tags || []).includes(this.currentTagFilter)) return false;
         if (this.catchUpOnly && !needsCatchUp(p)) return false;
         if (this.birthdayOnly && !bdaySoon(p)) return false;
+        if (this.near && !(geoPrecise(p) && haversineKm(this.near, p) <= this.near.km)) return false;
         return this.matchesSearch(p);
       }
 
@@ -4341,11 +4878,15 @@
       }
 
       listRows() {
-        return sortPeople(this.visiblePeople.filter((p) => !this.listNoLocOnly || !hasCoords(p)), this.listSort);
+        // with a place chosen, the default order becomes "longest since you spoke", which is the point of asking
+        const mode = this.near && this.listSort === 'name' ? 'catchup' : this.listSort;
+        return sortPeople(this.visiblePeople.filter((p) => !this.listNoLocOnly || !hasCoords(p)), mode);
       }
 
       renderList() {
         if (!this.listOpen) return;
+        this.syncListTab();
+        if (this.listTab === 'today') { this.renderToday(); return; }
         const rows = this.listRows();
         const body = $('listBody');
         const scroll = body.scrollTop;
@@ -4360,6 +4901,7 @@
               <span class="list-sub">${esc(sub)}</span>
             </span>
             ${hasCoords(p) ? '' : '<span class="list-flag">no pin</span>'}
+            ${this.near && geoPrecise(p) ? `<span class="list-flag">${Math.round(haversineKm(this.near, p))} km</span>` : ''}
             ${needsCatchUp(p) ? '<span class="list-flag due">catch up</span>' : ''}
             ${bdaySoon(p, 7) ? `<span class="list-flag bday">🎂 ${birthdayLabel(nextBirthday(p).days)}</span>` : ''}
           </button>`;
@@ -4853,8 +5395,9 @@
               ${p.email ? `<a class="chip-link" href="mailto:${esc(p.email)}">✉ Email</a>` : ''}
               ${p.phone ? `<a class="chip-link" href="tel:${esc(String(p.phone).replace(/[^\d+]/g, ''))}">☎ Call</a>` : ''}
               ${site ? `<a class="chip-link" href="${esc(siteUrl)}" target="_blank" rel="noopener noreferrer">↗ Website</a>` : ''}
-              <button class="chip-link" data-action="contacted-today">✓ Contacted today</button>
-              ${this.cloudEnabled() ? `${p.email ? '<button class="chip-link" data-action="chat">💬 Chat</button>' : ''}<button class="chip-link" data-action="memory-new">✎ Write a memory</button><button class="chip-link" data-action="memory-list">📖 Memories</button>` : ''}
+              <button class="chip-link" data-action="contacted-today" title="Log that you were in touch today">✓ Contacted</button>
+              ${geoPrecise(p) ? '<button class="chip-link" data-action="near" title="Who else lives near here?">🧭 Nearby</button>' : ''}
+              ${this.cloudEnabled() ? `${p.email ? '<button class="chip-link" data-action="chat">💬 Chat</button>' : ''}<button class="chip-link" data-action="memory-new" title="Write a memory about them">✎ Memory</button><button class="chip-link" data-action="memory-list" title="Memories that mention them">📖 Memories</button>` : ''}
             </div>
             <div class="tier-buttons" role="group" aria-label="Tier">
               ${[1, 2, 3].map((t) => `<button class="tier-btn${p.tier === t ? ' active' : ''}" data-action="tier" data-tier="${t}" style="--tier:${TIER_COLORS[t]}" aria-pressed="${p.tier === t}">${esc(TIER_LABELS[t])}</button>`).join('')}
@@ -4919,6 +5462,7 @@
           } else { this.tg.person = p.name; this.showTogether('journal'); }
         }
         else if (action === 'chat') this.startChatWith(this.people.find((x) => x.id === id));
+        else if (action === 'near') { const p = this.people.find((x) => x.id === id); if (p && geoPrecise(p)) { this.openNear(); this.setNear({ lat: p.lat, lng: p.lng, label: p.name }); } }
         else if (action === 'contacted-today') {
           const p = this.people.find((x) => x.id === id);
           if (!p) return;
@@ -5852,6 +6396,7 @@
 
       // ---------------- notifications ----------------
       showNotification(message, { actionLabel, onAction, duration = 3500 } = {}) {
+        [...$('toasts').children].forEach((t) => { if (!actionLabel && t.firstChild && t.firstChild.textContent === message) t.remove(); });
         const el = document.createElement('div');
         el.className = 'toast';
         const text = document.createElement('span');

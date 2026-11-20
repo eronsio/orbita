@@ -46,6 +46,8 @@ removed under Authentication -> Users (deleting a user also deletes their saved 
 ## 8. Chat + journals (optional)
 Paste all of [`orbita_together.sql`](orbita_together.sql) into the SQL Editor and run it (safe to run again). It adds groups and one-to-one chats, a chat for each, and shared/private journals, all protected by row-level security. Keep **Confirm email** ON: invitations are matched to confirmed email addresses. To test the SQL locally: `npm install --no-save @electric-sql/pglite` then `node tests/together.sql.test.js` (set `PGLITE_PATH` if it is installed elsewhere).
 
+Photos on memories live in the same file (table `orbita_entry_photos`, functions `orbita_add_photo` / `orbita_delete_photo`). Each memory can have up to 6 small JPEGs; each person has about 90 MB of photo space (change it in `orbita_photo_quota()`). Re-run the whole file after pulling an update.
+
 ## Notes
 - Contacts are stored as one JSON document per user (`orbita_data`), capped at about 8 MB. Two devices that edit at the
   same time are reconciled with a three-way merge (see `threeWayMerge` in `index.html`).

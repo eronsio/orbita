@@ -15,7 +15,7 @@ const crypto = require('crypto');
 let users, sessions, rows, lastRecovery, failing, ttl, tg, lastTs;
 const reset = () => {
   users = new Map(); sessions = new Map(); rows = new Map(); lastRecovery = null; failing = false; ttl = 3600; lastTs = 0;
-  tg = { names: new Map(), circles: new Map(), members: [], invites: [], messages: [], entries: [], shares: [] };
+  tg = { names: new Map(), circles: new Map(), members: [], invites: [], messages: [], entries: [], shares: [], photos: [] };
 };
 reset();
 const CONFIRM = process.env.MOCK_CONFIRM === '1';
@@ -161,9 +161,20 @@ const TG = {
       .sort((x, y) => (x.happened_on === y.happened_on ? (x.created_at < y.created_at ? 1 : -1) : (x.happened_on < y.happened_on ? 1 : -1)))
       .slice(0, 200)
       .map((e) => ({ id: e.id, author_id: e.author_id, mine: e.author_id === u.id, author_name: nameOf(e.author_id), title: e.title, body: e.body, happened_on: e.happened_on, place: e.place, people: e.people, created_at: e.created_at, updated_at: e.updated_at,
+        photos: tg.photos.filter((ph) => ph.entry_id === e.id).sort((x, y) => x.position - y.position).map((ph) => ({ id: ph.id, w: ph.w, h: ph.h })),
         circles: mine(e).map((cid) => { const c = tg.circles.get(cid); return { id: c.id, name: c.name, kind: c.kind }; }) }));
   },
+  orbita_add_photo: (u, a) => {
+    const e = tg.entries.find((x) => x.id === a.p_entry && x.author_id === u.id); if (!e) bad('You can only add photos to your own memories.');
+    const ok = (s) => /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(s || '');
+    if (!ok(a.p_thumb) || !ok(a.p_data)) bad('new row for relation "orbita_entry_photos" violates check constraint "orbita_photo_jpeg"');
+    if (tg.photos.filter((x) => x.entry_id === e.id).length >= 6) bad('A memory can have up to 6 photos.');
+    const ph = { id: uuid(), entry_id: e.id, position: tg.photos.filter((x) => x.entry_id === e.id).length, w: a.p_w, h: a.p_h, thumb: a.p_thumb, data: a.p_data };
+    tg.photos.push(ph); return ph.id;
+  },
+  orbita_delete_photo: (u, a) => { const ph = tg.photos.find((x) => x.id === a.p_photo); const e = ph && tg.entries.find((x) => x.id === ph.entry_id); if (e && e.author_id === u.id) tg.photos = tg.photos.filter((x) => x !== ph); return null; },
   orbita_delete_my_together_data: (u) => {
+    tg.photos = tg.photos.filter((ph) => { const e = tg.entries.find((x) => x.id === ph.entry_id); return !(e && e.author_id === u.id); });
     tg.entries = tg.entries.filter((e) => e.author_id !== u.id); tg.messages = tg.messages.filter((g) => g.author_id !== u.id);
     tg.members = tg.members.filter((m) => m.user_id !== u.id); tg.names.delete(u.id); return null;
   },
@@ -190,11 +201,18 @@ http.createServer(async (req, res) => {
     if (!fn) return send(res, 404, { code: 'PGRST202', message: `Could not find the function public.${p.slice(13)} in the schema cache` });
     try { const out = fn(user, body); return send(res, 200, out === undefined ? null : out); } catch (e) { if (e instanceof Fail) return send(res, 400, { code: 'P0001', message: e.message }); throw e; }
   }
+  if (p === '/rest/v1/orbita_entry_photos' && req.method === 'GET') {
+    const user = authed(req); if (!user) return send(res, 401, { message: 'JWT expired' });
+    const idq = url.searchParams.get('id') || ''; const cols = (url.searchParams.get('select') || 'id').split(',');
+    const ids = idq.startsWith('in.(') ? idq.slice(4, -1).split(',') : idq.startsWith('eq.') ? [idq.slice(3)] : null;
+    const visible = (ph) => { const e = tg.entries.find((x) => x.id === ph.entry_id); return e && (e.author_id === user.id || tg.shares.some((s) => s.entry_id === e.id && isMember(s.circle_id, user.id))); };
+    return send(res, 200, tg.photos.filter((ph) => visible(ph) && (!ids || ids.includes(ph.id))).map((ph) => Object.fromEntries(cols.map((c) => [c, ph[c]]))));
+  }
   if ((p === '/rest/v1/orbita_messages' || p === '/rest/v1/orbita_entries') && req.method === 'DELETE') {
     const user = authed(req); if (!user) return send(res, 401, { message: 'JWT expired' });
     const id = (url.searchParams.get('id') || '').replace(/^eq\./, '');
     if (p.endsWith('messages')) tg.messages = tg.messages.filter((g) => !(g.id === id && g.author_id === user.id));
-    else { const mine = tg.entries.find((e) => e.id === id && e.author_id === user.id); if (mine) { tg.entries = tg.entries.filter((e) => e !== mine); tg.shares = tg.shares.filter((s) => s.entry_id !== id); } }
+    else { const mine = tg.entries.find((e) => e.id === id && e.author_id === user.id); if (mine) { tg.entries = tg.entries.filter((e) => e !== mine); tg.shares = tg.shares.filter((s) => s.entry_id !== id); tg.photos = tg.photos.filter((ph) => ph.entry_id !== id); } }
     return send(res, 204);
   }
 

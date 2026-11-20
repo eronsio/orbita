@@ -189,6 +189,44 @@ const ok = (name, cond, extra = '') => { if (cond) console.log(`ok   ${name}`); 
   ok('"delete my data" removes my memories, messages and memberships', left.e === 0 && left.m === 0 && left.k === 0, JSON.stringify(left));
   ok('the other person in a direct chat is left with an empty, still-working chat', (await rpc(dave, 'orbita_my_circles')).value.some((c) => c.id === dm));
 
+  // ---------- photos ----------
+  {
+    const jpg = (n = 20) => 'data:image/jpeg;base64,' + 'A'.repeat(n);
+    const circle = (await rpc(alice, 'orbita_create_circle', 'Photo club', 'group', ['bob@example.test'])).value;
+    const bobPhotoInv = (await rpc(bob, 'orbita_my_invites')).value.find((i) => i.name === 'Photo club');
+    await rpc(bob, 'orbita_accept_invite', bobPhotoInv.id);
+    const entry = (await rpc(alice, 'orbita_save_entry', null, 'Pics', 'Photos of the day', '2026-10-30', '', [], [])).value;
+    const ph = await rpc(alice, 'orbita_add_photo', entry, jpg(10), jpg(50), 800, 600);
+    ok('author can add a photo', !!ph.value, JSON.stringify(ph));
+    ok('private photos are hidden from everyone else (table)', (await rows(bob, 'select id from orbita_entry_photos')).value.length === 0 && (await rows(mallory, 'select id from orbita_entry_photos')).value.length === 0);
+    ok('the author sees their photo, and the journal lists its metadata only', (await rows(alice, 'select id from orbita_entry_photos')).value.length === 1
+      && JSON.stringify((await rpc(alice, 'orbita_journal')).value.find((e) => e.id === entry).photos.map((x) => [x.w, x.h])) === '[[800,600]]');
+    await rpc(alice, 'orbita_save_entry', entry, 'Pics', 'Photos of the day', '2026-10-30', '', [], [circle]);
+    ok('once shared, a group member can see the photo', (await rows(bob, 'select id from orbita_entry_photos')).value.length === 1
+      && (await rpc(bob, 'orbita_journal')).value.find((e) => e.id === entry).photos.length === 1);
+    ok('a non-member still cannot', (await rows(mallory, 'select id from orbita_entry_photos')).value.length === 0);
+    mustFail('a group member cannot add photos to someone else\'s memory', await rpc(bob, 'orbita_add_photo', entry, jpg(), jpg(), 10, 10), /your own/);
+    await rpc(bob, 'orbita_delete_photo', ph.value);
+    ok('a group member cannot delete someone else\'s photo', (await rows(alice, 'select id from orbita_entry_photos')).value.length === 1);
+    mustFail('only JPEG data is accepted (png refused)', await rpc(alice, 'orbita_add_photo', entry, 'data:image/png;base64,AAAA', jpg(), 10, 10), /check constraint|jpeg/i);
+    mustFail('data must be base64 (script refused)', await rpc(alice, 'orbita_add_photo', entry, jpg(), 'data:image/jpeg;base64,<script>alert(1)</script>', 10, 10), /check constraint|jpeg/i);
+    mustFail('oversized thumbnails are refused', await rpc(alice, 'orbita_add_photo', entry, jpg(90000), jpg(), 10, 10), /check constraint|size/i);
+    mustFail('oversized photos are refused', await rpc(alice, 'orbita_add_photo', entry, jpg(), jpg(1300000), 10, 10), /check constraint|size/i);
+    mustFail('absurd dimensions are refused', await rpc(alice, 'orbita_add_photo', entry, jpg(), jpg(), 0, 10), /odd size/);
+    mustFail('signed-out visitors cannot add photos', await rpc(null, 'orbita_add_photo', entry, jpg(), jpg(), 10, 10), /permission denied/);
+    for (let i = 0; i < 5; i++) await rpc(alice, 'orbita_add_photo', entry, jpg(), jpg(), 10, 10);
+    mustFail('at most 6 photos per memory', await rpc(alice, 'orbita_add_photo', entry, jpg(), jpg(), 10, 10), /up to 6/);
+    // storage quota: shrink it for the test, then put it back
+    await db.exec('create or replace function public.orbita_photo_quota() returns bigint language sql immutable as $$ select 400::bigint $$');
+    const entry2 = (await rpc(alice, 'orbita_save_entry', null, '', 'Second memory', '2026-10-31', '', [], [])).value;
+    mustFail('the per-person photo quota is enforced', await rpc(alice, 'orbita_add_photo', entry2, jpg(10), jpg(50), 10, 10), /storage is full/);
+    await db.exec(sqlFile.slice(sqlFile.indexOf('create or replace function public.orbita_photo_quota()'), sqlFile.indexOf('create or replace function public.orbita_add_photo(')));
+    ok('author can delete their own photo', ((await rpc(alice, 'orbita_delete_photo', ph.value)), (await rows(alice, 'select id from orbita_entry_photos where id = $1', [ph.value])).value.length === 0));
+    await rpc(alice, 'orbita_delete_my_together_data');
+    ok('"delete my data" also removes photos', (await db.query('select count(*)::int as n from orbita_entry_photos')).rows[0].n === 0);
+    mustFail('signed-out visitors cannot read photos', await rows(null, 'select * from orbita_entry_photos'), /permission denied/);
+  }
+
   console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
   process.exit(failures ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(1); });

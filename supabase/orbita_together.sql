@@ -87,6 +87,23 @@ create table if not exists public.orbita_entry_circles (
 );
 create index if not exists orbita_entry_circles_circle_idx on public.orbita_entry_circles (circle_id);
 
+-- Photos on memories. Stored in the database as small JPEGs (a thumbnail for lists, a larger copy for viewing), resized in the
+-- browser first. They are exactly as visible as the memory they belong to.
+create table if not exists public.orbita_entry_photos (
+  id         uuid primary key default gen_random_uuid(),
+  entry_id   uuid not null references public.orbita_entries (id) on delete cascade,
+  position   integer not null default 0,
+  w          integer,
+  h          integer,
+  thumb      text not null,
+  data       text not null,
+  created_at timestamptz not null default now(),
+  constraint orbita_photo_thumb_size check (char_length(thumb) <= 80000),
+  constraint orbita_photo_data_size  check (char_length(data) <= 1200000),
+  constraint orbita_photo_jpeg       check (thumb ~ '^data:image/jpeg;base64,[A-Za-z0-9+/=]+$' and data ~ '^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
+);
+create index if not exists orbita_entry_photos_entry_idx on public.orbita_entry_photos (entry_id, position);
+
 -- ---------------------------------------------------------------------------------------------
 -- Helpers (security definer so the policies below can look at membership without recursing into themselves)
 -- ---------------------------------------------------------------------------------------------
@@ -166,6 +183,7 @@ alter table public.orbita_invites       enable row level security;
 alter table public.orbita_messages      enable row level security;
 alter table public.orbita_entries       enable row level security;
 alter table public.orbita_entry_circles enable row level security;
+alter table public.orbita_entry_photos  enable row level security;
 
 drop policy if exists "together: read profiles" on public.orbita_profiles;
 create policy "together: read profiles" on public.orbita_profiles for select to authenticated
@@ -203,11 +221,15 @@ drop policy if exists "together: read entry sharing" on public.orbita_entry_circ
 create policy "together: read entry sharing" on public.orbita_entry_circles for select to authenticated
   using (public.orbita_is_member(circle_id) or public.orbita_is_my_entry(entry_id));
 
+drop policy if exists "together: read photos" on public.orbita_entry_photos;
+create policy "together: read photos" on public.orbita_entry_photos for select to authenticated
+  using (public.orbita_can_see_entry(entry_id));
+
 -- table privileges: nothing for signed-out visitors; read-only (plus deleting your own messages/entries) for signed-in users
 revoke all on public.orbita_profiles, public.orbita_circles, public.orbita_members, public.orbita_invites,
-              public.orbita_messages, public.orbita_entries, public.orbita_entry_circles from anon, authenticated;
+              public.orbita_messages, public.orbita_entries, public.orbita_entry_circles, public.orbita_entry_photos from anon, authenticated;
 grant select on public.orbita_profiles, public.orbita_circles, public.orbita_members, public.orbita_invites,
-                public.orbita_messages, public.orbita_entries, public.orbita_entry_circles to authenticated;
+                public.orbita_messages, public.orbita_entries, public.orbita_entry_circles, public.orbita_entry_photos to authenticated;
 grant delete on public.orbita_messages, public.orbita_entries to authenticated;
 
 -- ---------------------------------------------------------------------------------------------
@@ -469,6 +491,8 @@ begin
                  'author_name', coalesce(nullif(p.display_name, ''), 'Someone'),
                  'title', e.title, 'body', e.body, 'happened_on', e.happened_on, 'place', e.place, 'people', e.people,
                  'created_at', e.created_at, 'updated_at', e.updated_at,
+                 'photos', (select coalesce(jsonb_agg(jsonb_build_object('id', ph.id, 'w', ph.w, 'h', ph.h) order by ph.position, ph.created_at), '[]'::jsonb)
+                              from public.orbita_entry_photos ph where ph.entry_id = e.id),
                  'circles', (select coalesce(jsonb_agg(jsonb_build_object('id', c.id, 'name', c.name, 'kind', c.kind) order by c.created_at), '[]'::jsonb)
                                from public.orbita_entry_circles ec
                                join public.orbita_circles c on c.id = ec.circle_id
@@ -484,6 +508,38 @@ begin
            and (p_before is null or e.happened_on < p_before)
          order by e.happened_on desc, e.created_at desc
          limit least(greatest(coalesce(p_limit, 100), 1), 200)) t), '[]'::jsonb);
+end $$;
+
+-- how much photo data one person may keep (characters of base64, about 3/4 of that in bytes: roughly 90 MB)
+create or replace function public.orbita_photo_quota() returns bigint
+language sql immutable set search_path = public as $$ select 120000000::bigint $$;
+
+create or replace function public.orbita_add_photo(p_entry uuid, p_thumb text, p_data text, p_w integer, p_h integer)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); pid uuid; n integer; used bigint;
+begin
+  if uid is null then raise exception 'not signed in' using errcode = '28000'; end if;
+  if not public.orbita_is_my_entry(p_entry) then raise exception 'You can only add photos to your own memories.'; end if;
+  if p_w is null or p_h is null or p_w not between 1 and 10000 or p_h not between 1 and 10000 then raise exception 'That image has an odd size.'; end if;
+  select count(*) into n from public.orbita_entry_photos where entry_id = p_entry;
+  if n >= 6 then raise exception 'A memory can have up to 6 photos.'; end if;
+  select coalesce(sum(char_length(ph.thumb) + char_length(ph.data)), 0) into used
+    from public.orbita_entry_photos ph join public.orbita_entries e on e.id = ph.entry_id where e.author_id = uid;
+  if used + char_length(coalesce(p_thumb, '')) + char_length(coalesce(p_data, '')) > public.orbita_photo_quota() then
+    raise exception 'Your photo storage is full. Delete some photos first.';
+  end if;
+  insert into public.orbita_entry_photos (entry_id, position, w, h, thumb, data)
+  values (p_entry, n, p_w, p_h, p_thumb, p_data) returning id into pid;
+  update public.orbita_entries set updated_at = now() where id = p_entry;
+  return pid;
+end $$;
+
+create or replace function public.orbita_delete_photo(p_photo uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not signed in' using errcode = '28000'; end if;
+  delete from public.orbita_entry_photos ph using public.orbita_entries e
+   where ph.id = p_photo and e.id = ph.entry_id and e.author_id = auth.uid();
 end $$;
 
 -- "delete my cloud data" from the account dialog also wipes this: my memories, messages and memberships

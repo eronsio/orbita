@@ -13,7 +13,7 @@ src = src.replace(/class Orbita \{[\s\S]*\n    \}\n\n    document\.addEventListe
 if (/class Orbita/.test(src)) throw new Error('Could not strip the Orbita class: the extraction pattern needs updating');
 src += `\nmodule.exports = { parsePhone, inferLocation, normalizePerson, contactKeys, fillMissing, rowToPerson, parseVCF,
   parseLocationText, applyInferredLocation, findDuplicateCandidates, mergeScore, csvSafe, esc, fold, SAMPLE_PEOPLE, threeWayMerge, mergeInto, sortPeople, daysSince, agoLabel, needsCatchUp, todayStr, CATCH_UP_DAYS, bloomLayout, bloomFit, BLOOM,
-  parseBirthday, nextBirthday, bdaySoon, birthdayLabel, birthdayInput, parseEmails, splitNames, circleTitle };`;
+  parseBirthday, nextBirthday, bdaySoon, birthdayLabel, birthdayInput, parseEmails, splitNames, circleTitle, haversineKm, geoPrecise, nearbyPeople, buildToday, fitWithin };`;
 const sandbox = path.join(require('os').tmpdir(), `orbita_unit_${process.pid}.js`);
 fs.writeFileSync(sandbox, src.replace("'use strict';", "'use strict'; const document = { getElementById() { return null; } }; const location = { hostname: 'example.com', search: '' }; const localStorage = { getItem() { return null; } }; const L = { Map: { mergeOptions() {}, addInitHook() {} }, Handler: { extend: (o) => o }, DomEvent: {} };"));
 const m = require(sandbox);
@@ -317,10 +317,10 @@ eq('csv: last contacted column is read', m.normalizePerson(m.rowToPerson({ Name:
   eq('birthday: 29 Feb is allowed', [pb('--02-29'), pb('1992-02-29')], ['--02-29', '1992-02-29']);
   eq('birthday: input form drops the leading dashes', [m.birthdayInput('--05-21'), m.birthdayInput('1990-05-21'), m.birthdayInput(null)], ['05-21', '1990-05-21', '']);
   const on = new Date(2026, 9, 22); // 22 Oct 2026
-  eq('birthday: today is 0 days, with the age they turn', m.nextBirthday({ birthday: '1990-10-22' }, on), { days: 0, age: 36 });
+  eq('birthday: today is 0 days, with the age they turn', m.nextBirthday({ birthday: '1990-10-22' }, on), { days: 0, age: 36, year: 2026 });
   eq('birthday: tomorrow', m.nextBirthday({ birthday: '1990-10-23' }, on).days, 1);
-  eq('birthday: one that already passed this year rolls to next year', m.nextBirthday({ birthday: '1990-10-21' }, on), { days: 364, age: 37 });
-  eq('birthday: no year means no age', m.nextBirthday({ birthday: '--12-25' }, on), { days: 64, age: null });
+  eq('birthday: one that already passed this year rolls to next year', m.nextBirthday({ birthday: '1990-10-21' }, on), { days: 364, age: 37, year: 2027 });
+  eq('birthday: no year means no age', m.nextBirthday({ birthday: '--12-25' }, on), { days: 64, age: null, year: 2026 });
   eq('birthday: no birthday is null', m.nextBirthday({}, on), null);
   eq('birthday: year-end wraps (31 Dec -> 2 Jan)', m.nextBirthday({ birthday: '--01-02' }, new Date(2026, 11, 31)).days, 2);
   eq('birthday: 29 Feb in a non-leap year lands on 1 Mar', m.nextBirthday({ birthday: '--02-29' }, new Date(2027, 1, 1)).days, 28);
@@ -348,6 +348,33 @@ eq('csv: last contacted column is read', m.normalizePerson(m.rowToPerson({ Name:
   eq('circle title: a group uses its name', m.circleTitle({ kind: 'group', name: 'Trip crew', members: [] }, me), 'Trip crew');
   eq('circle title: a one-to-one chat shows the other person', m.circleTitle({ kind: 'direct', members: [{ user_id: 'u1', name: 'me' }, { user_id: 'u2', name: 'Bob' }], pending: [] }, me), 'Bob');
   eq('circle title: a chat still waiting shows who was invited', m.circleTitle({ kind: 'direct', members: [{ user_id: 'u1', name: 'me' }], pending: [{ id: 'i', email: 'dave@example.test' }] }, me), 'dave@example.test');
+}
+
+// ---- near me / today / photos ----
+{ const km = (a, b) => Math.round(m.haversineKm(a, b));
+  eq('distance: Vigo to Madrid is about 465 km, a city to itself is 0', [km({ lat: 42.24, lng: -8.72 }, { lat: 40.42, lng: -3.70 }), km({ lat: 10, lng: 10 }, { lat: 10, lng: 10 })], [465, 0]);
+  eq('distance: crosses the date line sensibly', km({ lat: 0, lng: 179 }, { lat: 0, lng: -179 }), 222);
+  const here = { lat: 42.24, lng: -8.72 };
+  const ppl = [person({ id: 'a', name: 'Pontevedra', lat: 42.43, lng: -8.64, geoSource: 'manual' }), person({ id: 'b', name: 'Country guess', lat: 42.3, lng: -8.7, geoSource: 'country' }),
+    person({ id: 'c', name: 'Madrid', lat: 40.42, lng: -3.7, geoSource: 'geocoded' }), person({ id: 'd', name: 'No pin' }), person({ id: 'e', name: 'Phone guess', lat: 42.2, lng: -8.7, geoSource: 'phone' })];
+  eq('near: only precise pins inside the radius, nearest first', m.nearbyPeople(ppl, here, 50).map((x) => x.p.name), ['Pontevedra']);
+  eq('near: a bigger radius widens it, approximate pins never count', m.nearbyPeople(ppl, here, 600).map((x) => x.p.name), ['Pontevedra', 'Madrid']);
+  eq('near: geoPrecise', ppl.map((p) => m.geoPrecise(p)), [true, false, true, false, false]);
+  eq('photo: fits inside the box and is never enlarged', [m.fitWithin(4000, 3000, 1280), m.fitWithin(600, 400, 1280), m.fitWithin(3000, 4000, 320)], [{ w: 1280, h: 960 }, { w: 600, h: 400 }, { w: 240, h: 320 }]);
+  const now = new Date(2026, 9, 22);
+  const dt = (n) => { const x = new Date(2026, 9, 22 + n); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
+  const md = (n) => `--${dt(n).slice(5)}`;
+  const t1 = m.buildToday([
+    person({ id: '1', name: 'Today bday', birthday: md(0) }), person({ id: '2', name: 'Soon bday', birthday: md(5) }), person({ id: '3', name: 'Far bday', birthday: md(20) }),
+    person({ id: '4', name: 'Wished already', birthday: md(1), wishedYear: 2026 }),
+    person({ id: '5', name: 'Overdue a lot', tier: 1, lastContacted: '2025-01-01' }), person({ id: '6', name: 'Never contacted', tier: 2 }),
+    person({ id: '7', name: 'Overdue a little', tier: 1, lastContacted: dt(-40) }), person({ id: '8', name: 'Up to date', tier: 1, lastContacted: dt(-3) }),
+    person({ id: '9', name: 'Snoozed', tier: 1, lastContacted: '2025-01-01', snoozedUntil: dt(3) }), person({ id: '10', name: 'Untiered' }),
+  ], now);
+  eq('today: birthdays this week, soonest first, wished ones and far ones left out', t1.birthdays.map((x) => x.p.name), ['Today bday', 'Soon bday']);
+  eq('today: catch-ups, never-contacted first then most overdue; snoozed and untiered left out', t1.catchUp.map((x) => x.p.name), ['Never contacted', 'Overdue a lot', 'Overdue a little']);
+  eq('snooze ends: a snoozed contact comes back after the date', m.needsCatchUp(person({ tier: 1, lastContacted: '2025-01-01', snoozedUntil: dt(3) }), new Date(2026, 9, 26)), true);
+  eq('normalize: snooze and wished year are validated', [person({ snoozedUntil: '2026-11-01T00:00' }).snoozedUntil, person({ snoozedUntil: 'x' }).snoozedUntil, person({ wishedYear: '2026' }).wishedYear, person({ wishedYear: 'no' }).wishedYear], ['2026-11-01', null, 2026, null]);
 }
 
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
